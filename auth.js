@@ -1,4 +1,4 @@
-// Tus credenciales de conexión
+// Tus credenciales oficiales de conexión
 const firebaseConfig = {
     apiKey: "AIzaSyDDCGT88IspX4-_TOKlQcdeo-93favOuoy",
     authDomain: "://firebaseapp.com",
@@ -8,23 +8,11 @@ const firebaseConfig = {
     appId: "1:792321276987:web:3494cc6f399b0d83e5301e"
   };
   
-  // Inicializamos Firebase con la sintaxis tradicional compatible
+  // Inicializamos Firebase de forma tradicional compatible con navegadores
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   
-  // Función para Iniciar Sesión
-  window.login = async () => {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      try {
-          await auth.signInWithEmailAndPassword(email, password);
-          alert("¡Bienvenido al sistema!");
-      } catch (error) {
-          alert("Error al ingresar: " + error.message);
-      }
-  }
-  
-  // Función para Registrar Usuario
+  // Función para registrar usuarios (Presidencia Municipal)
   window.registerUser = async () => {
       const cedula = document.getElementById("cedula").value;
       const fullName = document.getElementById("fullName").value;
@@ -38,12 +26,24 @@ const firebaseConfig = {
       }
   
       try {
-          // Registramos en el módulo de autenticación de Firebase
+          // Guarda al usuario en la nube de Google
           await auth.createUserWithEmailAndPassword(email, password);
-          alert(`¡Usuario registrado con éxito!\nNombre: ${fullName}\nRol: ${role}`);
+          alert(`¡Usuario registrado con éxito en la nube!\nNombre: ${fullName}\nRol: ${role}`);
           document.getElementById("registerForm").reset();
       } catch (error) {
           alert("Error al registrar en Firebase: " + error.message);
+      }
+  }
+  
+  // Función para iniciar sesión
+  window.login = async () => {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      try {
+          await auth.signInWithEmailAndPassword(email, password);
+          alert("¡Bienvenido al sistema de la Presidencia Municipal!");
+      } catch (error) {
+          alert("Error al ingresar: " + error.message);
       }
   }
   
