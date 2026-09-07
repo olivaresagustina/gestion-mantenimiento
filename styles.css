@@ -1,0 +1,235 @@
+/* Configuración General y Tipografía */
+@import url('https://googleapis.com');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background: #eef2f3; /* Fondo gris claro suave para resaltar la tarjeta */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* Contenedor Principal de la Tarjeta */
+.main-container {
+    width: 100%;
+    max-width: 950px;
+    padding: 20px;
+}
+
+.login-card {
+    background: #fbf6ee; /* Color beige claro del fondo izquierdo */
+    display: flex;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    min-height: 550px;
+}
+
+/* --- PANEL IZQUIERDO (Formulario) --- */
+.left-panel {
+    flex: 1.2;
+    padding: 40px 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Logotipo Institucional */
+.header-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    align-self: flex-start;
+}
+
+.logo-img {
+    width: 45px;
+    height: auto;
+}
+
+.logo-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+}
+
+.logo-top {
+    font-size: 10px;
+    font-weight: 600;
+    color: #636363;
+    letter-spacing: 1px;
+}
+
+.logo-bottom {
+    font-size: 20px;
+    font-weight: 700;
+    color: #a47c3c; /* Color dorado del texto */
+    letter-spacing: 1px;
+}
+
+/* Títulos del Formulario */
+.left-panel h2 {
+    color: #5c1424; /* Color guinda institucional */
+    font-size: 28px;
+    font-weight: 700;
+    margin-top: 20px;
+    text-align: center;
+}
+
+.subtitle {
+    color: #a47c3c;
+    font-size: 14px;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+#loginForm {
+    width: 100%;
+    max-width: 320px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Campos de entrada con icono */
+.input-group {
+    position: relative;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.input-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #636363;
+    font-size: 16px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px 12px 12px 45px;
+    border: 1.5px solid #cccccc;
+    border-radius: 8px;
+    background: #ffffff;
+    font-size: 14px;
+    outline: none;
+    transition: 0.3s;
+}
+
+.input-group input:focus {
+    border-color: #5c1424;
+}
+
+/* Enlace Olvidaste Contraseña */
+.forgot-password {
+    color: #5c1424;
+    font-size: 13px;
+    text-decoration: underline;
+    margin-bottom: 25px;
+    font-weight: 600;
+}
+
+/* Botón Iniciar Sesión (Guinda) */
+.btn-primary {
+    background: #5c1424;
+    color: #ffffff;
+    border: none;
+    padding: 12px 0;
+    width: 80%;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: 0.3s;
+    box-shadow: 0 4px 10px rgba(92, 20, 36, 0.3);
+}
+
+.btn-primary:hover {
+    background: #440e1a;
+    transform: translateY(-2px);
+}
+
+/* Pie de la tarjeta */
+.card-footer {
+    font-size: 11px;
+    color: #636363;
+    font-weight: 600;
+    letter-spacing: 1px;
+    margin-top: 20px;
+}
+
+/* --- PANEL DERECHO (Bienvenida Guinda con curva) --- */
+.right-panel {
+    flex: 1;
+    background: #5c1424; /* Fondo guinda */
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    /* Efecto de curva ovalada del lado izquierdo del panel guinda */
+    border-top-left-radius: 100% 50%;
+    border-bottom-left-radius: 100% 50%;
+}
+
+.welcome-content {
+    text-align: center;
+    color: #ffffff;
+    max-width: 280px;
+    z-index: 2;
+}
+
+.welcome-content h1 {
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.welcome-content p {
+    font-size: 13px;
+    line-height: 1.6;
+    margin-bottom: 30px;
+    opacity: 0.9;
+}
+
+/* Botón Registrarse (Dorado/Transparente) */
+.btn-outline {
+    display: inline-block;
+    border: 2px solid #b8904c;
+    background: #b8904c;
+    color: #ffffff;
+    padding: 10px 35px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.btn-outline:hover {
+    background: transparent;
+    color: #b8904c;
+    transform: translateY(-2px);
+}
+
+/* Responsivo para celulares */
+@filter (max-width: 768px) {
+    .login-card {
+        flex-direction: column;
+    }
+    .right-panel {
+        border-radius: 0;
+        padding: 60px 20px;
+    }
+}
