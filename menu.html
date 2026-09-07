@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menú Principal - Sistema de Gestión</title>
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Librerías de Firebase -->
+    <script src="https://gstatic.com"></script>
+    <script src="https://gstatic.com"></script>
+</head>
+<body>
+    <div class="menu-container">
+        <header class="menu-header">
+            <h2>Bienvenido al Sistema de Gestión y Mantenimiento</h2>
+            <p>Usuario: <span id="userEmail">Cargando...</span> | Rol: <span id="userRole">Cargando...</span></p>
+            <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
+        </header>
+
+        <main class="modules-grid">
+            <!-- Módulo Inventario -->
+            <div class="module-card" id="mod-inventario">
+                <h3>📦 INVENTARIO</h3>
+                <p>Equipos, encargados, departamentos y áreas.</p>
+                <button onclick="goToModule('inventario')">Acceder</button>
+            </div>
+
+            <!-- Módulo Mantenimiento -->
+            <div class="module-card" id="mod-mantenimiento">
+                <h3>🛠️ MANTENIMIENTO</h3>
+                <p>Registro de actividades e historial de cómputo.</p>
+                <button onclick="goToModule('mantenimiento')">Acceder</button>
+            </div>
+
+            <!-- Módulo Dashboard -->
+            <div class="module-card" id="mod-dashboard">
+                <h3>📊 DASHBOARD</h3>
+                <p>Reportes estadísticos y gráficas mensuales.</p>
+                <button onclick="goToModule('dashboard')">Acceder</button>
+            </div>
+
+            <!-- Módulo Reportes -->
+            <div class="module-card" id="mod-reportes">
+                <h3>📄 REPORTES</h3>
+                <p>Probabilidad de mantenimientos y ubicaciones.</p>
+                <button onclick="goToModule('reportes')">Acceder</button>
+            </div>
+        </main>
+    </div>
+
+    <script src="auth.js"></script>
+</body>
+</html>
