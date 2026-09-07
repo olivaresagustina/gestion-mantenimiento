@@ -7,9 +7,10 @@
     <!-- Enlazamos los estilos de styles.css -->
     <link rel="stylesheet" href="styles.css">
 
-    <!-- CORRECCIÓN: Librerías reales de Firebase v8 enlazadas correctamente -->
-    <script src="https://gstatic.com"></script>
-    <script src="https://gstatic.com"></script>
+    <!-- LIBRERÍAS OFICIALES DE GOOGLE FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
 </head>
 <body>
     <div class="login-box">
@@ -23,10 +24,10 @@
 
             <button type="button" onclick="login()">Ingresar</button>
         </form>
-        <p>¿No tienes cuenta? <a href="Registro.html">Regístrate aquí</a></p>
+        <p>¿No tienes cuenta? <a href="registro.html">Regístrate aquí</a></p>
     </div>
 
-    <!-- CORRECCIÓN: Quitamos type="module" para que sea compatible con la función login() -->
+    <!-- Lógica de control -->
     <script src="auth.js"></script>
 </body>
 </html>
