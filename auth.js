@@ -1,11 +1,12 @@
 // Tus credenciales oficiales de conexión (CORREGIDO el authDomain que estaba roto)
 const firebaseConfig = {
-    apiKey: "AIzaSyDDCGT88IspX4-_TOKlQcdeo-93favOuoy",
-    authDomain: "://firebaseapp.com",
-    projectId: "gestion-mantenimiento-ap-20f51",
-    storageBucket: "gestion-mantenimiento-ap-20f51.firebasestorage.app",
-    messagingSenderId: "792321276987",
-    appId: "1:792321276987:web:3494cc6f399b0d83e5301e"
+  apiKey: "AIzaSyDDcGT88IspX4-_TOKtQcdeo-93favOuoY",
+  authDomain: "gestion-mantenimiento-ap-20f51.firebaseapp.com",
+  projectId: "gestion-mantenimiento-ap-20f51",
+  storageBucket: "gestion-mantenimiento-ap-20f51.firebasestorage.app",
+  messagingSenderId: "792321276987",
+  appId: "1:792321276987:web:3494cc6f399b0d83e5301e",
+  measurementId: "G-XLE9Y7FPGM"
 };
   
 // Inicializamos Firebase de forma tradicional compatible con navegadores
