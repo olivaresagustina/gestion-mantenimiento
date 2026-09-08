@@ -3,52 +3,158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menú Principal - Sistema de Gestión</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Menú Principal - H. Ayuntamiento de Calnali</title>
+    <link rel="stylesheet" href="styles_menu.css">
     
-    <!-- Librerías de Firebase -->
+    <!-- LIBRERÍAS DE FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 </head>
 <body>
-    <div class="menu-container">
-        <header class="menu-header">
-            <h2>Bienvenido al Sistema de Gestión y Mantenimiento</h2>
-            <p>Usuario: <span id="userEmail">Cargando...</span> | Rol: <span id="userRole">Cargando...</span></p>
-            <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
-        </header>
-
-        <main class="modules-grid">
-            <!-- Módulo Inventario -->
-            <div class="module-card" id="mod-inventario">
-                <h3>📦 INVENTARIO</h3>
-                <p>Equipos, encargados, departamentos y áreas.</p>
-                <button onclick="goToModule('inventario')">Acceder</button>
+    <div class="dashboard-container">
+        
+        <!-- BARRA LATERAL IZQUIERDA (MENÚ GUINDA) -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <img src="logo.png" alt="Logo Calnali" class="menu-logo-img">
+                <div class="logo-text">
+                    <span class="logo-top">JUNTOS RESCATANDO</span>
+                    <span class="logo-bottom">CALNALI</span>
+                </div>
             </div>
 
-            <!-- Módulo Mantenimiento -->
-            <div class="module-card" id="mod-mantenimiento">
-                <h3>🛠️ MANTENIMIENTO</h3>
-                <p>Registro de actividades e historial de cómputo.</p>
-                <button onclick="goToModule('mantenimiento')">Acceder</button>
-            </div>
+            <nav class="sidebar-nav">
+                <!-- Sección Dashboard por defecto activa -->
+                <div class="nav-section active">
+                    <div class="section-title">📊 Dashboard</div>
+                    <ul class="sub-menu">
+                        <li class="active-sub">• Reporte del equipo</li>
+                        <li>• Gráfica de mantenimiento</li>
+                    </ul>
+                </div>
 
-            <!-- Módulo Dashboard -->
-            <div class="module-card" id="mod-dashboard">
-                <h3>📊 DASHBOARD</h3>
-                <p>Reportes estadísticos y gráficas mensuales.</p>
-                <button onclick="goToModule('dashboard')">Acceder</button>
-            </div>
+                <!-- Módulos principales solicitados en tu tabla -->
+                <div class="nav-item">🛡️ SEGURIDAD</div>
+                <div class="nav-item">📦 INVENTARIO</div>
+                <div class="nav-item">🛠️ MANTENIMIENTO</div>
+                <div class="nav-item">📊 REPORTES</div>
+            </nav>
 
-            <!-- Módulo Reportes -->
-            <div class="module-card" id="mod-reportes">
-                <h3>📄 REPORTES</h3>
-                <p>Probabilidad de mantenimientos y ubicaciones.</p>
-                <button onclick="goToModule('reportes')">Acceder</button>
-            </div>
+            <button class="btn-logout-sidebar" onclick="logout()">Cerrar Sesión</button>
+        </aside>
+
+        <!-- CONTENIDO PRINCIPAL (FONDO BEIGE) -->
+        <main class="main-content">
+            
+            <!-- Barra superior de búsqueda y usuario -->
+            <header class="top-bar">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" placeholder="Buscar equipo, departamento, etc...">
+                </div>
+                <div class="user-profile">
+                    <span class="notification-icon">🔔</span>
+                    <span id="userEmailDisplay" class="user-email-text">admin@calnali.gob.mx</span>
+                    <img src="https://placeholder.com" alt="Avatar" class="avatar-img">
+                </div>
+            </header>
+
+            <h1 class="page-title">RESUMEN DEL EQUIPO DE CÓMPUTO</h1>
+
+            <!-- TARJETAS DE MÉTRICAS PRINCIPALES -->
+            <section class="metrics-grid">
+                <div class="metric-card bg-cream">
+                    <h2>1,000</h2>
+                    <p>Total de Equipos</p>
+                </div>
+                <div class="metric-card bg-gold">
+                    <h2>900</h2>
+                    <p>Mantenimiento Preventivo Al Día</p>
+                </div>
+                <div class="metric-card bg-darkcream">
+                    <h2>100</h2>
+                    <p>Correctivo Pendiente</p>
+                </div>
+            </section>
+
+            <!-- CONTENEDOR DE GRÁFICAS Y RESUMEN ESTADÍSTICO -->
+            <h2 class="section-heading">RESUMEN DE ESTADO Y MANTENIMIENTO</h2>
+            
+            <section class="charts-container">
+                <!-- Bloque Izquierdo: Simulación de Distribución Circular -->
+                <div class="chart-box">
+                    <h3>DISTRIBUCIÓN DE EQUIPOS POR ESTADO</h3>
+                    <div class="mock-donut-chart">
+                        <div class="donut-inner">85%</div>
+                    </div>
+                    <div class="chart-legends">
+                        <span class="legend"><span class="dot maroon"></span> Operativo (85%)</span>
+                        <span class="legend"><span class="dot gold"></span> En Reparación (10%)</span>
+                        <span class="legend"><span class="dot brown"></span> Baja (5%)</span>
+                    </div>
+                </div>
+
+                <!-- Bloque Central: Simulación de Barras por Departamento -->
+                <div class="chart-box">
+                    <h3>MANTENIMIENTO POR DEPARTAMENTO</h3>
+                    <div class="mock-bar-chart">
+                        <div class="bar-container"><div class="bar h-80 bg-maroon"></div><span>Soporte</span></div>
+                        <div class="bar-container"><div class="bar h-60 bg-gold"></div><span>Ventas</span></div>
+                        <div class="bar-container"><div class="bar h-40 bg-maroon"></div><span>Contab.</span></div>
+                        <div class="bar-container"><div class="bar h-20 bg-gold"></div><span>Soporte</span></div>
+                    </div>
+                </div>
+
+                <!-- Bloque Derecho: Resumen lateral de Equipos Totales -->
+                <div class="summary-sidebar-box">
+                    <div class="summary-row">
+                        <div class="summary-icon bg-maroon">👥</div>
+                        <div>
+                            <h4>EQUIPOS TOTALES</h4>
+                            <h3>1,000</h3>
+                        </div>
+                    </div>
+                    <div class="summary-row">
+                        <div class="summary-icon bg-gold">🛠️</div>
+                        <div>
+                            <h4>MANTENIMIENTOS AL DÍA</h4>
+                            <h3>900</h3>
+                        </div>
+                    </div>
+                    <div class="summary-row">
+                        <div class="summary-icon bg-brown">📋</div>
+                        <div>
+                            <h4>CORRECTIVOS EN ESPERA</h4>
+                            <h3>100</h3>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TENDENCIA DE PROBLEMAS FRECUENTES -->
+            <section class="trend-section">
+                <h3>TENDENCIA DE PROBLEMAS FRECUENTES (ÚLTIMOS 6 MESES)</h3>
+                <div class="chart-legends-top">
+                    <span><span class="line-dot color-1"></span> Fallo de Red</span>
+                    <span><span class="line-dot color-2"></span> Sistemas</span>
+                    <span><span class="line-dot color-3"></span> Impresoras</span>
+                    <span><span class="line-dot color-4"></span> Hardware</span>
+                </div>
+                <div class="mock-line-chart">
+                    <!-- Las líneas finales las renderizaremos dinámicamente con CSS y SVG o Chart.js más adelante -->
+                    <div class="months-axis">
+                        <span>Ene</span><span>Feb</span><span>Mar</span><span>Abr</span><span>Mai</span><span>Jun</span>
+                    </div>
+                </div>
+            </section>
+
+            <footer class="main-footer">
+                H. AYUNTAMIENTO 2024-2027
+            </footer>
         </main>
     </div>
 
+    <!-- Enlazamos tu lógica JavaScript existente -->
     <script src="auth.js"></script>
 </body>
 </html>
