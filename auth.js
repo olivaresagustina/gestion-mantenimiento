@@ -1,4 +1,4 @@
-javascript// Tus credenciales oficiales de conexión (CORREGIDO el authDomain que estaba roto)
+// Tus credenciales oficiales de conexión (CORREGIDO el authDomain que estaba roto)
 const firebaseConfig = {
   apiKey: "AIzaSyDDcGT88IspX4-_TOKtQcdeo-93favOuoY",
   authDomain: "gestion-mantenimiento-ap-20f51.firebaseapp.com",
