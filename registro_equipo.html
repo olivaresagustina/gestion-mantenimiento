@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar Nuevo Equipo - Juntos Rescatando Calnali</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .form-container {
+            background-color: #ffffff;
+            width: 500px;
+            border: 2px solid #1a5276;
+            border-radius: 5px;
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+        }
+        .form-header {
+            background-color: #1a5276;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .form-body {
+            padding: 15px 25px;
+        }
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 12px;
+            color: #333;
+        }
+        input[type="text"], select, textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        input[disabled] {
+            background-color: #e9ecef;
+            color: #6c757d;
+        }
+        .file-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 5px;
+        }
+        .btn-action {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .btn-blue { background-color: #2980b9; color: white; }
+        .btn-gray { background-color: #bdc3c7; color: #333; }
+        .btn-upload { background-color: #bdc3c7; color: black; border: 1px solid #999; }
+        .row-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .img-preview {
+            width: 40px;
+            height: 30px;
+            border: 1px solid #ccc;
+            object-fit: contain;
+            background-color: #fafafa;
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <div class="form-header">REGISTRAR NUEVO EQUIPO</div>
+    
+    <form id="formRegistroEquipo" class="form-body" onsubmit="event.preventDefault();">
+        <label>ID (Auto-generado)</label>
+        <input type="text" id="equipoId" value="197" disabled>
+
+        <label>Tipo</label>
+        <select id="equipoTipo" required>
+            <option value="">Seleccione Tipo</option>
+            <option value="Teclado">Teclado</option>
+            <option value="Mouse">Mouse</option>
+            <option value="Monitor">Monitor</option>
+            <option value="CPU">CPU</option>
+            <option value="Laptop">Laptop</option>
+            <option value="Impresora">Impresora</option>
+        </select>
+
+        <label>Marca</label>
+        <input type="text" id="equipoMarca" placeholder="Ej: DELL" required>
+
+        <label>Modelo</label>
+        <input type="text" id="equipoModelo" placeholder="Ej: BT242" required>
+
+        <label>Serie</label>
+        <input type="text" id="equipoSerie" placeholder="Ej: 670-103-823" required>
+
+        <label>Figura (Imagen)</label>
+        <div class="file-row">
+            <!-- Input oculto para estilizar el botón igual a tu captura -->
+            <input type="file" id="equipoImagen" accept=".jpeg,.png,.jpg" style="display: none;">
+            <button type="button" class="btn-action btn-upload" onclick="document.getElementById('equipoImagen').click()">Subir Imagen</button>
+            <img id="previewContainer" class="img-preview" src="data:image/svg+xml;utf8,<svg xmlns='http://w3.org' width='40' height='30'></svg>" alt="Vista previa">
+        </div>
+
+        <label>Comentarios</label>
+        <textarea id="equipoComentarios" rows="2" placeholder="Requiere limpieza profunda (opcional)"></textarea>
+
+        <label>Condición</label>
+        <select id="equipoCondicion" required>
+            <option value="Funcional">Funcional</option>
+            <option value="No Funcional">No Funcional</option>
+            <option value="Mantenimiento" selected>Mantenimiento</option>
+        </select>
+
+        <label>Área</label>
+        <select id="equipoArea" required>
+            <option value="">Seleccione Área</option>
+            <option value="Oficinas Administrativas">Oficinas Administrativas</option>
+            <option value="Presidencia">Presidencia</option>
+        </select>
+
+        <label>Departamento</label>
+        <select id="equipoDepartamento" required>
+            <option value="">Seleccione Departamento</option>
+            <option value="Sistemas">Sistemas</option>
+            <option value="Contabilidad">Contabilidad</option>
+            <option value="Ventas">Ventas</option>
+        </select>
+
+        <label>Encargado</label>
+        <select id="equipoEncargado" required>
+            <option value="">Seleccione Encargado</option>
+            <option value="Juan Pérez">Juan Pérez</option>
+            <option value="María Gómez">María Gómez</option>
+        </select>
+
+        <div class="row-buttons">
+            <button type="button" id="btnGuardarEquipo" class="btn-action btn-blue">Guardar Registro</button>
+            <button type="button" class="btn-action btn-gray" onclick="window.history.back()">Cancelar</button>
+        </div>
+    </form>
+</div>
+
+<!-- Carga de las SDKs de Firebase compatibles con tu entorno (Versión Tradicional) -->
+<script src="https://gstatic.com"></script>
+<script src="https://gstatic.com"></script>
+
+<!-- Tu lógica modular independiente -->
+<script src="inventario.js"></script>
+
+</body>
+</html>

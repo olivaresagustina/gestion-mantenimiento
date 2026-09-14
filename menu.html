@@ -7,8 +7,8 @@
     <link rel="stylesheet" href="styles_menu.css">
     
     <!-- LIBRERÍAS DE FIREBASE -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 </head>
 <body>
     <div class="dashboard-container">
@@ -25,7 +25,7 @@
 
             <nav class="sidebar-nav">
                 <!-- Sección Dashboard por defecto activa -->
-                <div class="nav-section active">
+                <div class="nav-section">
                     <div class="section-title">📊 Dashboard</div>
                     <ul class="sub-menu">
                         <li class="active-sub">• Reporte del equipo</li>
@@ -35,7 +35,18 @@
 
                 <!-- Módulos principales solicitados en tu tabla -->
                 <div class="nav-item">🛡️ SEGURIDAD</div>
-                <div class="nav-item">📦 INVENTARIO</div>
+                
+                <!-- Sección de Inventario Actualizada con tus 4 Opciones -->
+                <div class="nav-section active">
+                    <div class="section-title">📦 INVENTARIO</div>
+                    <ul class="sub-menu">
+                        <li><a href="registro_equipo.html" style="color: inherit; text-decoration: none;">• Registro del equipo de cómputo</a></li>
+                        <li>• Registro de Usuarios encargados</li>
+                        <li>• Registro de Departamentos y Áreas</li>
+                        <li>• Asignación de equipos a Encargados</li>
+                    </ul>
+                </div>
+
                 <div class="nav-item">🛠️ MANTENIMIENTO</div>
                 <div class="nav-item">📊 REPORTES</div>
             </nav>
