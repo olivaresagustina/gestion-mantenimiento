@@ -278,6 +278,7 @@
                     <option value="No Funcional">No Funcional</option>
                     <option value="Mantenimiento" selected>Mantenimiento</option>
                 </select>
+
                 <label>Área</label>
                 <select id="equipoArea" required>
                     <option value="Oficinas Administrativas">Oficinas Administrativas</option>
@@ -300,10 +301,24 @@
             </form>
         </div>
     </div>
-
-    <!-- SCRIPTS DE CONEXIÓN -->
+    <!-- LIBRERÍAS Y SCRIPT DE CONTROL INTERNO -->
     <script src="https://gstatic.com"></script>
     <script src="https://gstatic.com"></script>
     <script src="inventario.js"></script>
+
+    <script>
+        // Control interactivo directo en el HTML para evitar fallos de carga
+        const modalElement = document.getElementById('modalRegistro');
+        
+        // Abrir formulario al presionar el botón azul con signo +
+        document.getElementById('btnAbrirFormulario').addEventListener('click', () => {
+            modalElement.style.display = 'flex';
+        });
+
+        // Cerrar formulario al presionar Cancelar
+        document.getElementById('btnCancelarFormulario').addEventListener('click', () => {
+            modalElement.style.display = 'none';
+        });
+    </script>
 </body>
 </html>
