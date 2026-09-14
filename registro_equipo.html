@@ -301,24 +301,88 @@
             </form>
         </div>
     </div>
-    <!-- LIBRERÍAS Y SCRIPT DE CONTROL INTERNO -->
-    <script src="https://gstatic.com"></script>
-    <script src="https://gstatic.com"></script>
-    <script src="inventario.js"></script>
+    <!-- LIBRERÍAS DE FIREBASE -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
     <script>
-        // Control interactivo directo en el HTML para evitar fallos de carga
+        // 1. Inicialización de Firebase con tus credenciales institucionales
+        const firebaseConfig = {
+            apiKey: "AIzaSyDDCGTBBIspX4-_TOktQCdeo-9JfaVouoY",
+            authDomain: "://firebaseapp.com",
+            projectId: "gestion-mantenimiento-ap-20f51",
+            storageBucket: "://appspot.com",
+            messagingSenderId: "792321276987",
+            appId: "1:792321276987:web:3494cc6f399bcd3e5301e1",
+            measurementId: "G-XLE9Y7FPGM"
+        };
+
+        // Inicializar servicio de manera segura
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.firestore();
+
+        // 2. Control Visual de la Ventana Modal
         const modalElement = document.getElementById('modalRegistro');
         
-        // Abrir formulario al presionar el botón azul con signo +
         document.getElementById('btnAbrirFormulario').addEventListener('click', () => {
             modalElement.style.display = 'flex';
         });
 
-        // Cerrar formulario al presionar Cancelar
         document.getElementById('btnCancelarFormulario').addEventListener('click', () => {
             modalElement.style.display = 'none';
         });
+
+        // 3. Función para Registrar el Equipo en la Base de Datos
+        async function guardarEquipoEnFirebase() {
+            // Capturar datos del formulario
+            const tipo = document.getElementById("equipoTipo").value;
+            const marca = document.getElementById("equipoMarca").value;
+            const modelo = document.getElementById("equipoModelo").value;
+            const serie = document.getElementById("equipoSerie").value;
+            const comentarios = document.getElementById("equipoComentarios").value;
+            const condicion = document.getElementById("equipoCondicion").value;
+            const area = document.getElementById("equipoArea").value;
+            const departamento = document.getElementById("equipoDepartamento").value;
+            const encargado = document.getElementById("equipoEncargado").value;
+
+            // Validación de campos obligatorios (Requerimiento RF018)
+            if (!tipo || !marca || !modelo || !serie) {
+                alert("Alerta: Por favor, complete los datos obligatorios del equipo (Tipo, Marca, Modelo y Serie).");
+                return;
+            }
+
+            try {
+                // Insertar documento en Cloud Firestore dentro de la colección "equipos"
+                await db.collection("equipos").add({
+                    tipo: tipo,
+                    marca: marca,
+                    modelo: modelo,
+                    serie: serie,
+                    comentarios: comentarios,
+                    condicion: condicion,
+                    area: area,
+                    departamento: departamento,
+                    encargado: encargado,
+                    fechaRegistro: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                // Alerta de éxito (Requerimiento RF019)
+                alert("¡Operación realizada correctamente! El equipo ha sido guardado con éxito.");
+                
+                // Limpiar campos y cerrar modal
+                document.getElementById("formRegistroEquipo").reset();
+                modalElement.style.display = 'none';
+
+            } catch (error) {
+                console.error("Error detectado en Firestore: ", error);
+                alert("Hubo un problema al guardar en la base de datos: " + error.message);
+            }
+        }
+
+        // Vincular clic del botón "Guardar Registro" con la base de datos
+        document.getElementById("btnGuardarEquipo").addEventListener("click", guardarEquipoEnFirebase);
     </script>
 </body>
 </html>
