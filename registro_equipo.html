@@ -3,165 +3,307 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registrar Nuevo Equipo - Juntos Rescatando Calnali</title>
+    <title>Inventario - Equipos de Cómputo</title>
+    <link rel="stylesheet" href="styles_menu.css">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f6f9;
-            padding: 20px;
+        .table-container {
+            background-color: white;
+            border: 1px solid #dcdcdc;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .table-header-actions {
             display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        .btn-round {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
             justify-content: center;
+            margin-left: 5px;
+        }
+        .btn-blue-add { background-color: #3b71ca; }
+        .btn-gray-search { background-color: #6c757d; }
+        
+        .main-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            text-align: left;
+        }
+        .main-table th, .main-table td {
+            border: 1px solid #e0e0e0;
+            padding: 10px;
+        }
+        .main-table th {
+            background-color: #fafafa;
+            font-weight: bold;
+        }
+        .status-badge {
+            background-color: #fff9c4;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: #f57f17;
+        }
+        .img-table {
+            width: 50px;
+            height: auto;
+            object-fit: contain;
+        }
+        .btn-action-t {
+            padding: 4px 8px;
+            border: none;
+            border-radius: 3px;
+            color: white;
+            cursor: pointer;
+            margin-right: 2px;
+            font-size: 12px;
+        }
+        
+        /* ESTILOS DEL FORMULARIO FLOTANTE (MODAL) */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
         }
         .form-container {
             background-color: #ffffff;
-            width: 500px;
+            width: 480px;
             border: 2px solid #1a5276;
             border-radius: 5px;
-            box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+            box-shadow: 0px 4px 15px rgba(0,0,0,0.2);
         }
         .form-header {
             background-color: #1a5276;
             color: white;
             text-align: center;
             padding: 10px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: bold;
         }
         .form-body {
-            padding: 15px 25px;
+            padding: 15px 20px;
+            max-height: 85vh;
+            overflow-y: auto;
         }
         label {
             display: block;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: bold;
-            margin-top: 12px;
+            margin-top: 10px;
             color: #333;
         }
         input[type="text"], select, textarea {
             width: 100%;
-            padding: 8px;
-            margin-top: 5px;
+            padding: 6px;
+            margin-top: 4px;
             border: 1px solid #ccc;
             border-radius: 4px;
             box-sizing: border-box;
+            font-size: 13px;
         }
-        input[disabled] {
-            background-color: #e9ecef;
-            color: #6c757d;
-        }
-        .file-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 5px;
-        }
-        .btn-action {
-            padding: 8px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 14px;
-        }
-        .btn-blue { background-color: #2980b9; color: white; }
-        .btn-gray { background-color: #bdc3c7; color: #333; }
-        .btn-upload { background-color: #bdc3c7; color: black; border: 1px solid #999; }
-        .row-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        .img-preview {
-            width: 40px;
-            height: 30px;
-            border: 1px solid #ccc;
-            object-fit: contain;
-            background-color: #fafafa;
-        }
+        input[disabled] { background-color: #e9ecef; color: #6c757d; }
+        .file-row { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
+        .btn-upload-file { padding: 6px 12px; background-color: #e0e0e0; border: 1px solid #adadad; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .row-buttons { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-form { padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 13px; }
+        .btn-save { background-color: #2980b9; color: white; }
+        .btn-cancel { background-color: #bdc3c7; color: #333; }
+        .img-preview-box { width: 35px; height: 35px; border: 1px solid #ccc; background-color: #f9f9f9; display: inline-block; }
     </style>
 </head>
 <body>
+    <div class="dashboard-container">
+        
+        <!-- BARRA LATERAL IZQUIERDA -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <img src="logo.png" alt="Logo Calnali" class="menu-logo-img">
+                <div class="logo-text">
+                    <span class="logo-top">JUNTOS RESCATANDO</span>
+                    <span class="logo-bottom">CALNALI</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="section-title"><a href="menu.html" style="color:inherit; text-decoration:none;">📊 Dashboard</a></div>
+                </div>
+                <div class="nav-item">🛡️ SEGURIDAD</div>
+                <div class="nav-section active">
+                    <div class="section-title">📦 INVENTARIO</div>
+                    <ul class="sub-menu">
+                        <li class="active-sub">• Registro del equipo de cómputo</li>
+                        <li>• Registro de Usuarios encargados</li>
+                        <li>• Registro de Departamentos y Áreas</li>
+                        <li>• Asignación de equipos a Encargados</li>
+                    </ul>
+                </div>
+                <div class="nav-item">🛠️ MANTENIMIENTO</div>
+                <div class="nav-item">📊 REPORTES</div>
+            </nav>
+            <button class="btn-logout-sidebar">Cerrar Sesión</button>
+        </aside>
 
-<div class="form-container">
-    <div class="form-header">REGISTRAR NUEVO EQUIPO</div>
-    
-    <form id="formRegistroEquipo" class="form-body" onsubmit="event.preventDefault();">
-        <label>ID (Auto-generado)</label>
-        <input type="text" id="equipoId" value="197" disabled>
+        <!-- CONTENIDO PRINCIPAL -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" placeholder="Buscar equipo...">
+                </div>
+                <div class="user-profile">
+                    <span class="notification-icon">🔔</span>
+                    <span class="user-email-text">admin@calnali.gob.mx</span>
+                </div>
+            </header>
 
-        <label>Tipo</label>
-        <select id="equipoTipo" required>
-            <option value="">Seleccione Tipo</option>
-            <option value="Teclado">Teclado</option>
-            <option value="Mouse">Mouse</option>
-            <option value="Monitor">Monitor</option>
-            <option value="CPU">CPU</option>
-            <option value="Laptop">Laptop</option>
-            <option value="Impresora">Impresora</option>
-        </select>
+            <h1 class="page-title">Equipos de Cómputo</h1>
 
-        <label>Marca</label>
-        <input type="text" id="equipoMarca" placeholder="Ej: DELL" required>
+            <!-- TABLA PRINCIPAL -->
+            <div class="table-container">
+                <div class="table-header-actions">
+                    <div>Lista de Equipos de Cómputo</div>
+                    <div>
+                        <button class="btn-round btn-blue-add" id="btnAbrirFormulario" title="Registrar nuevo equipo">+</button>
+                        <button class="btn-round btn-gray-search" title="Configuración">⚙️</button>
+                    </div>
+                </div>
 
-        <label>Modelo</label>
-        <input type="text" id="equipoModelo" placeholder="Ej: BT242" required>
+                <table class="main-table">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox"></th>
+                            <th>ID</th>
+                            <th>Tipo</th>
+                            <th>Marca</th>
+                            <th>Modelo</th>
+                            <th>Serie</th>
+                            <th>Figura</th>
+                            <th>Comentarios</th>
+                            <th>Condición</th>
+                            <th>Área</th>
+                            <th>Departamento</th>
+                            <th>Encargado</th>
+                            <th>Botones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaEquiposCuerpo">
+                        <tr>
+                            <td><input type="checkbox"></td>
+                            <td>196</td>
+                            <td>Teclado</td>
+                            <td>DELL</td>
+                            <td>BT242</td>
+                            <td>670-103-823</td>
+                            <td><img src="teclado.png" class="img-table" alt="Teclado"></td>
+                            <td>Requiere limpieza profunda</td>
+                            <td><span class="status-badge">Mantenimiento</span></td>
+                            <td>Oficinas Administrativas</td>
+                            <td>Sistemas</td>
+                            <td>Juan Pérez</td>
+                            <td>
+                                <button class="btn-action-t" style="background-color: #3b71ca;">✏️</button>
+                                <button class="btn-action-t" style="background-color: #dc4c64;">🗑️</button>
+                                <button class="btn-action-t" style="background-color: #e4a11b;">👁️</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
 
-        <label>Serie</label>
-        <input type="text" id="equipoSerie" placeholder="Ej: 670-103-823" required>
+    <!-- VENTANA MODAL FLOTANTE -->
+    <div class="modal-overlay" id="modalRegistro">
+        <div class="form-container">
+            <div class="form-header">REGISTRAR NUEVO EQUIPO</div>
+            <form id="formRegistroEquipo" class="form-body" onsubmit="event.preventDefault();">
+                
+                <label>ID (Auto-generado)</label>
+                <input type="text" id="equipoId" value="197" disabled>
 
-        <label>Figura (Imagen)</label>
-        <div class="file-row">
-            <!-- Input oculto para estilizar el botón igual a tu captura -->
-            <input type="file" id="equipoImagen" accept=".jpeg,.png,.jpg" style="display: none;">
-            <button type="button" class="btn-action btn-upload" onclick="document.getElementById('equipoImagen').click()">Subir Imagen</button>
-            <img id="previewContainer" class="img-preview" src="data:image/svg+xml;utf8,<svg xmlns='http://w3.org' width='40' height='30'></svg>" alt="Vista previa">
+                <label>Tipo</label>
+                <select id="equipoTipo" required>
+                    <option value="">Seleccione Tipo</option>
+                    <option value="Teclado">Teclado</option>
+                    <option value="Mouse">Mouse</option>
+                    <option value="Monitor">Monitor</option>
+                    <option value="CPU">CPU</option>
+                    <option value="Laptop">Laptop</option>
+                </select>
+
+                <label>Marca</label>
+                <input type="text" id="equipoMarca" placeholder="Ej: DELL" required>
+
+                <label>Modelo</label>
+                <input type="text" id="equipoModelo" placeholder="Ej: BT242" required>
+
+                <label>Serie</label>
+                <input type="text" id="equipoSerie" placeholder="Ej: 670-103-823" required>
+
+                <label>Figura (Imagen)</label>
+                <div class="file-row">
+                    <input type="file" id="equipoImagen" accept=".jpeg,.png,.jpg" style="display: none;">
+                    <button type="button" class="btn-upload-file" onclick="document.getElementById('equipoImagen').click()">Subir Imagen</button>
+                    <div class="img-preview-box" id="previewContainer"></div>
+                </div>
+
+                <label>Comentarios</label>
+                <textarea id="equipoComentarios" placeholder="Requiere limpieza profunda (opcional)"></textarea>
+
+                <label>Condición</label>
+                <select id="equipoCondicion" required>
+                    <option value="Funcional">Funcional</option>
+                    <option value="No Funcional">No Funcional</option>
+                    <option value="Mantenimiento" selected>Mantenimiento</option>
+                </select>
+                <label>Área</label>
+                <select id="equipoArea" required>
+                    <option value="Oficinas Administrativas">Oficinas Administrativas</option>
+                </select>
+
+                <label>Departamento</label>
+                <select id="equipoDepartamento" required>
+                    <option value="Sistemas">Sistemas</option>
+                </select>
+
+                <label>Encargado</label>
+                <select id="equipoEncargado" required>
+                    <option value="Juan Pérez">Juan Pérez</option>
+                </select>
+
+                <div class="row-buttons">
+                    <button type="button" id="btnGuardarEquipo" class="btn-form btn-save">Guardar Registro</button>
+                    <button type="button" id="btnCancelarFormulario" class="btn-form btn-cancel">Cancelar</button>
+                </div>
+            </form>
         </div>
+    </div>
 
-        <label>Comentarios</label>
-        <textarea id="equipoComentarios" rows="2" placeholder="Requiere limpieza profunda (opcional)"></textarea>
-
-        <label>Condición</label>
-        <select id="equipoCondicion" required>
-            <option value="Funcional">Funcional</option>
-            <option value="No Funcional">No Funcional</option>
-            <option value="Mantenimiento" selected>Mantenimiento</option>
-        </select>
-
-        <label>Área</label>
-        <select id="equipoArea" required>
-            <option value="">Seleccione Área</option>
-            <option value="Oficinas Administrativas">Oficinas Administrativas</option>
-            <option value="Presidencia">Presidencia</option>
-        </select>
-
-        <label>Departamento</label>
-        <select id="equipoDepartamento" required>
-            <option value="">Seleccione Departamento</option>
-            <option value="Sistemas">Sistemas</option>
-            <option value="Contabilidad">Contabilidad</option>
-            <option value="Ventas">Ventas</option>
-        </select>
-
-        <label>Encargado</label>
-        <select id="equipoEncargado" required>
-            <option value="">Seleccione Encargado</option>
-            <option value="Juan Pérez">Juan Pérez</option>
-            <option value="María Gómez">María Gómez</option>
-        </select>
-
-        <div class="row-buttons">
-            <button type="button" id="btnGuardarEquipo" class="btn-action btn-blue">Guardar Registro</button>
-            <button type="button" class="btn-action btn-gray" onclick="window.history.back()">Cancelar</button>
-        </div>
-    </form>
-</div>
-
-<!-- Carga de las SDKs de Firebase compatibles con tu entorno (Versión Tradicional) -->
-<script src="https://gstatic.com"></script>
-<script src="https://gstatic.com"></script>
-
-<!-- Tu lógica modular independiente -->
-<script src="inventario.js"></script>
-
+    <!-- SCRIPTS DE CONEXIÓN -->
+    <script src="https://gstatic.com"></script>
+    <script src="https://gstatic.com"></script>
+    <script src="inventario.js"></script>
 </body>
 </html>
