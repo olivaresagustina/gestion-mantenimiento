@@ -420,5 +420,20 @@
             }
         }
     </script>
+    function cargarEncargadosEnDesplegable() {
+        db.collection("usuarios_encargados").onSnapshot((snapshot) => {
+            const select = document.getElementById("equipoEncargado");
+            select.innerHTML = '<option value="">Seleccione Encargado</option>';
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                const option = document.createElement("option");
+                option.value = data.nombreCompleto;
+                option.textContent = data.nombreCompleto;
+                select.appendChild(option);
+            });
+        });
+    }
+    // Ejecútala al cargar la página: window.onload = cargarEncargadosEnDesplegable;
+    
 </body>
 </html>
