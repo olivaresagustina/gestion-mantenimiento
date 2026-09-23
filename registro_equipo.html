@@ -308,12 +308,13 @@
 
     <script>
         // 1. Inicialización de Firebase con credenciales institucionales completas
-            
+        const nombreProyecto = "gestion-mantenimiento-ap-20f51";
+
             const firebaseConfig = {
             apiKey: "AIzaSyDDCGTBBIspX4-_TOktQCdeo-9JfaVouoY",
-            authDomain: "://firebaseapp.com",
-            projectId: "gestion-mantenimiento-ap-20f51",
-            storageBucket: "://appspot.com",
+            authDomain: nombreProyecto + ".firebaseapp.com",
+            projectId: nombreProyecto,
+            storageBucket: nombreProyecto + ".appspot.com",
             messagingSenderId: "792321276987",
             appId: "1:792321276987:web:3494cc6f399bcd3e5301e1",
             measurementId: "G-XLE9Y7FPGM"
