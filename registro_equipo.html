@@ -310,7 +310,7 @@
         // 1. Inicialización de Firebase con credenciales institucionales completas
         const nombreProyecto = "gestion-mantenimiento-ap-20f51";
 
-            const firebaseConfig = {
+        const firebaseConfig = {
             apiKey: "AIzaSyDDCGTBBIspX4-_TOktQCdeo-9JfaVouoY",
             authDomain: nombreProyecto + ".firebaseapp.com",
             projectId: nombreProyecto,
@@ -324,7 +324,6 @@
             firebase.initializeApp(firebaseConfig);
         }
         const db = firebase.firestore();
-
 
         // Control de Ventana Modal Flotante
         const modalElement = document.getElementById('modalRegistro');
@@ -340,13 +339,11 @@
         // 2. Función para insertar visualmente el nuevo equipo en la tabla de la página
         function agregarEquipoALaTablaHTML(idDoc, datos) {
             const tbody = document.getElementById("tablaEquiposCuerpo");
-            
-            // Creamos un nuevo renglón (tr)
             const tr = document.createElement("tr");
             
             tr.innerHTML = `
                 <td><input type="checkbox"></td>
-                <td>${datos.idSecuencial || '197'}</td>
+                <td>197</td>
                 <td>${datos.tipo}</td>
                 <td>${datos.marca}</td>
                 <td>${datos.modelo}</td>
@@ -359,18 +356,15 @@
                 <td>${datos.encargado}</td>
                 <td>
                     <button class="btn-action-t" style="background-color: #3b71ca;">✏️</button>
-                    <button class="btn-action-t" style="background-color: #dc4c64;" onclick="eliminarEquipo('${idDoc}', this)">🗑️</button>
+                    <button class="btn-action-t" style="background-color: #dc4c64;" onclick="eliminarEquipo(this)">🗑️</button>
                     <button class="btn-action-t" style="background-color: #e4a11b;">👁️</button>
                 </td>
             `;
-            
-            // Lo añadimos al final de la tabla existente
             tbody.appendChild(tr);
         }
 
         // 3. Función asíncrona principal para Guardar Registro
         async function guardarEquipoEnFirebase() {
-            // Obtenemos los valores capturados en tu modal flotante
             const tipo = document.getElementById("equipoTipo").value;
             const marca = document.getElementById("equipoMarca").value;
             const modelo = document.getElementById("equipoModelo").value;
@@ -381,13 +375,11 @@
             const departamento = document.getElementById("equipoDepartamento").value;
             const encargado = document.getElementById("equipoEncargado").value;
 
-            // Validación estricta de campos obligatorios
             if (!tipo || !marca || !modelo || !serie) {
                 alert("Alerta: Por favor, complete los datos obligatorios (Tipo, Marca, Modelo y Serie).");
                 return;
             }
 
-            // Estructura de objeto JSON para Firebase
             const nuevoEquipo = {
                 tipo: tipo,
                 marca: marca,
@@ -398,21 +390,14 @@
                 area: area,
                 departamento: departamento,
                 encargado: encargado,
-                idSecuencial: 197, // ID estático temporal simulando tu diseño
                 fechaRegistro: firebase.firestore.FieldValue.serverTimestamp()
             };
 
             try {
-                // Guardar de forma remota en la colección "equipos" de Cloud Firestore
                 const docRef = await db.collection("equipos").add(nuevoEquipo);
-
-                // Disparar alerta de éxito en el navegador
                 alert("¡Operación realizada correctamente! El equipo ha sido guardado con éxito.");
                 
-                // Insertar dinámicamente el nuevo registro en la tabla de abajo
                 agregarEquipoALaTablaHTML(docRef.id, nuevoEquipo);
-
-                // Resetear el formulario y cerrar el modal flotante
                 document.getElementById("formRegistroEquipo").reset();
                 modalElement.style.display = 'none';
 
@@ -422,19 +407,16 @@
             }
         }
 
-        // Vincular el evento click del botón azul con nuestra función corregida
         document.getElementById("btnGuardarEquipo").addEventListener("click", guardarEquipoEnFirebase);
 
-        // Función opcional para eliminar filas dinámicas de la tabla de forma local
-        function eliminarEquipo(idDoc, boton) {
-            if(confirm("¿Está seguro de que desea eliminar este equipo?")) {
-                db.collection("equipos").doc(idDoc).delete().then(() => {
-                    const fila = boton.parentNode.parentNode;
-                    fila.parentNode.removeChild(fila);
-                    alert("Equipo eliminado del inventario correctamente.");
-                }).catch((error) => {
-                    alert("Error al eliminar: " + error.message);
-                });
+        // Función de eliminación visual inmediata
+        function eliminarEquipo(boton) {
+            if(confirm("¿Está seguro de que desea eliminar este equipo de la lista visual?")) {
+                const fila = boton.closest('tr');
+                if(fila) {
+                    fila.remove();
+                    alert("Equipo removido de la vista actual.");
+                }
             }
         }
     </script>
