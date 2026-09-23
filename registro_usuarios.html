@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usuarios Encargados - Juntos Rescatando Calnali</title>
+    <link rel="stylesheet" href="styles_menu.css">
+    <style>
+        .table-container {
+            background-color: white;
+            border: 1px solid #dcdcdc;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .table-header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        .btn-round {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 5px;
+            background-color: #3b71ca;
+        }
+        .main-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            text-align: left;
+        }
+        .main-table th, .main-table td {
+            border: 1px solid #e0e0e0;
+            padding: 10px;
+        }
+        .main-table th { background-color: #fafafa; font-weight: bold; }
+        .btn-action-t {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 3px;
+            color: white;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        /* VISTA MODAL FLOTANTE (AGREGAR ENCARGADO) */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center; align-items: center;
+            z-index: 999;
+        }
+        .form-container {
+            background-color: #ffffff;
+            width: 550px;
+            border-radius: 6px;
+            box-shadow: 0px 4px 15px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        .form-header {
+            background-color: #3b71ca;
+            color: white;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: 500;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            padding: 20px;
+        }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group.full-width { grid-column: span 2; }
+        label { font-size: 13px; font-weight: bold; margin-bottom: 5px; color: #333; }
+        input, select {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 13px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        input[disabled] { background-color: #e0e0e0; color: #666; }
+        .row-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding: 15px 20px;
+            background-color: #f5f5f5;
+            border-top: 1px solid #e0e0e0;
+        }
+        .btn-footer {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn-save { background-color: #198754; color: white; }
+        .btn-cancel { background-color: #dc3545; color: white; }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- BARRA LATERAL IZQUIERDA -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <img src="logo.png" alt="Logo Calnali" class="menu-logo-img">
+                <div class="logo-text">
+                    <span class="logo-top">JUNTOS RESCATANDO</span>
+                    <span class="logo-bottom">CALNALI</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="section-title"><a href="menu.html" style="color:inherit; text-decoration:none;">📊 Dashboard</a></div>
+                </div>
+                <div class="nav-item">🛡️ SEGURIDAD</div>
+                <div class="nav-section active">
+                    <div class="section-title">📦 INVENTARIO</div>
+                    <ul class="sub-menu">
+                        <li><a href="registro_equipo.html" style="color:inherit; text-decoration:none;">• Registro del equipo de cómputo</a></li>
+                        <li class="active-sub">• Registro de Usuarios encargados</li>
+                        <li>• Registro de Departamentos y Áreas</li>
+                        <li>• Asignación de equipos a Encargados</li>
+                    </ul>
+                </div>
+                <div class="nav-item">🛠️ MANTENIMIENTO</div>
+                <div class="nav-item">📊 REPORTES</div>
+            </nav>
+        </aside>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <main class="main-content">
+            <h1 class="page-title">Usuarios</h1>
+            <div class="table-container">
+                <div class="table-header-actions">
+                    <div>Lista de usuarios</div>
+                    <button class="btn-round" id="btnAbrirModal">+</button>
+                </div>
+                <table class="main-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Rol</th>
+                            <th>Nombre Completo</th>
+                            <th>Teléfono</th>
+                            <th>Departamento</th>
+                            <th>Área</th>
+                            <th>Usuario</th>
+                            <th>Botones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaUsuariosCuerpo">
+                        <!-- Los registros de Firebase se inyectarán aquí -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- VENTANA MODAL FLOTANTE (AGREGAR ENCARGADO) -->
+    <div class="modal-overlay" id="modalUsuario">
+        <div class="form-container">
+            <div class="form-header">Agregar encargado</div>
+            <form id="formRegistroUsuario" onsubmit="event.preventDefault();">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>ID:</label>
+                        <input type="text" value="AUTOMÁTICO" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label>Rol:</label>
+                        <select id="userRol" required>
+                            <option value="Director">Director</option>
+                            <option value="Administrador">Administrador</option>
+                            <option value="Encargado">Encargado</option>
+                        </select>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Nombre completo:</label>
+                        <input type="text" id="userNombre" placeholder="Ej: Juan Pérez" required>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Teléfono:</label>
+                        <input type="text" id="userTelefono" placeholder="Ej: 7711234567" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Departamento:</label>
+                        <select id="userDepartamento" required>
+                            <option value="Dirección Informática">Dirección Informática</option>
+                            <option value="Contabilidad">Contabilidad</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Área:</label>
+                        <select id="userArea" required>
+                            <option value="Tecnológica">Tecnológica</option>
+                            <option value="Administrativa">Administrativa</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Usuario (Correo de acceso):</label>
+                        <input type="text" id="userEmail" placeholder="ejemplo@calnali.gob.mx" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Contraseña:</label>
+                        <input type="password" id="userPass" required>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Confirme la contraseña:</label>
+                        <input type="password" id="userPassConf" required>
+                    </div>
+                </div>
+                <div class="row-buttons">
+                    <button type="button" id="btnGuardarUsuario" class="btn-footer btn-save">✓ Guardar</button>
+                    <button type="button" id="btnCancelarModal" class="btn-footer btn-cancel">✕ Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- LIBRERÍAS DE FIREBASE -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>   
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <script>
+        const nombreProyecto = "gestion-mantenimiento-ap-20f51";
+        const firebaseConfig = {
+            apiKey: "AIzaSyDDCGTBBIspX4-_TOktQCdeo-9JfaVouoY",
+            authDomain: nombreProyecto + ".firebaseapp.com",
+            projectId: nombreProyecto,
+            storageBucket: nombreProyecto + ".appspot.com",
+            messagingSenderId: "792321276987",
+            appId: "1:792321276987:web:3494cc6f399bcd3e5301e1",
+            measurementId: "G-XLE9Y7FPGM"
+        };
+
+        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        // Control Visual de la Ventana Modal
+        const modalElement = document.getElementById('modalUsuario');
+        document.getElementById('btnAbrirModal').addEventListener('click', () => modalElement.style.display = 'flex');
+        document.getElementById('btnCancelarModal').addEventListener('click', () => modalElement.style.display = 'none');
+
+        // Función para renderizar usuarios en la tabla dinámicamente
+        function cargarUsuariosTabla() {
+            db.collection("usuarios_encargados").orderBy("nombreCompleto").onSnapshot((snapshot) => {
+                const tbody = document.getElementById("tablaUsuariosCuerpo");
+                tbody.innerHTML = "";
+                let index = 1;
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${index++}</td>
+                        <td>${data.rol}</td>
+                        <td>${data.nombreCompleto}</td>
+                        <td>${data.telefono}</td>
+                        <td>${data.departamento}</td>
+                        <td>${data.area}</td>
+                        <td>${data.usuarioEmail}</td>
+                        <td>
+                            <button class="btn-action-t" style="background-color: #e4a11b;">Editar</button>
+                            <button class="btn-action-t" style="background-color: #dc4c64;" onclick="eliminarEncargado('${doc.id}')">Eliminar</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            });
+        }
+
+        // Función Principal: Registro en Firebase Auth + Guardar en Firestore con Privilegios
+        async function registrarUsuarioYCredenciales() {
+            const rol = document.getElementById("userRol").value;
+            const nombre = document.getElementById("userNombre").value;
+            const telefono = document.getElementById("userTelefono").value;
+            const depto = document.getElementById("userDepartamento").value;
+            const area = document.getElementById("userArea").value;
+            const email = document.getElementById("userEmail").value;
+            const pass = document.getElementById("userPass").value;
+            const passConf = document.getElementById("userPassConf").value;
+
+            if (!nombre || !telefono || !email || !pass) {
+                alert("Por favor complete todos los campos obligatorios.");
+                return;
+            }
+            if (pass !== passConf) {
+                alert("Las contraseñas ingresadas no coinciden.");
+                return;
+            }
+
+            try {
+                // 1. Crear el usuario de forma real en la sección Authentication de Firebase
+                const userCredential = await auth.createUserWithEmailAndPassword(email, pass);
+                const uid = userCredential.user.uid;
+
+                // 2. Definir los privilegios según el Rol del requerimiento
+                let privilegios = { verModulos: ["dashboard", "inventario"], editar: false };
+                if (rol === "Director" || rol === "Administrador") {
+                    privilegios.verModulos = ["dashboard", "seguridad", "inventario", "mantenimiento", "reportes"];
+                    privilegios.editar = true;
+                }
+
+                // 3. Guardar el perfil completo en Firestore (Sirve de catálogo para Equipos de Cómputo)
+                await db.collection("usuarios_encargados").doc(uid).set({
+                    rol: rol,
+                    nombreCompleto: nombre,
+                    telefono: telefono,
+                    departamento: depto,
+                    area: area,
+                    usuarioEmail: email,
+                    privilegios: privilegios,
+                    fechaRegistro: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                alert("¡Usuario encargado y cuenta de acceso creados exitosamente!");
+                document.getElementById("formRegistroUsuario").reset();
+                modalElement.style.display = 'none';
+
+            } catch (error) {
+                console.error(error);
+                alert("Error al procesar el alta: " + error.message);
+            }
+        }
+
+        document.getElementById("btnGuardarUsuario").addEventListener("click", registrarUsuarioYCredenciales);
+        window.onload = cargarUsuariosTabla;
+
+        function eliminarEncargado(id) {
+            if (confirm("¿Desea dar de baja este usuario encargado del sistema?")) {
+                db.collection("usuarios_encargados").doc(id).delete()
+                    .then(() => alert("Registro eliminado de la base de datos."));
+            }
+        }
+    </script>
+</body>
+</html>
