@@ -302,8 +302,8 @@
     </div>
 
     <!-- LIBRERÍAS DE FIREBASE -->
-    <script src="https://gstatic.com"></script>
-    <script src="https://gstatic.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>   
 
     <script>
         // Inicialización de Firebase con tus credenciales
@@ -322,7 +322,7 @@
         }
         const db = firebase.firestore();
 
-        // Control Visual de la Ventana Modal
+        // Control de Ventana Modal Flotante
         const modalElement = document.getElementById('modalRegistro');
         
         document.getElementById('btnAbrirFormulario').addEventListener('click', () => {
@@ -333,7 +333,7 @@
             modalElement.style.display = 'none';
         });
 
-        // Función para Registrar el Equipo en Cloud Firestore
+        // Función para Registrar el Equipo
         async function guardarEquipoEnFirebase() {
             const tipo = document.getElementById("equipoTipo").value;
             const marca = document.getElementById("equipoMarca").value;
@@ -378,4 +378,3 @@
     </script>
 </body>
 </html>
-              
