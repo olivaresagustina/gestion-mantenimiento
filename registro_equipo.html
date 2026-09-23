@@ -397,7 +397,7 @@
                 const docRef = await db.collection("equipos").add(nuevoEquipo);
                 alert("¡Operación realizada correctamente! El equipo ha sido guardado con éxito.");
                 
-                agregarEquipoALaTablaHTML(docRef.id, nuevoEquipo);
+                //agregarEquipoALaTablaHTML(docRef.id, nuevoEquipo);
                 document.getElementById("formRegistroEquipo").reset();
                 modalElement.style.display = 'none';
 
@@ -419,6 +419,80 @@
                 }
             }
         }
+            // 4. Función para leer y cargar AUTOMÁTICAMENTE todos los equipos de Firebase
+            function escucharYMostrarEquipos() {
+            // Conectamos a la colección "equipos" ordenando por fecha de registro
+            db.collection("equipos").orderBy("fechaRegistro", "asc").onSnapshot((snapshot) => {
+                const tbody = document.getElementById("tablaEquiposCuerpo");
+                
+                // Evitamos duplicados limpiando la tabla antes de renderizar (dejamos el renglón estático de muestra si deseas)
+                tbody.innerHTML = `
+                    <tr>
+                        <td><input type="checkbox"></td>
+                        <td>196</td>
+                        <td>Teclado</td>
+                        <td>DELL</td>
+                        <td>BT242</td>
+                        <td>670-103-823</td>
+                        <td><img src="teclado.png" class="img-table" alt="Teclado"></td>
+                        <td>Requiere limpieza profunda</td>
+                        <td><span class="status-badge">Mantenimiento</span></td>
+                        <td>Oficinas Administrativas</td>
+                        <td>Sistemas</td>
+                        <td>Juan Pérez</td>
+                        <td>
+                            <button class="btn-action-t" style="background-color: #3b71ca;">✏️</button>
+                            <button class="btn-action-t" style="background-color: #dc4c64;">🗑️</button>
+                            <button class="btn-action-t" style="background-color: #e4a11b;">👁️</button>
+                        </td>
+                    </tr>
+                `;
+
+                // Recorremos cada documento real que existe en tu Firestore
+                snapshot.forEach((doc) => {
+                    const datos = doc.data();
+                    const tr = document.createElement("tr");
+                    
+                    tr.innerHTML = `
+                        <td><input type="checkbox"></td>
+                        <td>197</td>
+                        <td>${datos.tipo}</td>
+                        <td>${datos.marca}</td>
+                        <td>${datos.modelo}</td>
+                        <td>${datos.serie}</td>
+                        <td><img src="teclado.png" class="img-table" alt="Equipo"></td>
+                        <td>${datos.comentarios || 'Sin comentarios'}</td>
+                        <td><span class="status-badge">${datos.condicion}</span></td>
+                        <td>${datos.area}</td>
+                        <td>${datos.departamento}</td>
+                        <td>${datos.encargado}</td>
+                        <td>
+                            <button class="btn-action-t" style="background-color: #3b71ca;">✏️</button>
+                            <button class="btn-action-t" style="background-color: #dc4c64;" onclick="eliminarEquipoReal('${doc.id}')">🗑️</button>
+                            <button class="btn-action-t" style="background-color: #e4a11b;">👁️</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }, (error) => {
+                console.error("Error al leer desde Firestore: ", error);
+            });
+        }
+
+        // Función para eliminar físicamente de la base de datos de Firebase
+        function eliminarEquipoReal(idDoc) {
+            if(confirm("¿Está seguro de que desea eliminar permanentemente este equipo de la base de datos?")) {
+                db.collection("equipos").doc(idDoc).delete().then(() => {
+                    alert("Equipo eliminado de Firebase correctamente.");
+                }).catch((error) => {
+                    alert("Error al borrar: " + error.message);
+                });
+            }
+        }
+
+        // Activamos la escucha automática inmediatamente en cuanto el HTML esté listo
+        window.addEventListener('DOMContentLoaded', escucharYMostrarEquipos);
+
     </script>
     function cargarEncargadosEnDesplegable() {
         db.collection("usuarios_encargados").onSnapshot((snapshot) => {
