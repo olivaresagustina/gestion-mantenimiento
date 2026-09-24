@@ -480,21 +480,28 @@
         // Activamos la escucha automática inmediatamente en cuanto el HTML esté listo
         window.addEventListener('DOMContentLoaded', escucharYMostrarEquipos);
 
-    </script>
-    function cargarEncargadosEnDesplegable() {
-        db.collection("usuarios_encargados").onSnapshot((snapshot) => {
-            const select = document.getElementById("equipoEncargado");
-            select.innerHTML = '<option value="">Seleccione Encargado</option>';
-            snapshot.forEach((doc) => {
-                const data = doc.data();
-                const option = document.createElement("option");
-                option.value = data.nombreCompleto;
-                option.textContent = data.nombreCompleto;
-                select.appendChild(option);
+                // 5. Inyección dinámica de encargados desde Firebase al select del formulario
+                function cargarEncargadosEnDesplegable() {
+            db.collection("usuarios_encargados").orderBy("nombreCompleto").onSnapshot((snapshot) => {
+                const select = document.getElementById("equipoEncargado");
+                if (select) {
+                    select.innerHTML = '<option value="">Seleccione Encargado</option>';
+                    snapshot.forEach((doc) => {
+                        const data = doc.data();
+                        const option = document.createElement("option");
+                        option.value = data.nombreCompleto;
+                        option.textContent = data.nombreCompleto;
+                        select.appendChild(option);
+                    });
+                }
             });
-        });
-    }
-    // Ejecútala al cargar la página: window.onload = cargarEncargadosEnDesplegable;
-    
-</body>
-</html>
+        }
+        
+        // Activamos la carga de encargados al iniciar la pantalla
+        window.addEventListener('DOMContentLoaded', cargarEncargadosEnDesplegable);
+
+
+    </script>
+   </body>
+   </html>
+   
