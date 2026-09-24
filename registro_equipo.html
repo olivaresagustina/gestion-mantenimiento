@@ -419,34 +419,17 @@
                 }
             }
         }
-            // 4. Función para leer y cargar AUTOMÁTICAMENTE todos los equipos de Firebase
-            function escucharYMostrarEquipos() {
+                    // 4. Función para leer y cargar AUTOMÁTICAMENTE todos los equipos de Firebase comenzando desde el ID 1
+        function escucharYMostrarEquipos() {
             // Conectamos a la colección "equipos" ordenando por fecha de registro
             db.collection("equipos").orderBy("fechaRegistro", "asc").onSnapshot((snapshot) => {
                 const tbody = document.getElementById("tablaEquiposCuerpo");
                 
-                // Evitamos duplicados limpiando la tabla antes de renderizar (dejamos el renglón estático de muestra si deseas)
-                tbody.innerHTML = `
-                    <tr>
-                        <td><input type="checkbox"></td>
-                        <td>196</td>
-                        <td>Teclado</td>
-                        <td>DELL</td>
-                        <td>BT242</td>
-                        <td>670-103-823</td>
-                        <td><img src="teclado.png" class="img-table" alt="Teclado"></td>
-                        <td>Requiere limpieza profunda</td>
-                        <td><span class="status-badge">Mantenimiento</span></td>
-                        <td>Oficinas Administrativas</td>
-                        <td>Sistemas</td>
-                        <td>Juan Pérez</td>
-                        <td>
-                            <button class="btn-action-t" style="background-color: #3b71ca;">✏️</button>
-                            <button class="btn-action-t" style="background-color: #dc4c64;">🗑️</button>
-                            <button class="btn-action-t" style="background-color: #e4a11b;">👁️</button>
-                        </td>
-                    </tr>
-                `;
+                // Limpiamos la tabla por completo para que no queden registros viejos ni fijos
+                tbody.innerHTML = "";
+
+                // Iniciamos el contador consecutivo estrictamente en 1
+                let siguienteID = 1;
 
                 // Recorremos cada documento real que existe en tu Firestore
                 snapshot.forEach((doc) => {
@@ -455,7 +438,7 @@
                     
                     tr.innerHTML = `
                         <td><input type="checkbox"></td>
-                        <td>197</td>
+                        <td>${siguienteID}</td>
                         <td>${datos.tipo}</td>
                         <td>${datos.marca}</td>
                         <td>${datos.modelo}</td>
@@ -473,11 +456,15 @@
                         </td>
                     `;
                     tbody.appendChild(tr);
+
+                    // Sumamos 1 para el siguiente registro de la lista
+                    siguienteID++;
                 });
             }, (error) => {
                 console.error("Error al leer desde Firestore: ", error);
             });
         }
+
 
         // Función para eliminar físicamente de la base de datos de Firebase
         function eliminarEquipoReal(idDoc) {
