@@ -273,19 +273,20 @@
 
     <script>
         // Control Visual de la Ventana Modal
-
         var modalElement = document.getElementById('modalUsuario');
+        
         document.getElementById('btnAbrirModal').addEventListener('click', function() {
             modalElement.style.display = 'flex';
         });
+        
         document.getElementById('btnCancelarModal').addEventListener('click', function() {
             modalElement.style.display = 'none';
         });
 
         // Función para renderizar usuarios encargados en la tabla dinámicamente
         function cargarUsuariosTabla() {
-            if (!window.db) return;
-            window.db.collection("usuarios_encargados").orderBy("fechaRegistro", "asc").onSnapshot(function(snapshot) {
+            if (!db) return;
+            db.collection("usuarios_encargados").orderBy("fechaRegistro", "asc").onSnapshot(function(snapshot) {
                 var tbody = document.getElementById("tablaUsuariosCuerpo");
                 if (!tbody) return;
                 tbody.innerHTML = "";
@@ -334,14 +335,14 @@
                 alert("La contraseña debe tener al menos 6 caracteres por seguridad de Firebase.");
                 return;
             }
-            if (!window.auth || !window.db) {
+            if (!auth || !db) {
                 alert("La conexión con Firebase se está inicializando. Intente de nuevo en un segundo.");
                 return;
             }
 
             try {
                 // 1. Crear la cuenta de acceso real en la sección Authentication de Firebase
-                var userCredential = await window.auth.createUserWithEmailAndPassword(email, pass);
+                var userCredential = await auth.createUserWithEmailAndPassword(email, pass);
                 var uid = userCredential.user.uid;
 
                 // 2. Definir los privilegios del sistema según el Rol seleccionado (RF014)
@@ -352,7 +353,7 @@
                 }
 
                 // 3. Guardar el perfil completo en Firestore
-                await window.db.collection("usuarios_encargados").doc(uid).set({
+                await db.collection("usuarios_encargados").doc(uid).set({
                     rol: rol,
                     nombreCompleto: nombre,
                     telefono: telefono,
@@ -379,7 +380,7 @@
         // Función para dar de baja encargados
         function eliminarEncargado(id) {
             if (confirm("¿Está seguro de que desea dar de baja este usuario encargado del sistema?")) {
-                window.db.collection("usuarios_encargados").doc(id).delete()
+                db.collection("usuarios_encargados").doc(id).delete()
                     .then(function() { alert("Registro eliminado de la base de datos correctamente."); })
                     .catch(function(err) { alert("Error al borrar: " + err.message); });
             }
