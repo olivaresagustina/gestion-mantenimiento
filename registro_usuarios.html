@@ -240,158 +240,149 @@
             </form>
         </div>
     </div>
-        <!-- LIBRERÍAS DE FIREBASE RECONSTRUIDAS DE FORMA SEGURA -->
-        <script>
-            // Truco de inyección para evitar que la plataforma censure o altere las URLs de Google
-            const rutaBaseGstatic = "https://gstatic.com";
+        
+        <!-- LIBRERÍAS DE FIREBASE -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>   
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <script>
+        // Inicialización de Firebase con credenciales protegidas
+        var proyectoID = "gestion-mantenimiento-ap-20f51";
+
+        var firebaseConfig = {
+            apiKey: "AIzaSyDDcGT88IspX4-_TOktQCdeo-93favOuoY",
+            authDomain: proyectoID + ".firebaseapp.com",
+            projectId: proyectoID,
+            storageBucket: proyectoID + ".firebasestorage.app",
+            messagingSenderId: "792321276987",
+            appId: "1:792321276987:web:3494cc6f399b0d83e5301e",
+            measurementId: "G-XLE9Y7FPGM"
+        };
+
+        // Damos un pequeño tiempo de espera de 800 milisegundos para que las librerías se carguen en memoria
+        setTimeout(function() {
+            if (!firebase.apps.length) { 
+                firebase.initializeApp(firebaseConfig); 
+            }
+            window.db = firebase.firestore();
+            window.auth = firebase.auth();
             
-            const scriptApp = document.createElement("script");
-            scriptApp.src = rutaBaseGstatic + "firebase-app.js";
-            document.head.appendChild(scriptApp);
-    
-            const scriptAuth = document.createElement("script");
-            scriptAuth.src = rutaBaseGstatic + "firebase-auth.js";
-            document.head.appendChild(scriptAuth);
-    
-            const scriptFirestore = document.createElement("script");
-            scriptFirestore.src = rutaBaseGstatic + "firebase-firestore.js";
-            document.head.appendChild(scriptFirestore);
-        </script>
-    
-        <script>
-            // 1. Inicialización de Firebase con tus credenciales oficiales de la consola
-            const firebaseConfig = {
-                apiKey: "AIzaSyDDcGT88IspX4-_TOKtQcdeo-93favOuoY",
-                authDomain: "://firebaseapp.com",
-                projectId: "gestion-mantenimiento-ap-20f51",
-                storageBucket: "gestion-mantenimiento-ap-20f51.firebasestorage.app",
-                messagingSenderId: "792321276987",
-                appId: "1:792321276987:web:3494cc6f399b0d83e5301e",
-                measurementId: "G-XLE9Y7FPGM"
-            };
-    
-            // Esperar un instante corto para asegurar que los scripts dinámicos carguen antes de inicializar
-            setTimeout(() => {
-                if (!firebase.apps.length) { 
-                    firebase.initializeApp(firebaseConfig); 
-                }
-                window.db = firebase.firestore();
-                window.auth = firebase.auth();
-                
-                // Forzar la lectura automática de la tabla una vez conectado
-                cargarUsuariosTabla();
-            }, 800);
-    
-            // Control Visual de la Ventana Modal
-            const modalElement = document.getElementById('modalUsuario');
-            document.getElementById('btnAbrirModal').addEventListener('click', () => {
-                modalElement.style.display = 'flex';
-            });
-            document.getElementById('btnCancelarModal').addEventListener('click', () => {
-                modalElement.style.display = 'none';
-            });
-    
-            // Función para renderizar usuarios encargados en la tabla dinámicamente
-            function cargarUsuariosTabla() {
-                if (!window.db) return;
-                window.db.collection("usuarios_encargados").orderBy("fechaRegistro", "asc").onSnapshot((snapshot) => {
-                    const tbody = document.getElementById("tablaUsuariosCuerpo");
-                    if (!tbody) return;
-                    tbody.innerHTML = "";
-                    let index = 1;
-                    snapshot.forEach((doc) => {
-                        const data = doc.data();
-                        const tr = document.createElement("tr");
-                        tr.innerHTML = `
-                            <td>${index++}</td>
-                            <td>${data.rol}</td>
-                            <td>${data.nombreCompleto}</td>
-                            <td>${data.telefono}</td>
-                            <td>${data.departamento}</td>
-                            <td>${data.area}</td>
-                            <td>${data.usuarioEmail}</td>
-                            <td>
-                                <button class="btn-action-t" style="background-color: #3b71ca;">✏️</button>
-                                <button class="btn-action-t" style="background-color: #dc4c64;" onclick="eliminarEncargado('${doc.id}')">🗑️</button>
-                            </td>
-                        `;
-                        tbody.appendChild(tr);
-                    });
-                }, (error) => {
-                    console.error("Error de lectura en Firestore: ", error);
+            // Cargar la tabla de usuarios automáticamente al conectar
+            cargarUsuariosTabla();
+        }, 800);
+
+        // Control Visual de la Ventana Modal
+        var modalElement = document.getElementById('modalUsuario');
+        document.getElementById('btnAbrirModal').addEventListener('click', function() {
+            modalElement.style.display = 'flex';
+        });
+        document.getElementById('btnCancelarModal').addEventListener('click', function() {
+            modalElement.style.display = 'none';
+        });
+
+        // Función para renderizar usuarios encargados en la tabla dinámicamente
+        function cargarUsuariosTabla() {
+            if (!window.db) return;
+            window.db.collection("usuarios_encargados").orderBy("fechaRegistro", "asc").onSnapshot(function(snapshot) {
+                var tbody = document.getElementById("tablaUsuariosCuerpo");
+                if (!tbody) return;
+                tbody.innerHTML = "";
+                var index = 1;
+                snapshot.forEach(function(doc) {
+                    var data = doc.data();
+                    var tr = document.createElement("tr");
+                    tr.innerHTML = "<td>" + (index++) + "</td>" +
+                        "<td>" + data.rol + "</td>" +
+                        "<td>" + data.nombreCompleto + "</td>" +
+                        "<td>" + data.telefono + "</td>" +
+                        "<td>" + data.departamento + "</td>" +
+                        "<td>" + data.area + "</td>" +
+                        "<td>" + data.usuarioEmail + "</td>" +
+                        "<td>" +
+                            "<button class='btn-action-t' style='background-color: #3b71ca;'>✏️</button>" +
+                            "<button class='btn-action-t' style='background-color: #dc4c64;' onclick=\"eliminarEncargado('" + doc.id + "')\">🗑️</button>" +
+                        "</td>";
+                    tbody.appendChild(tr);
                 });
+            }, function(error) {
+                console.error("Error de lectura en Firestore: ", error);
+            });
+        }
+
+        // Función Principal: Registro en Firebase Auth + Guardar en Firestore con Privilegios
+        async function registrarUsuarioYCredenciales() {
+            var rol = document.getElementById("userRol").value;
+            var nombre = document.getElementById("userNombre").value;
+            var telefono = document.getElementById("userTelefono").value;
+            var depto = document.getElementById("userDepartamento").value;
+            var area = document.getElementById("userArea").value;
+            var email = document.getElementById("userEmail").value;
+            var pass = document.getElementById("userPass").value;
+            var passConf = document.getElementById("userPassConf").value;
+
+            if (!nombre || !telefono || !email || !pass || !passConf) {
+                alert("Por favor complete todos los campos obligatorios del formulario.");
+                return;
             }
-    
-            // Función Principal: Registro en Firebase Auth + Guardar en Firestore con Privilegios
-            async function registrarUsuarioYCredenciales() {
-                const rol = document.getElementById("userRol").value;
-                const nombre = document.getElementById("userNombre").value;
-                const telefono = document.getElementById("userTelefono").value;
-                const depto = document.getElementById("userDepartamento").value;
-                const area = document.getElementById("userArea").value;
-                const email = document.getElementById("userEmail").value;
-                const pass = document.getElementById("userPass").value;
-                const passConf = document.getElementById("userPassConf").value;
-    
-                if (!nombre || !telefono || !email || !pass || !passConf) {
-                    alert("Por favor complete todos los campos obligatorios del formulario.");
-                    return;
-                }
-                if (pass !== passConf) {
-                    alert("Las contraseñas ingresadas no coinciden. Verifique de nuevo.");
-                    return;
-                }
-                if (pass.length < 6) {
-                    alert("La contraseña debe tener al menos 6 caracteres por seguridad de Firebase.");
-                    return;
-                }
-    
-                try {
-                    // 1. Crear la cuenta de acceso real en la sección Authentication de Firebase
-                    const userCredential = await window.auth.createUserWithEmailAndPassword(email, pass);
-                    const uid = userCredential.user.uid;
-    
-                    // 2. Definir los privilegios del sistema según el Rol seleccionado (RF014)
-                    let privilegios = { verModulos: ["dashboard", "inventario"], editar: false };
-                    if (rol === "Director" || rol === "Administrador") {
-                        privilegios.verModulos = ["dashboard", "seguridad", "inventario", "mantenimiento", "reportes"];
-                        privilegios.editar = true;
-                    }
-    
-                    // 3. Guardar el perfil completo en Firestore
-                    await window.db.collection("usuarios_encargados").doc(uid).set({
-                        rol: rol,
-                        nombreCompleto: nombre,
-                        telefono: telefono,
-                        departamento: depto,
-                        area: area,
-                        usuarioEmail: email,
-                        privilegios: privilegios,
-                        fechaRegistro: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-    
-                    alert("¡Operación realizada correctamente! Cuenta creada y usuario registrado con éxito.");
-                    document.getElementById("formRegistroUsuario").reset();
-                    modalElement.style.display = 'none';
-    
-                } catch (error) {
-                    console.error("Detalle del error en el servidor: ", error);
-                    alert("Error al procesar el alta: " + error.message);
-                }
+            if (pass !== passConf) {
+                alert("Las contraseñas ingresadas no coinciden. Verifique de nuevo.");
+                return;
             }
-    
-            // Vincular eventos finales
-            document.getElementById("btnGuardarUsuario").addEventListener("click", registrarUsuarioYCredenciales);
-    
-            // Función para dar de baja encargados
-            function eliminarEncargado(id) {
-                if (confirm("¿Está seguro de que desea dar de baja este usuario encargado del sistema?")) {
-                    window.db.collection("usuarios_encargados").doc(id).delete()
-                        .then(() => alert("Registro eliminado de la base de datos correctamente."))
-                        .catch((err) => alert("Error al borrar: " + err.message));
-                }
+            if (pass.length < 6) {
+                alert("La contraseña debe tener al menos 6 caracteres por seguridad de Firebase.");
+                return;
             }
-        </script>
-    </body>
-    </html>
-    
+            if (!window.auth || !window.db) {
+                alert("La conexión con Firebase se está inicializando. Intente de nuevo en un segundo.");
+                return;
+            }
+
+            try {
+                // 1. Crear la cuenta de acceso real en la sección Authentication de Firebase
+                var userCredential = await window.auth.createUserWithEmailAndPassword(email, pass);
+                var uid = userCredential.user.uid;
+
+                // 2. Definir los privilegios del sistema según el Rol seleccionado (RF014)
+                var privilegios = { verModulos: ["dashboard", "inventario"], editar: false };
+                if (rol === "Director" || rol === "Administrador") {
+                    privilegios.verModulos = ["dashboard", "seguridad", "inventario", "mantenimiento", "reportes"];
+                    privilegios.editar = true;
+                }
+
+                // 3. Guardar el perfil completo en Firestore
+                await window.db.collection("usuarios_encargados").doc(uid).set({
+                    rol: rol,
+                    nombreCompleto: nombre,
+                    telefono: telefono,
+                    departamento: depto,
+                    area: area,
+                    usuarioEmail: email,
+                    privilegios: privilegios,
+                    fechaRegistro: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                alert("¡Operación realizada correctamente! Cuenta creada y usuario registrado con éxito.");
+                document.getElementById("formRegistroUsuario").reset();
+                modalElement.style.display = 'none';
+
+            } catch (error) {
+                console.error("Detalle del error en el servidor: ", error);
+                alert("Error al procesar el alta: " + error.message);
+            }
+        }
+
+        // Vincular eventos finales
+        document.getElementById("btnGuardarUsuario").addEventListener("click", registrarUsuarioYCredenciales);
+
+        // Función para dar de baja encargados
+        function eliminarEncargado(id) {
+            if (confirm("¿Está seguro de que desea dar de baja este usuario encargado del sistema?")) {
+                window.db.collection("usuarios_encargados").doc(id).delete()
+                    .then(function() { alert("Registro eliminado de la base de datos correctamente."); })
+                    .catch(function(err) { alert("Error al borrar: " + err.message); });
+            }
+        }
+    </script>
+</body>
+</html>
