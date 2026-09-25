@@ -234,7 +234,7 @@
                     </div>
                 </div>
                 <div class="row-buttons">
-                    <button type="button" id="btnGuardarUsuario" class="btn-footer btn-save">✓ Guardar</button>
+                    <button type="submit" id="btnGuardarUsuario" class="btn-footer btn-save">✓ Guardar</button>
                     <button type="button" id="btnCancelarModal" class="btn-footer btn-cancel">✕ Cancelar</button>
                 </div>
             </form>
@@ -318,6 +318,8 @@ const auth = firebase.auth();
 
         // Función Principal: Registro en Firebase Auth + Guardar en Firestore con Privilegios
         async function registrarUsuarioYCredenciales() {
+            e.preventDefault(); // Evita que la página se recargue
+
             var rol = document.getElementById("userRol").value;
             var nombre = document.getElementById("userNombre").value;
             var telefono = document.getElementById("userTelefono").value;
@@ -379,7 +381,9 @@ const auth = firebase.auth();
         }
 
         // Vincular eventos finales
-        document.getElementById("btnGuardarUsuario").addEventListener("click", registrarUsuarioYCredenciales);
+        
+        document.getElementById("formRegistroUsuario").addEventListener("submit", registrarUsuarioYCredenciales);
+
 
         // Función para dar de baja encargados
         function eliminarEncargado(id) {
