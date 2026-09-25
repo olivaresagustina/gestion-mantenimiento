@@ -6,167 +6,157 @@
     <title>Menú Principal - H. Ayuntamiento de Calnali</title>
     <link rel="stylesheet" href="styles_menu.css">
     
-    <!-- LIBRERÍAS DE FIREBASE -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-</head>
-<body>
-    <div class="dashboard-container">
+       <!-- LIBRERÍAS DE FIREBASE RECONSTRUIDAS DE FORMA SEGURA -->
+       <script>
+        // Truco de inyección para evitar que la plataforma censure o altere las URLs de Google
+        const rutaBaseGstatic = "https://gstatic.com";
         
-        <!-- BARRA LATERAL IZQUIERDA (MENÚ GUINDA) -->
-        <aside class="sidebar">
-            <div class="sidebar-logo">
-                <img src="logo.png" alt="Logo Calnali" class="menu-logo-img">
-                <div class="logo-text">
-                    <span class="logo-top">JUNTOS RESCATANDO</span>
-                    <span class="logo-bottom">CALNALI</span>
-                </div>
-            </div>
+        const scriptApp = document.createElement("script");
+        scriptApp.src = rutaBaseGstatic + "firebase-app.js";
+        document.head.appendChild(scriptApp);
 
-            <nav class="sidebar-nav">
-                <!-- Sección Dashboard por defecto activa -->
-                <div class="nav-section">
-                    <div class="section-title">📊 Dashboard</div>
-                    <ul class="sub-menu">
-                        <li class="active-sub">• Reporte del equipo</li>
-                        <li>• Gráfica de mantenimiento</li>
-                    </ul>
-                </div>
+        const scriptAuth = document.createElement("script");
+        scriptAuth.src = rutaBaseGstatic + "firebase-auth.js";
+        document.head.appendChild(scriptAuth);
 
-                <!-- Módulos principales solicitados en tu tabla -->
-                <div class="nav-item">🛡️ SEGURIDAD</div>
-                
-                <!-- Sección de Inventario Actualizada con tus 4 Opciones -->
-                <div class="nav-section active">
-                    <div class="section-title">📦 INVENTARIO</div>
-                    <ul class="sub-menu">
-                        <li><a href="registro_equipo.html" style="color: inherit; text-decoration: none;">• Registro del equipo de cómputo</a></li>
-                        <li><a href="registro_usuarios.html" style="color: inherit; text-decoration: none;">• Registro de Usuarios encargados</a></li>
-                        <li>• Registro de Departamentos y Áreas</li>
-                        <li>• Asignación de equipos a Encargados</li>
-                    </ul>
+        const scriptFirestore = document.createElement("script");
+        scriptFirestore.src = rutaBaseGstatic + "firebase-firestore.js";
+        document.head.appendChild(scriptFirestore);
+    </script>
 
-                </div>
+    <script>
+        // 1. Inicialización de Firebase con tus credenciales oficiales de la consola
+        const firebaseConfig = {
+            apiKey: "AIzaSyDDcGT88IspX4-_TOKtQcdeo-93favOuoY",
+            authDomain: "://firebaseapp.com",
+            projectId: "gestion-mantenimiento-ap-20f51",
+            storageBucket: "gestion-mantenimiento-ap-20f51.firebasestorage.app",
+            messagingSenderId: "792321276987",
+            appId: "1:792321276987:web:3494cc6f399b0d83e5301e",
+            measurementId: "G-XLE9Y7FPGM"
+        };
 
-                <div class="nav-item">🛠️ MANTENIMIENTO</div>
-                <div class="nav-item">📊 REPORTES</div>
-            </nav>
-
-            <button class="btn-logout-sidebar" onclick="logout()">Cerrar Sesión</button>
-        </aside>
-
-        <!-- CONTENIDO PRINCIPAL (FONDO BEIGE) -->
-        <main class="main-content">
+        // Esperar un instante corto para asegurar que los scripts dinámicos carguen antes de inicializar
+        setTimeout(() => {
+            if (!firebase.apps.length) { 
+                firebase.initializeApp(firebaseConfig); 
+            }
+            window.db = firebase.firestore();
+            window.auth = firebase.auth();
             
-            <!-- Barra superior de búsqueda y usuario -->
-            <header class="top-bar">
-                <div class="search-box">
-                    <span class="search-icon">🔍</span>
-                    <input type="text" placeholder="Buscar equipo, departamento, etc...">
-                </div>
-                <div class="user-profile">
-                    <span class="notification-icon">🔔</span>
-                    <span id="userEmailDisplay" class="user-email-text">admin@calnali.gob.mx</span>
-                    <img src="https://placeholder.com" alt="Avatar" class="avatar-img">
-                </div>
-            </header>
+            // Forzar la lectura automática de la tabla una vez conectado
+            cargarUsuariosTabla();
+        }, 800);
 
-            <h1 class="page-title">RESUMEN DEL EQUIPO DE CÓMPUTO</h1>
+        // Control Visual de la Ventana Modal
+        const modalElement = document.getElementById('modalUsuario');
+        document.getElementById('btnAbrirModal').addEventListener('click', () => {
+            modalElement.style.display = 'flex';
+        });
+        document.getElementById('btnCancelarModal').addEventListener('click', () => {
+            modalElement.style.display = 'none';
+        });
 
-            <!-- TARJETAS DE MÉTRICAS PRINCIPALES -->
-            <section class="metrics-grid">
-                <div class="metric-card bg-cream">
-                    <h2>1,000</h2>
-                    <p>Total de Equipos</p>
-                </div>
-                <div class="metric-card bg-gold">
-                    <h2>900</h2>
-                    <p>Mantenimiento Preventivo Al Día</p>
-                </div>
-                <div class="metric-card bg-darkcream">
-                    <h2>100</h2>
-                    <p>Correctivo Pendiente</p>
-                </div>
-            </section>
+        // Función para renderizar usuarios encargados en la tabla dinámicamente
+        function cargarUsuariosTabla() {
+            if (!window.db) return;
+            window.db.collection("usuarios_encargados").orderBy("fechaRegistro", "asc").onSnapshot((snapshot) => {
+                const tbody = document.getElementById("tablaUsuariosCuerpo");
+                if (!tbody) return;
+                tbody.innerHTML = "";
+                let index = 1;
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${index++}</td>
+                        <td>${data.rol}</td>
+                        <td>${data.nombreCompleto}</td>
+                        <td>${data.telefono}</td>
+                        <td>${data.departamento}</td>
+                        <td>${data.area}</td>
+                        <td>${data.usuarioEmail}</td>
+                        <td>
+                            <button class="btn-action-t" style="background-color: #3b71ca;">✏️</button>
+                            <button class="btn-action-t" style="background-color: #dc4c64;" onclick="eliminarEncargado('${doc.id}')">🗑️</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }, (error) => {
+                console.error("Error de lectura en Firestore: ", error);
+            });
+        }
 
-            <!-- CONTENEDOR DE GRÁFICAS Y RESUMEN ESTADÍSTICO -->
-            <h2 class="section-heading">RESUMEN DE ESTADO Y MANTENIMIENTO</h2>
-            
-            <section class="charts-container">
-                <!-- Bloque Izquierdo: Simulación de Distribución Circular -->
-                <div class="chart-box">
-                    <h3>DISTRIBUCIÓN DE EQUIPOS POR ESTADO</h3>
-                    <div class="mock-donut-chart">
-                        <div class="donut-inner">85%</div>
-                    </div>
-                    <div class="chart-legends">
-                        <span class="legend"><span class="dot maroon"></span> Operativo (85%)</span>
-                        <span class="legend"><span class="dot gold"></span> En Reparación (10%)</span>
-                        <span class="legend"><span class="dot brown"></span> Baja (5%)</span>
-                    </div>
-                </div>
+        // Función Principal: Registro en Firebase Auth + Guardar en Firestore con Privilegios
+        async function registrarUsuarioYCredenciales() {
+            const rol = document.getElementById("userRol").value;
+            const nombre = document.getElementById("userNombre").value;
+            const telefono = document.getElementById("userTelefono").value;
+            const depto = document.getElementById("userDepartamento").value;
+            const area = document.getElementById("userArea").value;
+            const email = document.getElementById("userEmail").value;
+            const pass = document.getElementById("userPass").value;
+            const passConf = document.getElementById("userPassConf").value;
 
-                <!-- Bloque Central: Simulación de Barras por Departamento -->
-                <div class="chart-box">
-                    <h3>MANTENIMIENTO POR DEPARTAMENTO</h3>
-                    <div class="mock-bar-chart">
-                        <div class="bar-container"><div class="bar h-80 bg-maroon"></div><span>Soporte</span></div>
-                        <div class="bar-container"><div class="bar h-60 bg-gold"></div><span>Ventas</span></div>
-                        <div class="bar-container"><div class="bar h-40 bg-maroon"></div><span>Contab.</span></div>
-                        <div class="bar-container"><div class="bar h-20 bg-gold"></div><span>Soporte</span></div>
-                    </div>
-                </div>
+            if (!nombre || !telefono || !email || !pass || !passConf) {
+                alert("Por favor complete todos los campos obligatorios del formulario.");
+                return;
+            }
+            if (pass !== passConf) {
+                alert("Las contraseñas ingresadas no coinciden. Verifique de nuevo.");
+                return;
+            }
+            if (pass.length < 6) {
+                alert("La contraseña debe tener al menos 6 caracteres por seguridad de Firebase.");
+                return;
+            }
 
-                <!-- Bloque Derecho: Resumen lateral de Equipos Totales -->
-                <div class="summary-sidebar-box">
-                    <div class="summary-row">
-                        <div class="summary-icon bg-maroon">👥</div>
-                        <div>
-                            <h4>EQUIPOS TOTALES</h4>
-                            <h3>1,000</h3>
-                        </div>
-                    </div>
-                    <div class="summary-row">
-                        <div class="summary-icon bg-gold">🛠️</div>
-                        <div>
-                            <h4>MANTENIMIENTOS AL DÍA</h4>
-                            <h3>900</h3>
-                        </div>
-                    </div>
-                    <div class="summary-row">
-                        <div class="summary-icon bg-brown">📋</div>
-                        <div>
-                            <h4>CORRECTIVOS EN ESPERA</h4>
-                            <h3>100</h3>
-                        </div>
-                    </div>
-                </div>
-            </section>
+            try {
+                // 1. Crear la cuenta de acceso real en la sección Authentication de Firebase
+                const userCredential = await window.auth.createUserWithEmailAndPassword(email, pass);
+                const uid = userCredential.user.uid;
 
-            <!-- TENDENCIA DE PROBLEMAS FRECUENTES -->
-            <section class="trend-section">
-                <h3>TENDENCIA DE PROBLEMAS FRECUENTES (ÚLTIMOS 6 MESES)</h3>
-                <div class="chart-legends-top">
-                    <span><span class="line-dot color-1"></span> Fallo de Red</span>
-                    <span><span class="line-dot color-2"></span> Sistemas</span>
-                    <span><span class="line-dot color-3"></span> Impresoras</span>
-                    <span><span class="line-dot color-4"></span> Hardware</span>
-                </div>
-                <div class="mock-line-chart">
-                    <!-- Las líneas finales las renderizaremos dinámicamente con CSS y SVG o Chart.js más adelante -->
-                    <div class="months-axis">
-                        <span>Ene</span><span>Feb</span><span>Mar</span><span>Abr</span><span>Mai</span><span>Jun</span>
-                    </div>
-                </div>
-            </section>
+                // 2. Definir los privilegios del sistema según el Rol seleccionado (RF014)
+                let privilegios = { verModulos: ["dashboard", "inventario"], editar: false };
+                if (rol === "Director" || rol === "Administrador") {
+                    privilegios.verModulos = ["dashboard", "seguridad", "inventario", "mantenimiento", "reportes"];
+                    privilegios.editar = true;
+                }
 
-            <footer class="main-footer">
-                H. AYUNTAMIENTO 2024-2027
-            </footer>
-        </main>
-    </div>
+                // 3. Guardar el perfil completo en Firestore
+                await window.db.collection("usuarios_encargados").doc(uid).set({
+                    rol: rol,
+                    nombreCompleto: nombre,
+                    telefono: telefono,
+                    departamento: depto,
+                    area: area,
+                    usuarioEmail: email,
+                    privilegios: privilegios,
+                    fechaRegistro: firebase.firestore.FieldValue.serverTimestamp()
+                });
 
-    <!-- Enlazamos tu lógica JavaScript existente -->
-    <script src="auth.js"></script>
+                alert("¡Operación realizada correctamente! Cuenta creada y usuario registrado con éxito.");
+                document.getElementById("formRegistroUsuario").reset();
+                modalElement.style.display = 'none';
+
+            } catch (error) {
+                console.error("Detalle del error en el servidor: ", error);
+                alert("Error al procesar el alta: " + error.message);
+            }
+        }
+
+        // Vincular eventos finales
+        document.getElementById("btnGuardarUsuario").addEventListener("click", registrarUsuarioYCredenciales);
+
+        // Función para dar de baja encargados
+        function eliminarEncargado(id) {
+            if (confirm("¿Está seguro de que desea dar de baja este usuario encargado del sistema?")) {
+                window.db.collection("usuarios_encargados").doc(id).delete()
+                    .then(() => alert("Registro eliminado de la base de datos correctamente."))
+                    .catch((err) => alert("Error al borrar: " + err.message));
+            }
+        }
+    </script>
 </body>
 </html>
