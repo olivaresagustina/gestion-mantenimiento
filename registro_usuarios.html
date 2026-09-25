@@ -270,8 +270,7 @@ const db = firebase.firestore();
 const auth = firebase.auth();
 
 
-        // Cargar la tabla de usuarios automáticamente al conectar
-        window.addEventListener('DOMContentLoaded', cargarUsuariosTabla);
+        
     </script>
 
     <script>
@@ -287,12 +286,13 @@ const auth = firebase.auth();
         });
 
         // Función corregida para renderizar usuarios encargados en la tabla dinámicamente
-                // Función corregida para renderizar usuarios encargados en la tabla dinámicamente
-function cargarUsuariosTabla() {
-    if (!db) return;
+    
+        function cargarUsuariosTabla() {
+    if (!db) {
+        console.error("La base de datos Firestore no está inicializada.");
+        return;
+    }
     db.collection("usuarios_encargados").onSnapshot(function(snapshot) {
-
-        
         var tbody = document.getElementById("tablaUsuariosCuerpo");
         if (!tbody) return;
         tbody.innerHTML = "";
@@ -388,6 +388,9 @@ function cargarUsuariosTabla() {
         
         document.getElementById("formRegistroUsuario").addEventListener("submit", registrarUsuarioYCredenciales);
 
+        // Cargar la tabla de usuarios automáticamente al conectar
+        window.addEventListener('DOMContentLoaded', cargarUsuariosTabla);
+
 
         // Función para dar de baja encargados
         function eliminarEncargado(id) {
@@ -397,6 +400,7 @@ function cargarUsuariosTabla() {
                     .catch(function(err) { alert("Error al borrar: " + err.message); });
             }
         }
+        
     </script>
 </body>
 </html>
