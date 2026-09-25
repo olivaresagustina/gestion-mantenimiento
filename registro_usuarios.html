@@ -287,37 +287,39 @@ const auth = firebase.auth();
         });
 
         // Función corregida para renderizar usuarios encargados en la tabla dinámicamente
-                function cargarUsuariosTabla() {
-            if (!db) return;
-            db.collection("usuarios_encargados").orderBy("fechaRegistro", "asc").onSnapshot(function(snapshot) {
-                var tbody = document.getElementById("tablaUsuariosCuerpo");
-                if (!tbody) return;
-                tbody.innerHTML = "";
-                var index = 1;
-                snapshot.forEach(function(doc) {
-                    var data = doc.data();
-                    var tr = document.createElement("tr");
-                    tr.innerHTML = "<td>" + (index++) + "</td>" +
-                        "<td>" + data.rol + "</td>" +
-                        "<td>" + data.nombreCompleto + "</td>" +
-                        "<td>" + data.telefono + "</td>" +
-                        "<td>" + data.departamento + "</td>" +
-                        "<td>" + data.area + "</td>" +
-                        "<td>" + data.usuarioEmail + "</td>" +
-                        "<td>" +
-                            "<button class='btn-action-t' style='background-color: #3b71ca; margin-right: 5px;'>✏️</button>" +
-                            "<button class='btn-action-t' style='background-color: #dc4c64;' onclick=\"eliminarEncargado('" + doc.id + "')\">🗑️</button>" +
-                        "</td>";
-                    tbody.appendChild(tr);
-                });
-            }, function(error) {
-                console.error("Error de lectura en Firestore: ", error);
-            });
-        }
+                // Función corregida para renderizar usuarios encargados en la tabla dinámicamente
+function cargarUsuariosTabla() {
+    if (!db) return;
+    db.collection("usuarios_encargados").orderBy("fechaRegistro", "asc").onSnapshot(function(snapshot) {
+        var tbody = document.getElementById("tablaUsuariosCuerpo");
+        if (!tbody) return;
+        tbody.innerHTML = "";
+        var index = 1;
+        snapshot.forEach(function(doc) {
+            var data = doc.data();
+            var tr = document.createElement("tr");
+            tr.innerHTML = "<td>" + (index++) + "</td>" +
+                "<td>" + (data.rol || '') + "</td>" +
+                "<td>" + (data.nombreCompleto || '') + "</td>" +
+                "<td>" + (data.telefono || '') + "</td>" +
+                "<td>" + (data.departamento || '') + "</td>" +
+                "<td>" + (data.area || '') + "</td>" +
+                "<td>" + (data.usuarioEmail || '') + "</td>" +
+                "<td>" +
+                    "<button class='btn-action-t' style='background-color: #3b71ca; margin-right: 5px;'>✏️</button>" +
+                    "<button class='btn-action-t' style='background-color: #dc4c64;' onclick=\"eliminarEncargado('" + doc.id + "')\">🗑️</button>" +
+                "</td>";
+            tbody.appendChild(tr);
+        });
+    }, function(error) {
+        console.error("Error de lectura en Firestore: ", error);
+    });
+}
+
 
 
         // Función Principal: Registro en Firebase Auth + Guardar en Firestore con Privilegios
-        async function registrarUsuarioYCredenciales() {
+        async function registrarUsuarioYCredenciales(e) {
             e.preventDefault(); // Evita que la página se recargue
 
             var rol = document.getElementById("userRol").value;
@@ -396,3 +398,4 @@ const auth = firebase.auth();
     </script>
 </body>
 </html>
+
