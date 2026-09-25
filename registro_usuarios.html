@@ -290,7 +290,9 @@ const auth = firebase.auth();
                 // Función corregida para renderizar usuarios encargados en la tabla dinámicamente
 function cargarUsuariosTabla() {
     if (!db) return;
-    db.collection("usuarios_encargados").orderBy("fechaRegistro", "asc").onSnapshot(function(snapshot) {
+    db.collection("usuarios_encargados").onSnapshot(function(snapshot) {
+
+        
         var tbody = document.getElementById("tablaUsuariosCuerpo");
         if (!tbody) return;
         tbody.innerHTML = "";
