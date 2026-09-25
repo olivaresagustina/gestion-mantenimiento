@@ -241,31 +241,16 @@
         </div>
     </div>
         
-        <!-- LIBRERÍAS DE FIREBASE -->
-         
-        <script>
-            // Rompemos las palabras para que el filtro del sistema no las detecte ni las borre
-            var parte1 = "https://www.";
-            var parte2 = "://gstatic.com";
-            
-            var s1 = document.createElement("script");
-            s1.src = parte1 + parte2 + "app.js";
-            document.head.appendChild(s1);
-    
-            var s2 = document.createElement("script");
-            s2.src = parte1 + parte2 + "auth.js";
-            document.head.appendChild(s2);
-    
-            var s3 = document.createElement("script");
-            s3.src = parte1 + parte2 + "firestore.js";
-            document.head.appendChild(s3);
-        </script>
+            <!-- LIBRERÍAS OFICIALES DE GOOGLE FIREBASE REESTABLECIDAS -->
+            <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+            <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>   
+            <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
     <script>
-        // Inicialización de Firebase con credenciales protegidas
-        var proyectoID = "gestion-mantenimiento-ap-20f51";
+        // Inicialización instantánea y directa de Firebase
+        const proyectoID = "gestion-mantenimiento-ap-20f51";
 
-        var firebaseConfig = {
+        const firebaseConfig = {
             apiKey: "AIzaSyDDcGT88IspX4-_TOktQCdeo-93favOuoY",
             authDomain: proyectoID + ".firebaseapp.com",
             projectId: proyectoID,
@@ -275,19 +260,20 @@
             measurementId: "G-XLE9Y7FPGM"
         };
 
-        // Damos un pequeño tiempo de espera de 800 milisegundos para que las librerías se carguen en memoria
-        setTimeout(function() {
-            if (!firebase.apps.length) { 
-                firebase.initializeApp(firebaseConfig); 
-            }
-            window.db = firebase.firestore();
-            window.auth = firebase.auth();
-            
-            // Cargar la tabla de usuarios automáticamente al conectar
-            cargarUsuariosTabla();
-        }, 800);
+        // Inicializar de forma síncrona inmediata sin esperas
+        if (!firebase.apps.length) { 
+            firebase.initializeApp(firebaseConfig); 
+        }
+        const db = firebase.firestore();
+        const auth = firebase.auth();
 
+        // Cargar la tabla de usuarios automáticamente al conectar
+        window.addEventListener('DOMContentLoaded', cargarUsuariosTabla);
+    </script>
+
+    <script>
         // Control Visual de la Ventana Modal
+
         var modalElement = document.getElementById('modalUsuario');
         document.getElementById('btnAbrirModal').addEventListener('click', function() {
             modalElement.style.display = 'flex';
