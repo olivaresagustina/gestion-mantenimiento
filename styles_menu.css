@@ -30,30 +30,46 @@ body {
     flex-shrink: 0;
 }
 
+/* --- NUEVA CONFIGURACIÓN DEL LOGOTIPO (CORREGIDO) --- */
 .sidebar-logo {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 15px; /* Más separación estética entre imagen y letras */
     margin-bottom: 40px;
+    width: 100%;
 }
 
 .menu-logo-img {
-    width: 35px;
+    width: 70px; /* Logotipo duplicado a dos veces su tamaño original */
     height: auto;
+    flex-shrink: 0;
 }
 
+/* Alinea los textos en filas verticales */
+.logo-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+}
+
+/* Texto superior: Pequeño, en mayúsculas y espaciado */
 .sidebar-logo .logo-top {
-    font-size: 8px;
+    font-size: 9px;
     font-weight: 600;
-    color: #dfdfdf;
-    letter-spacing: 1px;
+    color: #dfdfdf; /* Tono blanco grisáceo original */
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
 }
 
+/* Texto inferior: Grande, imponente y dorado */
 .sidebar-logo .logo-bottom {
-    font-size: 16px;
+    font-size: 24px; /* Aumentado para emparejar la jerarquía visual */
     font-weight: 700;
-    color: #b8904c; /* Dorado */
+    color: #b8904c; /* Dorado institucional */
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
 }
+
 
 .sidebar-nav {
     display: flex;
