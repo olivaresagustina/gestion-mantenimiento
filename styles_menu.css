@@ -38,6 +38,20 @@ body {
     margin-bottom: 40px;
     width: 100%;
 }
+/* Remueve estilos por defecto de enlace y alinea los elementos del logo */
+.logo-link {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    text-decoration: none; /* Quita el subrayado */
+    width: 100%;
+}
+
+/* Asegura que el puntero cambie a mano al pasar el mouse por encima */
+.logo-link:hover {
+    cursor: pointer;
+}
+
 
 .menu-logo-img {
     width: 70px; /* Logotipo duplicado a dos veces su tamaño original */
