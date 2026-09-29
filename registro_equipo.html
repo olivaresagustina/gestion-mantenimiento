@@ -283,14 +283,15 @@
                     <option value="Mantenimiento" selected>Mantenimiento</option>
                 </select>
                 <label>Área</label>
-                <select id="equipoArea" required>
-                    <option value="Oficinas Administrativas">Oficinas Administrativas</option>
-                </select>
+<select id="equipoArea" required>
+    <option value="">Cargando áreas...</option>
+</select>
 
-                <label>Departamento</label>
-                <select id="equipoDepartamento" required>
-                    <option value="Sistemas">Sistemas</option>
-                </select>
+<label>Departamento</label>
+<select id="equipoDepartamento" required disabled>
+    <option value="">Selecciona primero un área...</option>
+</select>
+
 
                 <label>Encargado</label>
                 <select id="equipoEncargado" required>
@@ -503,6 +504,62 @@
         
         // Activamos la carga de encargados al iniciar la pantalla
         window.addEventListener('DOMContentLoaded', cargarEncargadosEnDesplegable);
+
+    // --- LÓGICA DE SELECTS DINÁMICOS EN CASCADA ---
+let listaGlobalAreasDeptos = [];
+
+function inicializarFiltroAreasDepartamentos() {
+    const selectArea = document.getElementById("equipoArea");
+    const selectDepto = document.getElementById("equipoDepartamento");
+
+    if (!selectArea || !selectDepto) return;
+
+    // 1. Cargar áreas únicas desde Firestore
+    db.collection("areas_departamentos").get().then((snapshot) => {
+        listaGlobalAreasDeptos = [];
+        const areasUnicas = new Set();
+
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            listaGlobalAreasDeptos.push(data);
+            if (data.area) areasUnicas.add(data.area.trim());
+        });
+
+        selectArea.innerHTML = '<option value="">-- Seleccione Área --</option>';
+        areasUnicas.forEach((area) => {
+            selectArea.innerHTML += `<option value="${area}">${area}</option>`;
+        });
+    }).catch(error => console.error("Error al cargar áreas:", error));
+
+    // 2. Escuchar cambios para filtrar departamentos
+    selectArea.addEventListener("change", (e) => {
+        const areaSeleccionada = e.target.value;
+
+        if (!areaSeleccionada) {
+            selectDepto.innerHTML = '<option value="">Selecciona primero un área...</option>';
+            selectDepto.disabled = true;
+            return;
+        }
+
+        const deptosFiltrados = listaGlobalAreasDeptos.filter(item => item.area && item.area.trim() === areaSeleccionada);
+        selectDepto.innerHTML = '<option value="">-- Seleccione Departamento --</option>';
+
+        if (deptosFiltrados.length === 0) {
+            selectDepto.innerHTML = '<option value="">Sin departamentos asignados</option>';
+        } else {
+            deptosFiltrados.forEach((item) => {
+                if (item.departamento) {
+                    selectDepto.innerHTML += `<option value="${item.departamento.trim()}">${item.departamento.trim()}</option>`;
+                }
+            });
+            selectDepto.disabled = false;
+        }
+    });
+}
+
+// Ejecutar automáticamente al iniciar la pantalla
+window.addEventListener('DOMContentLoaded', inicializarFiltroAreasDepartamentos);
+
 
 
     </script>
