@@ -77,14 +77,10 @@
         /* ESTILOS DEL FORMULARIO FLOTANTE (MODAL) */
         .modal-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.5);
             display: none;
-            justify-content: center;
-            align-items: center;
+            justify-content: center; align-items: center;
             z-index: 999;
         }
         .form-container {
@@ -135,19 +131,17 @@
 </head>
 <body>
     <div class="dashboard-container">
-        
         <!-- BARRA LATERAL IZQUIERDA -->
         <aside class="sidebar">
-                <div class="sidebar-logo">
-
-                    <a href="menu.html" class="logo-link">
-                        <img src="logo.png" alt="Logo Calnali" class="menu-logo-img">
-                        <div class="logo-text">
-                            <span class="logo-top">JUNTOS RESCATANDO</span>
-                            <span class="logo-bottom">CALNALI</span>
-                        </div>
-                    </a>
-                </div>
+            <div class="sidebar-logo">
+                <a href="menu.html" class="logo-link">
+                    <img src="logo.png" alt="Logo Calnali" class="menu-logo-img">
+                    <div class="logo-text">
+                        <span class="logo-top">JUNTOS RESCATANDO</span>
+                        <span class="logo-bottom">CALNALI</span>
+                    </div>
+                </a>
+            </div>
             <nav class="sidebar-nav">
                 <div class="nav-section">
                     <div class="section-title"><a href="menu.html" style="color:inherit; text-decoration:none;">📊 Dashboard</a></div>
@@ -159,7 +153,6 @@
                         <li class="active-sub">• Registro del equipo de cómputo</li>
                         <li><a href="registro_usuarios.html" style="color: inherit; text-decoration: none;">• Registro de Usuarios encargados</a></li>
                         <li><a href="registro_areas.html" style="color:inherit; text-decoration:none;">• Registro de Áreas y Departamentos</a></li>
-                        
                         <li>• Asignación de equipos a Encargados</li>
                     </ul>
                 </div>
@@ -184,7 +177,6 @@
 
             <h1 class="page-title">Equipos de Cómputo</h1>
 
-            <!-- TABLA PRINCIPAL -->
             <div class="table-container">
                 <div class="table-header-actions">
                     <div>Lista de Equipos de Cómputo</div>
@@ -213,31 +205,12 @@
                         </tr>
                     </thead>
                     <tbody id="tablaEquiposCuerpo">
-                        <tr>
-                            <td><input type="checkbox"></td>
-                            <td>196</td>
-                            <td>Teclado</td>
-                            <td>DELL</td>
-                            <td>BT242</td>
-                            <td>670-103-823</td>
-                            <td><img src="teclado.png" class="img-table" alt="Teclado"></td>
-                            <td>Requiere limpieza profunda</td>
-                            <td><span class="status-badge">Mantenimiento</span></td>
-                            <td>Oficinas Administrativas</td>
-                            <td>Sistemas</td>
-                            <td>Juan Pérez</td>
-                            <td>
-                                <button class="btn-action-t" style="background-color: #3b71ca;">✏️</button>
-                                <button class="btn-action-t" style="background-color: #dc4c64;">🗑️</button>
-                                <button class="btn-action-t" style="background-color: #e4a11b;">👁️</button>
-                            </td>
-                        </tr>
+                        <!-- Los datos se inyectan dinámicamente -->
                     </tbody>
                 </table>
             </div>
         </main>
     </div>
-
     <!-- VENTANA MODAL FLOTANTE COMPLETA -->
     <div class="modal-overlay" id="modalRegistro">
         <div class="form-container">
@@ -245,7 +218,7 @@
             <form id="formRegistroEquipo" class="form-body" onsubmit="event.preventDefault();">
                 
                 <label>ID (Auto-generado)</label>
-                <input type="text" id="equipoId" value="197" disabled>
+                <input type="text" id="equipoId" value="AUTOMÁTICO" disabled>
 
                 <label>Tipo</label>
                 <select id="equipoTipo" required>
@@ -282,20 +255,20 @@
                     <option value="No Funcional">No Funcional</option>
                     <option value="Mantenimiento" selected>Mantenimiento</option>
                 </select>
+
                 <label>Área</label>
-<select id="equipoArea" required>
-    <option value="">Cargando áreas...</option>
-</select>
+                <select id="equipoArea" required>
+                    <option value="">Cargando áreas...</option>
+                </select>
 
-<label>Departamento</label>
-<select id="equipoDepartamento" required disabled>
-    <option value="">Selecciona primero un área...</option>
-</select>
-
+                <label>Departamento</label>
+                <select id="equipoDepartamento" required disabled>
+                    <option value="">Selecciona primero un área...</option>
+                </select>
 
                 <label>Encargado</label>
-                <select id="equipoEncargado" required>
-                    <option value="Juan Pérez">Juan Pérez</option>
+                <select id="equipoEncargado" required disabled>
+                    <option value="">Selecciona primero un departamento...</option>
                 </select>
 
                 <div class="row-buttons">
@@ -316,12 +289,12 @@
         const nombreProyecto = "gestion-mantenimiento-ap-20f51";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyDDCGTBBIspX4-_TOktQCdeo-9JfaVouoY",
+            apiKey: "AIzaSyDDcGT88IspX4-_TOKtQcdeo-93favOuoY",
             authDomain: nombreProyecto + ".firebaseapp.com",
             projectId: nombreProyecto,
-            storageBucket: nombreProyecto + ".appspot.com",
+            storageBucket: nombreProyecto + ".firebasestorage.app",
             messagingSenderId: "792321276987",
-            appId: "1:792321276987:web:3494cc6f399bcd3e5301e1",
+            appId: "1:792321276987:web:3494cc6f399b0d83e5301e",
             measurementId: "G-XLE9Y7FPGM"
         };
 
@@ -339,37 +312,15 @@
 
         document.getElementById('btnCancelarFormulario').addEventListener('click', () => {
             modalElement.style.display = 'none';
+            document.getElementById("formRegistroEquipo").reset();
+            // Restablecer estados de selects
+            document.getElementById("equipoDepartamento").disabled = true;
+            document.getElementById("equipoDepartamento").innerHTML = '<option value="">Selecciona primero un área...</option>';
+            document.getElementById("equipoEncargado").disabled = true;
+            document.getElementById("equipoEncargado").innerHTML = '<option value="">Selecciona primero un departamento...</option>';
         });
-
-        // 2. Función para insertar visualmente el nuevo equipo en la tabla de la página
-        function agregarEquipoALaTablaHTML(idDoc, datos) {
-            const tbody = document.getElementById("tablaEquiposCuerpo");
-            const tr = document.createElement("tr");
-            
-            tr.innerHTML = `
-                <td><input type="checkbox"></td>
-                <td>197</td>
-                <td>${datos.tipo}</td>
-                <td>${datos.marca}</td>
-                <td>${datos.modelo}</td>
-                <td>${datos.serie}</td>
-                <td><img src="teclado.png" class="img-table" alt="Equipo"></td>
-                <td>${datos.comentarios || 'Sin comentarios'}</td>
-                <td><span class="status-badge">${datos.condicion}</span></td>
-                <td>${datos.area}</td>
-                <td>${datos.departamento}</td>
-                <td>${datos.encargado}</td>
-                <td>
-                    <button class="btn-action-t" style="background-color: #3b71ca;">✏️</button>
-                    <button class="btn-action-t" style="background-color: #dc4c64;" onclick="eliminarEquipo(this)">🗑️</button>
-                    <button class="btn-action-t" style="background-color: #e4a11b;">👁️</button>
-                </td>
-            `;
-            tbody.appendChild(tr);
-        }
-
-        // 3. Función asíncrona principal para Guardar Registro
-        async function guardarEquipoEnFirebase() {
+            // 3. Función asíncrona principal para Guardar Registro en Firestore
+            async function guardarEquipoEnFirebase() {
             const tipo = document.getElementById("equipoTipo").value;
             const marca = document.getElementById("equipoMarca").value;
             const modelo = document.getElementById("equipoModelo").value;
@@ -380,8 +331,8 @@
             const departamento = document.getElementById("equipoDepartamento").value;
             const encargado = document.getElementById("equipoEncargado").value;
 
-            if (!tipo || !marca || !modelo || !serie) {
-                alert("Alerta: Por favor, complete los datos obligatorios (Tipo, Marca, Modelo y Serie).");
+            if (!tipo || !marca || !modelo || !serie || !area || !departamento || !encargado) {
+                alert("Alerta: Por favor, complete todos los campos obligatorios del formulario.");
                 return;
             }
 
@@ -399,11 +350,17 @@
             };
 
             try {
-                const docRef = await db.collection("equipos").add(nuevoEquipo);
+                await db.collection("equipos").add(nuevoEquipo);
                 alert("¡Operación realizada correctamente! El equipo ha sido guardado con éxito.");
                 
-                //agregarEquipoALaTablaHTML(docRef.id, nuevoEquipo);
                 document.getElementById("formRegistroEquipo").reset();
+                
+                // Restablecer estados bloqueados tras guardar exitosamente
+                document.getElementById("equipoDepartamento").disabled = true;
+                document.getElementById("equipoDepartamento").innerHTML = '<option value="">Selecciona primero un área...</option>';
+                document.getElementById("equipoEncargado").disabled = true;
+                document.getElementById("equipoEncargado").innerHTML = '<option value="">Selecciona primero un departamento...</option>';
+                
                 modalElement.style.display = 'none';
 
             } catch (error) {
@@ -414,29 +371,14 @@
 
         document.getElementById("btnGuardarEquipo").addEventListener("click", guardarEquipoEnFirebase);
 
-        // Función de eliminación visual inmediata
-        function eliminarEquipo(boton) {
-            if(confirm("¿Está seguro de que desea eliminar este equipo de la lista visual?")) {
-                const fila = boton.closest('tr');
-                if(fila) {
-                    fila.remove();
-                    alert("Equipo removido de la vista actual.");
-                }
-            }
-        }
-                    // 4. Función para leer y cargar AUTOMÁTICAMENTE todos los equipos de Firebase comenzando desde el ID 1
+        // 4. Función para leer y cargar AUTOMÁTICAMENTE todos los equipos de Firebase en la tabla
         function escucharYMostrarEquipos() {
-            // Conectamos a la colección "equipos" ordenando por fecha de registro
             db.collection("equipos").orderBy("fechaRegistro", "asc").onSnapshot((snapshot) => {
                 const tbody = document.getElementById("tablaEquiposCuerpo");
-                
-                // Limpiamos la tabla por completo para que no queden registros viejos ni fijos
+                if (!tbody) return;
                 tbody.innerHTML = "";
-
-                // Iniciamos el contador consecutivo estrictamente en 1
                 let siguienteID = 1;
 
-                // Recorremos cada documento real que existe en tu Firestore
                 snapshot.forEach((doc) => {
                     const datos = doc.data();
                     const tr = document.createElement("tr");
@@ -444,16 +386,16 @@
                     tr.innerHTML = `
                         <td><input type="checkbox"></td>
                         <td>${siguienteID}</td>
-                        <td>${datos.tipo}</td>
-                        <td>${datos.marca}</td>
-                        <td>${datos.modelo}</td>
-                        <td>${datos.serie}</td>
+                        <td>${datos.tipo || ''}</td>
+                        <td>${datos.marca || ''}</td>
+                        <td>${datos.modelo || ''}</td>
+                        <td>${datos.serie || ''}</td>
                         <td><img src="teclado.png" class="img-table" alt="Equipo"></td>
                         <td>${datos.comentarios || 'Sin comentarios'}</td>
-                        <td><span class="status-badge">${datos.condicion}</span></td>
-                        <td>${datos.area}</td>
-                        <td>${datos.departamento}</td>
-                        <td>${datos.encargado}</td>
+                        <td><span class="status-badge">${datos.condicion || ''}</span></td>
+                        <td>${datos.area || ''}</td>
+                        <td>${datos.departamento || ''}</td>
+                        <td>${datos.encargado || ''}</td>
                         <td>
                             <button class="btn-action-t" style="background-color: #3b71ca;">✏️</button>
                             <button class="btn-action-t" style="background-color: #dc4c64;" onclick="eliminarEquipoReal('${doc.id}')">🗑️</button>
@@ -461,15 +403,12 @@
                         </td>
                     `;
                     tbody.appendChild(tr);
-
-                    // Sumamos 1 para el siguiente registro de la lista
                     siguienteID++;
                 });
             }, (error) => {
                 console.error("Error al leer desde Firestore: ", error);
             });
         }
-
 
         // Función para eliminar físicamente de la base de datos de Firebase
         function eliminarEquipoReal(idDoc) {
@@ -481,40 +420,17 @@
                 });
             }
         }
+         // 5. TRIPLE FILTRADO EN CASCADA CONECTADO A FIRESTORE
+         let listaGlobalAreasDeptos = [];
 
-        // Activamos la escucha automática inmediatamente en cuanto el HTML esté listo
-        window.addEventListener('DOMContentLoaded', escucharYMostrarEquipos);
-
-                // 5. Inyección dinámica de encargados desde Firebase al select del formulario
-                function cargarEncargadosEnDesplegable() {
-            db.collection("usuarios_encargados").orderBy("nombreCompleto").onSnapshot((snapshot) => {
-                const select = document.getElementById("equipoEncargado");
-                if (select) {
-                    select.innerHTML = '<option value="">Seleccione Encargado</option>';
-                    snapshot.forEach((doc) => {
-                        const data = doc.data();
-                        const option = document.createElement("option");
-                        option.value = data.nombreCompleto;
-                        option.textContent = data.nombreCompleto;
-                        select.appendChild(option);
-                    });
-                }
-            });
-        }
-        
-        // Activamos la carga de encargados al iniciar la pantalla
-        window.addEventListener('DOMContentLoaded', cargarEncargadosEnDesplegable);
-
-    // --- LÓGICA DE SELECTS DINÁMICOS EN CASCADA ---
-let listaGlobalAreasDeptos = [];
-
-function inicializarFiltroAreasDepartamentos() {
+function inicializarFiltroAvanzadoEquipos() {
     const selectArea = document.getElementById("equipoArea");
     const selectDepto = document.getElementById("equipoDepartamento");
+    const selectEncargado = document.getElementById("equipoEncargado");
 
-    if (!selectArea || !selectDepto) return;
+    if (!selectArea || !selectDepto || !selectEncargado) return;
 
-    // 1. Cargar áreas únicas desde Firestore
+    // Paso A: Descargar Catálogo Base de Áreas y Departamentos
     db.collection("areas_departamentos").get().then((snapshot) => {
         listaGlobalAreasDeptos = [];
         const areasUnicas = new Set();
@@ -529,17 +445,19 @@ function inicializarFiltroAreasDepartamentos() {
         areasUnicas.forEach((area) => {
             selectArea.innerHTML += `<option value="${area}">${area}</option>`;
         });
-    }).catch(error => console.error("Error al cargar áreas:", error));
+    }).catch(error => console.error("Error al cargar catálogo de áreas:", error));
 
-    // 2. Escuchar cambios para filtrar departamentos
+    // Paso B: Escuchador del cambio de Área para cargar Departamentos
     selectArea.addEventListener("change", (e) => {
         const areaSeleccionada = e.target.value;
 
-        if (!areaSeleccionada) {
-            selectDepto.innerHTML = '<option value="">Selecciona primero un área...</option>';
-            selectDepto.disabled = true;
-            return;
-        }
+        // Resetear elementos dependientes si se borra el área
+        selectDepto.innerHTML = '<option value="">Selecciona primero un área...</option>';
+        selectDepto.disabled = true;
+        selectEncargado.innerHTML = '<option value="">Selecciona primero un departamento...</option>';
+        selectEncargado.disabled = true;
+
+        if (!areaSeleccionada) return;
 
         const deptosFiltrados = listaGlobalAreasDeptos.filter(item => item.area && item.area.trim() === areaSeleccionada);
         selectDepto.innerHTML = '<option value="">-- Seleccione Departamento --</option>';
@@ -555,14 +473,69 @@ function inicializarFiltroAreasDepartamentos() {
             selectDepto.disabled = false;
         }
     });
+
+    // Paso C: Escuchador de Departamento para filtrar Encargados de forma cruzada
+    selectDepto.addEventListener("change", (e) => {
+        const deptoSeleccionado = e.target.value;
+        const areaSeleccionada = selectArea.value;
+
+        selectEncargado.innerHTML = '<option value="">Selecciona primero un departamento...</option>';
+        selectEncargado.disabled = true;
+
+        if (!deptoSeleccionado) return;
+
+        // Consultar dinámicamente la colección 'usuarios_encargados' que coincidan con Área y Departamento
+        db.collection("usuarios_encargados")
+            .where("area", "==", areaSeleccionada)
+            .where("departamento", "==", deptoSeleccionado)
+            .get()
+            .then((snapshot) => {
+                selectEncargado.innerHTML = '<option value="">-- Seleccione Encargado --</option>';
+                
+                if (snapshot.empty) {
+                    selectEncargado.innerHTML = '<option value="">Sin empleados registrados en esta adscripción</option>';
+                    selectEncargado.disabled = false; // Permitir abrirlo para ver el aviso
+                    return;
+                }
+
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.nombreCompleto) {
+                        const option = document.createElement("option");
+                        option.value = data.nombreCompleto.trim();
+                        option.textContent = data.nombreCompleto.trim();
+                        selectEncargado.appendChild(option);
+                    }
+                });
+                selectEncargado.disabled = false;
+            })
+            .catch((error) => {
+                console.error("Error al filtrar encargados por adscripción: ", error);
+                selectEncargado.innerHTML = '<option value="">Error al cargar personal</option>';
+            });
+    });
 }
 
-// Ejecutar automáticamente al iniciar la pantalla
-window.addEventListener('DOMContentLoaded', inicializarFiltroAreasDepartamentos);
+// Inicializaciones del DOM
+window.addEventListener('DOMContentLoaded', () => {
+    escucharYMostrarEquipos();
+    inicializarFiltroAvanzadoEquipos();
+});
+</script>
+</body>
+</html>
 
 
 
-    </script>
-   </body>
-   </html>
-   
+
+
+
+
+
+
+
+
+
+
+
+
