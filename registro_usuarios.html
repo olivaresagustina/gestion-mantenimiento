@@ -125,17 +125,15 @@
     <div class="dashboard-container">
         <!-- BARRA LATERAL IZQUIERDA -->
         <aside class="sidebar">
-         <!--  BLOQUE CORRECTO -->
-<div class="sidebar-logo">
-    
-    <a href="menu.html" class="logo-link">
-        <img src="logo.png" alt="Logo Calnali" class="menu-logo-img">
-        <div class="logo-text">
-            <span class="logo-top">JUNTOS RESCATANDO</span>
-            <span class="logo-bottom">CALNALI</span>
-        </div>
-    </a>
-</div>
+            <div class="sidebar-logo">
+                <a href="menu.html" class="logo-link">
+                    <img src="logo.png" alt="Logo Calnali" class="menu-logo-img">
+                    <div class="logo-text">
+                        <span class="logo-top">JUNTOS RESCATANDO</span>
+                        <span class="logo-bottom">CALNALI</span>
+                    </div>
+                </a>
+            </div>
 
             <nav class="sidebar-nav">
                 <div class="nav-section">
@@ -184,283 +182,271 @@
             </div>
         </main>
     </div>
-
-    <!-- VENTANA MODAL FLOTANTE (AGREGAR ENCARGADO) -->
-    <div class="modal-overlay" id="modalUsuario">
-        <div class="form-container">
-            <div class="form-header">Agregar encargado</div>
-            <form id="formRegistroUsuario" onsubmit="event.preventDefault();">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>ID:</label>
-                        <input type="text" value="AUTOMÁTICO" disabled>
+        <!-- VENTANA MODAL FLOTANTE (AGREGAR ENCARGADO) -->
+        <div class="modal-overlay" id="modalUsuario">
+            <div class="form-container">
+                <div class="form-header">Agregar encargado</div>
+                <form id="formRegistroUsuario">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>ID:</label>
+                            <input type="text" value="AUTOMÁTICO" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label>Rol:</label>
+                            <select id="userRol" required>
+                                <option value="Director">Director</option>
+                                <option value="Administrador">Administrador</option>
+                                <option value="Encargado">Encargado</option>
+                            </select>
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Nombre completo:</label>
+                            <input type="text" id="userNombre" placeholder="Ej: Juan Pérez" required>
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Teléfono:</label>
+                            <input type="text" id="userTelefono" placeholder="Ej: 7711234567" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Área</label>
+                            <select id="userArea" required>
+                                <option value="">Cargando áreas...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Departamento</label>
+                            <select id="userDepartamento" required disabled>
+                                <option value="">Selecciona primero un área...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Usuario (Correo de acceso):</label>
+                            <input type="text" id="userEmail" placeholder="ejemplo@calnali.gob.mx" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Contraseña:</label>
+                            <input type="password" id="userPass" required>
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Confirme la contraseña:</label>
+                            <input type="password" id="userPassConf" required>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>Rol:</label>
-                        <select id="userRol" required>
-                            <option value="Director">Director</option>
-                            <option value="Administrador">Administrador</option>
-                            <option value="Encargado">Encargado</option>
-                        </select>
+                    <div class="row-buttons">
+                        <button type="submit" id="btnGuardarUsuario" class="btn-footer btn-save">✓ Guardar</button>
+                        <button type="button" id="btnCancelarModal" class="btn-footer btn-cancel">✕ Cancelar</button>
                     </div>
-                    <div class="form-group full-width">
-                        <label>Nombre completo:</label>
-                        <input type="text" id="userNombre" placeholder="Ej: Juan Pérez" required>
-                    </div>
-                    <div class="form-group full-width">
-                        <label>Teléfono:</label>
-                        <input type="text" id="userTelefono" placeholder="Ej: 7711234567" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Área</label>
-<select id="equipoArea" required>
-    <option value="">Cargando áreas...</option>
-</select>
-
-<label>Departamento</label>
-<select id="equipoDepartamento" required disabled>
-    <option value="">Selecciona primero un área...</option>
-</select>
-
-                    </div>
-                    <div class="form-group">
-                        <label>Usuario (Correo de acceso):</label>
-                        <input type="text" id="userEmail" placeholder="ejemplo@calnali.gob.mx" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Contraseña:</label>
-                        <input type="password" id="userPass" required>
-                    </div>
-                    <div class="form-group full-width">
-                        <label>Confirme la contraseña:</label>
-                        <input type="password" id="userPassConf" required>
-                    </div>
-                </div>
-                <div class="row-buttons">
-                    <button type="submit" id="btnGuardarUsuario" class="btn-footer btn-save">✓ Guardar</button>
-                    <button type="button" id="btnCancelarModal" class="btn-footer btn-cancel">✕ Cancelar</button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
-    </div>
-        
-            <!-- LIBRERÍAS OFICIALES DE GOOGLE FIREBASE REESTABLECIDAS -->
-            <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-            <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>   
-            <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-
-    <script>
-        // Inicialización instantánea y directa de Firebase
-        const proyectoID = "gestion-mantenimiento-ap-20f51";
-
-        
-    const firebaseConfig = {
-  apiKey: "AIzaSyDDcGT88IspX4-_TOKtQcdeo-93favOuoY",
-  authDomain: "gestion-mantenimiento-ap-20f51.firebaseapp.com",
-  projectId: "gestion-mantenimiento-ap-20f51",
-  storageBucket: "gestion-mantenimiento-ap-20f51.firebasestorage.app",
-  messagingSenderId: "792321276987",
-  appId: "1:792321276987:web:3494cc6f399b0d83e5301e",
-  measurementId: "G-XLE9Y7FPGM"
-};
-
-
-// Inicializar de forma síncrona inmediata sin esperas
-if (!firebase.apps.length) { 
-    firebase.initializeApp(firebaseConfig); 
-}
-const db = firebase.firestore();
-const auth = firebase.auth();
-
-
-        
-    </script>
-
-    <script>
-        // Control Visual de la Ventana Modal
-        var modalElement = document.getElementById('modalUsuario');
-        
-        document.getElementById('btnAbrirModal').addEventListener('click', function() {
-            modalElement.style.display = 'flex';
-        });
-        
-        document.getElementById('btnCancelarModal').addEventListener('click', function() {
-            modalElement.style.display = 'none';
-        });
-
-        // Función corregida para renderizar usuarios encargados en la tabla dinámicamente
+            
+        <!-- LIBRERÍAS OFICIALES DE GOOGLE FIREBASE -->
+        <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>   
+        <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     
-        function cargarUsuariosTabla() {
-    if (!db) {
-        console.error("La base de datos Firestore no está inicializada.");
-        return;
-    }
-    db.collection("usuarios_encargados").onSnapshot(function(snapshot) {
-        var tbody = document.getElementById("tablaUsuariosCuerpo");
-        if (!tbody) return;
-        tbody.innerHTML = "";
-        var index = 1;
-        snapshot.forEach(function(doc) {
-            var data = doc.data();
-            var tr = document.createElement("tr");
-            tr.innerHTML = "<td>" + (index++) + "</td>" +
-                "<td>" + (data.rol || '') + "</td>" +
-                "<td>" + (data.nombreCompleto || '') + "</td>" +
-                "<td>" + (data.telefono || '') + "</td>" +
-                "<td>" + (data.departamento || '') + "</td>" +
-                "<td>" + (data.area || '') + "</td>" +
-                "<td>" + (data.usuarioEmail || '') + "</td>" +
-                "<td>" +
-                    "<button class='btn-action-t' style='background-color: #3b71ca; margin-right: 5px;'>✏️</button>" +
-                    "<button class='btn-action-t' style='background-color: #dc4c64;' onclick=\"eliminarEncargado('" + doc.id + "')\">🗑️</button>" +
-                "</td>";
-            tbody.appendChild(tr);
-        });
-    }, function(error) {
-        console.error("Error de lectura en Firestore: ", error);
+        <script>
+            // Inicialización instantánea y directa de Firebase
+            const proyectoID = "gestion-mantenimiento-ap-20f51";
+    
+            const firebaseConfig = {
+                apiKey: "AIzaSyDDcGT88IspX4-_TOKtQcdeo-93favOuoY",
+                authDomain: "://firebaseapp.com",
+                projectId: "gestion-mantenimiento-ap-20f51",
+                storageBucket: "gestion-mantenimiento-ap-20f51.firebasestorage.app",
+                messagingSenderId: "792321276987",
+                appId: "1:792321276987:web:3494cc6f399b0d83e5301e",
+                measurementId: "G-XLE9Y7FPGM"
+            };
+    
+            if (!firebase.apps.length) { 
+                firebase.initializeApp(firebaseConfig); 
+            }
+            const db = firebase.firestore();
+            const auth = firebase.auth();
+        </script>
+   
+   <script>
+    // Control Visual de la Ventana Modal Flotante
+    var modalElement = document.getElementById('modalUsuario');
+    
+    document.getElementById('btnAbrirModal').addEventListener('click', function() {
+        modalElement.style.display = 'flex';
     });
-}
+    
+    document.getElementById('btnCancelarModal').addEventListener('click', function() {
+        modalElement.style.display = 'none';
+        document.getElementById("formRegistroUsuario").reset();
+        document.getElementById("userDepartamento").disabled = true;
+        document.getElementById("userDepartamento").innerHTML = '<option value="">Selecciona primero un área...</option>';
+    });
 
-
-
-        // Función Principal: Registro en Firebase Auth + Guardar en Firestore con Privilegios
-        async function registrarUsuarioYCredenciales(e) {
-            e.preventDefault(); // Evita que la página se recargue
-
-            var rol = document.getElementById("userRol").value;
-            var nombre = document.getElementById("userNombre").value;
-            var telefono = document.getElementById("userTelefono").value;
-            var depto = document.getElementById("userDepartamento").value;
-            var area = document.getElementById("userArea").value;
-            var email = document.getElementById("userEmail").value;
-            var pass = document.getElementById("userPass").value;
-            var passConf = document.getElementById("userPassConf").value;
-
-            if (!nombre || !telefono || !email || !pass || !passConf) {
-                alert("Por favor complete todos los campos obligatorios del formulario.");
-                return;
-            }
-            if (pass !== passConf) {
-                alert("Las contraseñas ingresadas no coinciden. Verifique de nuevo.");
-                return;
-            }
-            if (pass.length < 6) {
-                alert("La contraseña debe tener al menos 6 caracteres por seguridad de Firebase.");
-                return;
-            }
-            if (!auth || !db) {
-                alert("La conexión con Firebase se está inicializando. Intente de nuevo en un segundo.");
-                return;
-            }
-
-            try {
-                // 1. Crear la cuenta de acceso real en la sección Authentication de Firebase
-                var userCredential = await auth.createUserWithEmailAndPassword(email, pass);
-                var uid = userCredential.user.uid;
-
-                // 2. Definir los privilegios del sistema según el Rol seleccionado (RF014)
-                var privilegios = { verModulos: ["dashboard", "inventario"], editar: false };
-                if (rol === "Director" || rol === "Administrador") {
-                    privilegios.verModulos = ["dashboard", "seguridad", "inventario", "mantenimiento", "reportes"];
-                    privilegios.editar = true;
-                }
-
-                // 3. Guardar el perfil completo en Firestore
-                await db.collection("usuarios_encargados").doc(uid).set({
-                    rol: rol,
-                    nombreCompleto: nombre,
-                    telefono: telefono,
-                    departamento: depto,
-                    area: area,
-                    usuarioEmail: email,
-                    privilegios: privilegios,
-                    fechaRegistro: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-                alert("¡Operación realizada correctamente! Cuenta creada y usuario registrado con éxito.");
-                document.getElementById("formRegistroUsuario").reset();
-                modalElement.style.display = 'none';
-
-            } catch (error) {
-                console.error("Detalle del error en el servidor: ", error);
-                alert("Error al procesar el alta: " + error.message);
-            }
-        }
-
-        // Vincular eventos finales
-        
-        document.getElementById("formRegistroUsuario").addEventListener("submit", registrarUsuarioYCredenciales);
-
-        // Cargar la tabla de usuarios automáticamente al conectar
-        window.addEventListener('DOMContentLoaded', cargarUsuariosTabla);
-
-
-        // Función para dar de baja encargados
-        function eliminarEncargado(id) {
-            if (confirm("¿Está seguro de que desea dar de baja este usuario encargado del sistema?")) {
-                db.collection("usuarios_encargados").doc(id).delete()
-                    .then(function() { alert("Registro eliminado de la base de datos correctamente."); })
-                    .catch(function(err) { alert("Error al borrar: " + err.message); });
-            }
-        }
-        
-    // --- LÓGICA DE SELECTS DINÁMICOS EN CASCADA ---
-let listaGlobalAreasDeptos = [];
-
-function inicializarFiltroAreasDepartamentos() {
-    const selectArea = document.getElementById("equipoArea");
-    const selectDepto = document.getElementById("equipoDepartamento");
-
-    if (!selectArea || !selectDepto) return;
-
-    // 1. Cargar áreas únicas desde Firestore
-    db.collection("areas_departamentos").get().then((snapshot) => {
-        listaGlobalAreasDeptos = [];
-        const areasUnicas = new Set();
-
-        snapshot.forEach((doc) => {
-            const data = doc.data();
-            listaGlobalAreasDeptos.push(data);
-            if (data.area) areasUnicas.add(data.area.trim());
+    // Función para renderizar usuarios encargados en la tabla dinámicamente desde Firestore
+    function cargarUsuariosTabla() {
+        if (!db) return;
+        db.collection("usuarios_encargados").onSnapshot(function(snapshot) {
+            var tbody = document.getElementById("tablaUsuariosCuerpo");
+            if (!tbody) return;
+            tbody.innerHTML = "";
+            var index = 1;
+            snapshot.forEach(function(doc) {
+                var data = doc.data();
+                var tr = document.createElement("tr");
+                tr.innerHTML = "<td>" + (index++) + "</td>" +
+                    "<td>" + (data.rol || '') + "</td>" +
+                    "<td>" + (data.nombreCompleto || '') + "</td>" +
+                    "<td>" + (data.telefono || '') + "</td>" +
+                    "<td>" + (data.departamento || '') + "</td>" +
+                    "<td>" + (data.area || '') + "</td>" +
+                    "<td>" + (data.usuarioEmail || '') + "</td>" +
+                    "<td>" +
+                        "<button class='btn-action-t' style='background-color: #3b71ca; margin-right: 5px;'>✏️</button>" +
+                        "<button class='btn-action-t' style='background-color: #dc4c64;' onclick=\"eliminarEncargado('" + doc.id + "')\">🗑️</button>" +
+                    "</td>";
+                tbody.appendChild(tr);
+            });
+        }, function(error) {
+            console.error("Error de lectura en Firestore: ", error);
         });
+    }
 
-        selectArea.innerHTML = '<option value="">-- Seleccione Área --</option>';
-        areasUnicas.forEach((area) => {
-            selectArea.innerHTML += `<option value="${area}">${area}</option>`;
-        });
-    }).catch(error => console.error("Error al cargar áreas:", error));
+    // Función Principal: Registro en Firebase Auth + Guardar en Firestore con Privilegios Unificados
+    async function registrarUsuarioYCredenciales(e) {
+        e.preventDefault(); // Detiene la recarga nativa de la página
 
-    // 2. Escuchar cambios para filtrar departamentos
-    selectArea.addEventListener("change", (e) => {
-        const areaSeleccionada = e.target.value;
+        var rol = document.getElementById("userRol").value;
+        var nombre = document.getElementById("userNombre").value;
+        var telefono = document.getElementById("userTelefono").value;
+        var depto = document.getElementById("userDepartamento").value;
+        var area = document.getElementById("userArea").value;
+        var email = document.getElementById("userEmail").value;
+        var pass = document.getElementById("userPass").value;
+        var passConf = document.getElementById("userPassConf").value;
 
-        if (!areaSeleccionada) {
-            selectDepto.innerHTML = '<option value="">Selecciona primero un área...</option>';
-            selectDepto.disabled = true;
+        // Validación de campos del lado del cliente
+        if (!nombre || !telefono || !area || !depto || !email || !pass || !passConf) {
+            alert("Por favor complete todos los campos obligatorios del formulario.");
+            return;
+        }
+        if (pass !== passConf) {
+            alert("Las contraseñas ingresadas no coinciden. Verifique de nuevo.");
+            return;
+        }
+        if (pass.length < 6) {
+            alert("La contraseña debe tener al menos 6 caracteres por seguridad de Firebase.");
             return;
         }
 
-        const deptosFiltrados = listaGlobalAreasDeptos.filter(item => item.area && item.area.trim() === areaSeleccionada);
-        selectDepto.innerHTML = '<option value="">-- Seleccione Departamento --</option>';
+        try {
+            // 1. Crear la cuenta de acceso real en la sección Authentication de Firebase
+            var userCredential = await auth.createUserWithEmailAndPassword(email, pass);
+            var uid = userCredential.user.uid;
 
-        if (deptosFiltrados.length === 0) {
-            selectDepto.innerHTML = '<option value="">Sin departamentos asignados</option>';
-        } else {
-            deptosFiltrados.forEach((item) => {
-                if (item.departamento) {
-                    selectDepto.innerHTML += `<option value="${item.departamento.trim()}">${item.departamento.trim()}</option>`;
-                }
+            // 2. Definir los privilegios del sistema según el Rol seleccionado
+            var privilegios = { verModulos: ["dashboard", "inventario"], editar: false };
+            if (rol === "Director" || rol === "Administrador") {
+                privilegios.verModulos = ["dashboard", "seguridad", "inventario", "mantenimiento", "reportes"];
+                privilegios.editar = true;
+            }
+
+            // 3. Guardar el perfil completo sincronizado en la colección de Firestore
+            await db.collection("usuarios_encargados").doc(uid).set({
+                rol: rol,
+                nombreCompleto: nombre,
+                telefono: telefono,
+                departamento: depto,
+                area: area,
+                usuarioEmail: email,
+                privilegios: privilegios,
+                fechaRegistro: firebase.firestore.FieldValue.serverTimestamp()
             });
-            selectDepto.disabled = false;
+
+            alert("¡Operación realizada correctamente! Cuenta creada y usuario registrado con éxito.");
+            
+            // Limpieza del formulario y reajuste de selects dinámicos
+            document.getElementById("formRegistroUsuario").reset();
+            document.getElementById("userDepartamento").disabled = true;
+            document.getElementById("userDepartamento").innerHTML = '<option value="">Selecciona primero un área...</option>';
+            modalElement.style.display = 'none';
+
+        } catch (error) {
+            console.error("Detalle del error en el servidor: ", error);
+            alert("Error al procesar el alta: " + error.message);
         }
-    });
-}
+    }
 
-// Ejecutar automáticamente al iniciar la pantalla
-window.addEventListener('DOMContentLoaded', inicializarFiltroAreasDepartamentos);
+    // Vincular el evento de envío al formulario de alta
+    document.getElementById("formRegistroUsuario").addEventListener("submit", registrarUsuarioYCredenciales);
+    window.addEventListener('DOMContentLoaded', cargarUsuariosTabla);
 
+    // Función para dar de baja encargados físicamente de Firestore
+    function eliminarEncargado(id) {
+        if (confirm("¿Está seguro de que desea dar de baja este usuario encargado del sistema?")) {
+            db.collection("usuarios_encargados").doc(id).delete()
+                .then(function() { alert("Registro eliminado de la base de datos correctamente."); })
+                .catch(function(err) { alert("Error al borrar: " + err.message); });
+        }
+    }
+    
+    // --- LÓGICA DE SELECTS DINÁMICOS EN CASCADA UNIFICADA ---
+    let listaGlobalAreasDeptos = [];
 
-    </script>
+    function inicializarFiltroAreasDepartamentos() {
+        const selectArea = document.getElementById("userArea");
+        const selectDepto = document.getElementById("userDepartamento");
+
+        if (!selectArea || !selectDepto) return;
+
+        // 1. Obtener registros vigentes desde la base de datos
+        db.collection("areas_departamentos").get().then((snapshot) => {
+            listaGlobalAreasDeptos = [];
+            const areasUnicas = new Set();
+
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                listaGlobalAreasDeptos.push(data);
+                if (data.area) areasUnicas.add(data.area.trim());
+            });
+
+            selectArea.innerHTML = '<option value="">-- Seleccione Área --</option>';
+            areasUnicas.forEach((area) => {
+                selectArea.innerHTML += `<option value="${area}">${area}</option>`;
+            });
+        }).catch(error => console.error("Error al cargar áreas:", error));
+
+        // 2. Evento reactivo que intercepta la selección del usuario
+        selectArea.addEventListener("change", (e) => {
+            const areaSeleccionada = e.target.value;
+
+            if (!areaSeleccionada) {
+                selectDepto.innerHTML = '<option value="">Selecciona primero un área...</option>';
+                selectDepto.disabled = true;
+                return;
+            }
+
+            // Filtrar exclusivamente los departamentos vinculados a esa área específica
+            const deptosFiltrados = listaGlobalAreasDeptos.filter(item => item.area && item.area.trim() === areaSeleccionada);
+            selectDepto.innerHTML = '<option value="">-- Seleccione Departamento --</option>';
+
+            if (deptosFiltrados.length === 0) {
+                selectDepto.innerHTML = '<option value="">Sin departamentos asignados</option>';
+            } else {
+                deptosFiltrados.forEach((item) => {
+                    if (item.departamento) {
+                        selectDepto.innerHTML += `<option value="${item.departamento.trim()}">${item.departamento.trim()}</option>`;
+                    }
+                });
+                selectDepto.disabled = false; // Desbloquea el campo para su captura
+            }
+        });
+    }
+
+    // Arrancar el filtro dinámico automáticamente al cargar el DOM
+    window.addEventListener('DOMContentLoaded', inicializarFiltroAreasDepartamentos);
+</script>
 </body>
 </html>
+
+
 
