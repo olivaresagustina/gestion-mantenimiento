@@ -202,33 +202,38 @@
     </div>
 
     <!-- VENTANA MODAL FLOTANTE -->
-    <div class="modal-overlay" id="modalAreas">
-        <div class="form-container">
-            <div class="form-header">Agregar Área o Departamento</div>
-            <form id="formRegistroAreas">
-                <div class="form-body">
-                    <div class="form-group">
-                        <label>Nombre del Área:</label>
-                        <input type="text" id="inputArea" placeholder="Ej: Gestión Integral" required>
+        <!-- VENTANA MODAL FLOTANTE (ADAPTADA PARA EDITAR) -->
+        <div class="modal-overlay" id="modalAreas">
+            <div class="form-container">
+                <!-- Agregamos un ID al encabezado para cambiar el título con JavaScript -->
+                <div class="form-header" id="modalTitulo">Agregar Área o Departamento</div>
+                <form id="formRegistroAreas">
+                    <!-- Campo oculto para almacenar el ID del documento cuando editamos -->
+                    <input type="hidden" id="editDocId">
+                    
+                    <div class="form-body">
+                        <div class="form-group">
+                            <label>Nombre del Área:</label>
+                            <input type="text" id="inputArea" placeholder="Ej: Gestión Integral" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Nombre del Departamento:</label>
+                            <input type="text" id="inputDepartamento" placeholder="Ej: Dirección de Gestión de Riesgo" required>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>Nombre del Departamento:</label>
-                        <input type="text" id="inputDepartamento" placeholder="Ej: Dirección de Gestión de Riesgo" required>
+                    <div class="row-buttons">
+                        <button type="submit" class="btn-footer btn-save">✓ Guardar</button>
+                        <button type="button" id="btnCancelarModal" class="btn-footer btn-cancel">✕ Cancelar</button>
                     </div>
-                </div>
-                <div class="row-buttons">
-                    <button type="submit" class="btn-footer btn-save">✓ Guardar</button>
-                    <button type="button" id="btnCancelarModal" class="btn-footer btn-cancel">✕ Cancelar</button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
-    </div>
-        
+    
     <!-- LIBRERÍAS DE FIREBASE SDK (Versión 8 de compatibilidad) -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>   
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-    
+
     <!-- Vinculamos la lógica del sistema -->
     <script src="registro_areas.js"></script>
 </body>

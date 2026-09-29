@@ -1,4 +1,4 @@
-// 1. Credenciales Oficiales de Conexión de tu Proyecto
+// 1. Credenciales Oficiales de Conexión de tu Proyecto Corregidas
 const firebaseConfig = {
     apiKey: "AIzaSyDDcGT88IspX4-_TOKtQcdeo-93favOuoY",
     authDomain: "://firebaseapp.com",
@@ -9,7 +9,7 @@ const firebaseConfig = {
     measurementId: "G-XLE9Y7FPGM"
 };
 
-// 2. Inicializar Firebase de forma segura si no se ha iniciado antes
+// 2. Inicializar Firebase de forma segura
 if (!firebase.apps.length) { 
     firebase.initializeApp(firebaseConfig); 
 }
@@ -18,15 +18,20 @@ const db = firebase.firestore();
 // Elementos Globales de la Interfaz
 const modal = document.getElementById('modalAreas');
 const form = document.getElementById('formRegistroAreas');
+const modalTitulo = document.getElementById('modalTitulo');
+const editDocId = document.getElementById('editDocId');
 
 // 3. Manejo y Control de la Ventana Modal
 document.getElementById('btnAbrirModal').addEventListener('click', () => {
+    modalTitulo.innerText = "Agregar Área o Departamento";
+    editDocId.value = ""; // Limpiamos el ID de edición por si acaso
     modal.style.display = 'flex';
 });
 
 document.getElementById('btnCancelarModal').addEventListener('click', () => {
     modal.style.display = 'none';
     form.reset();
+    editDocId.value = "";
 });
 
 // Cerrar la ventana si se hace clic fuera del formulario
@@ -34,15 +39,17 @@ window.addEventListener('click', (e) => {
     if (e.target === modal) {
         modal.style.display = 'none';
         form.reset();
+        editDocId.value = "";
     }
 });
 
-// 4. Función de Registro (Escritura en Cloud Firestore)
+// 4. Función de Registro y Edición unificada (Escritura / Actualización en Firestore)
 form.addEventListener('submit', async (e) => {
     e.preventDefault(); // Evitamos que la página se recargue
 
     const areaValue = document.getElementById('inputArea').value.trim();
     const deptoValue = document.getElementById('inputDepartamento').value.trim();
+    const idParaEditar = editDocId.value;
 
     if (!areaValue || !deptoValue) {
         alert("Por favor, rellene todos los campos del formulario.");
@@ -50,19 +57,30 @@ form.addEventListener('submit', async (e) => {
     }
 
     try {
-        // Almacenamos en una nueva colección llamada 'areas_departamentos'
-        await db.collection("areas_departamentos").add({
-            area: areaValue,
-            departamento: deptoValue,
-            fechaCreacion: firebase.firestore.FieldValue.serverTimestamp()
-        });
+        if (idParaEditar) {
+            // SI HAY UN ID: Modo Edición (Actualizar registro existente)
+            await db.collection("areas_departamentos").doc(idParaEditar).update({
+                area: areaValue,
+                departamento: deptoValue
+                // Mantenemos la fechaCreacion original intacta
+            });
+            alert("¡Operación realizada correctamente! El registro ha sido modificado.");
+        } else {
+            // NO HAY ID: Modo Creación (Añadir nuevo registro)
+            await db.collection("areas_departamentos").add({
+                area: areaValue,
+                departamento: deptoValue,
+                fechaCreacion: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            alert("¡Operación realizada correctamente! El registro ha sido añadido.");
+        }
 
-        alert("¡Operación realizada correctamente! El registro ha sido añadido.");
         form.reset();
+        editDocId.value = "";
         modal.style.display = 'none';
 
     } catch (error) {
-        console.error("Error al guardar en Firestore: ", error);
+        console.error("Error al procesar en Firestore: ", error);
         alert("Error al procesar la operación en el servidor: " + error.message);
     }
 });
@@ -80,12 +98,13 @@ function cargarAreasYDepartamentos() {
             const data = doc.data();
             const tr = document.createElement("tr");
 
+            // Pasamos los valores entre comillas simples escapadas a la función prepararEdicion
             tr.innerHTML = `
                 <td>${index++}</td>
                 <td>${data.area || ''}</td>
                 <td>${data.departamento || ''}</td>
                 <td>
-                    <button class='btn-action-t' style='background-color: #2c9faf; margin-right: 5px;'>✏️</button>
+                    <button class='btn-action-t' style='background-color: #2c9faf; margin-right: 5px;' onclick="prepararEdicion('${doc.id}', '${data.area || ''}', '${data.departamento || ''}')">✏️</button>
                     <button class='btn-action-t' style='background-color: #dc4c64;' onclick="eliminarRegistro('${doc.id}')">🗑️</button>
                 </td>
             `;
@@ -96,7 +115,19 @@ function cargarAreasYDepartamentos() {
     });
 }
 
-// 6. Función para dar de Baja (Eliminación en Firestore)
+// 6. Nueva función para cargar los datos en el modal antes de editar
+window.prepararEdicion = function(id, area, departamento) {
+    modalTitulo.innerText = "Modificar Área o Departamento";
+    editDocId.value = id; // Guardamos el ID del documento en el input invisible
+    
+    // Inyectamos los textos actuales en los inputs
+    document.getElementById('inputArea').value = area;
+    document.getElementById('inputDepartamento').value = departamento;
+    
+    modal.style.display = 'flex'; // Desplegamos el modal flotante
+};
+
+// 7. Función para dar de Baja (Eliminación en Firestore)
 window.eliminarRegistro = function(id) {
     if (confirm("¿Está seguro de que desea eliminar este registro del sistema?")) {
         db.collection("areas_departamentos").doc(id).delete()
