@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Menú Principal - H. Ayuntamiento de Calnali</title>
-    <link rel="stylesheet" href="styles_menu.css">
+    
+    <link rel="stylesheet" href="dashboard.css">
+
     
     <!-- LIBRERÍAS DE FIREBASE -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -52,7 +54,9 @@
                 <div class="nav-item">📊 REPORTES</div>
             </nav>
 
-            <button class="btn-logout-sidebar" onclick="logout()">Cerrar Sesión</button>
+            
+            <button class="btn-logout-sidebar" onclick="window.logout()">Cerrar Sesión</button>
+
         </aside>
 
         <!-- CONTENIDO PRINCIPAL (FONDO BEIGE) -->
@@ -170,3 +174,5 @@
     <script src="auth.js"></script>
 </body>
 </html>
+
+
