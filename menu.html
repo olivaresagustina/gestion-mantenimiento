@@ -9,6 +9,7 @@
     <!-- LIBRERÍAS DE FIREBASE -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 </head>
 <body>
     <div class="dashboard-container">
@@ -24,33 +25,32 @@
             </div>
 
             <nav class="sidebar-nav">
-                <!-- Sección Dashboard por defecto activa -->
-                <div class="nav-section">
+                <!-- Sección Dashboard -->
+                <div class="nav-section" id="seccionDashboard">
                     <div class="section-title">📊 Dashboard</div>
                     <ul class="sub-menu">
-                        <li class="active-sub">• Reporte del equipo</li>
+                        <li>• Reporte del equipo</li>
                         <li>• Gráfica de mantenimiento</li>
                     </ul>
                 </div>
-
-                <!-- Módulos principales solicitados en tu tabla -->
-                <div class="nav-item">🛡️ SEGURIDAD</div>
+            
+                <!-- Módulos principales con IDs asignados -->
+                <div class="nav-item" id="moduloSeguridad">🛡️ SEGURIDAD</div>
                 
-                <!-- Sección de Inventario Actualizada con tus 4 Opciones -->
-                <div class="nav-section active">
+                <!-- Sección de Inventario -->
+                <div class="nav-section active" id="seccionInventario">
                     <div class="section-title">📦 INVENTARIO</div>
-                    <ul class="sub-menu">
-                        <li><a href="registro_equipo.html" style="color: inherit; text-decoration: none;">• Registro del equipo de cómputo</a></li>
-                        <li><a href="registro_usuarios.html" style="color: inherit; text-decoration: none;">• Registro de Usuarios encargados</a></li>
-                        <li><a href="registro_areas.html" style="color:inherit; text-decoration:none;">• Registro de Áreas y Departamentos</a></li>
-                        
+                    <ul class="sub-menu" id="subMenuInventario">
+                        <li id="optEquipos"><a href="registro_equipo.html" style="color: inherit; text-decoration: none;">• Registro del equipo de cómputo</a></li>
+                        <li id="optUsuarios"><a href="registro_usuarios.html" style="color: inherit; text-decoration: none;">• Registro de Usuarios encargados</a></li>
+                        <li id="optAreas"><a href="registro_areas.html" style="color:inherit; text-decoration:none;">• Registro de Áreas y Departamentos</a></li>
                     </ul>
-
                 </div>
-
-                <div class="nav-item">🛠️ MANTENIMIENTO</div>
-                <div class="nav-item">📊 REPORTES</div>
+            
+                <div class="nav-item" id="moduloMantenimiento">🛠️ MANTENIMIENTO</div>
+                <div class="nav-item" id="moduloReportes">📊 REPORTES</div>
             </nav>
+            
 
             <button class="btn-logout-sidebar" onclick="logout()">Cerrar Sesión</button>
         </aside>
@@ -168,6 +168,155 @@
 
     <!-- Enlazamos tu lógica JavaScript existente -->
     <script src="auth.js"></script>
+        <script>
+        // 1. Inicialización de Firebase (Usando las credenciales de tu proyecto)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDDcGT88IspX4-_TOKtQcdeo-93favOuoY",
+            authDomain: "://firebaseapp.com",
+            projectId: "gestion-mantenimiento-ap-20f51",
+            storageBucket: "gestion-mantenimiento-ap-20f51.firebasestorage.app",
+            messagingSenderId: "792321276987",
+            appId: "1:792321276987:web:3494cc6f399b0d83e5301e",
+            measurementId: "G-XLE9Y7FPGM"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.firestore();
+
+        // 2. Escuchador de sesión activa para control de roles en tiempo real
+        firebase.auth().onAuthStateChanged(async (user) => {
+            if (user) {
+                // Actualizar el correo en la barra superior de la pantalla
+                document.getElementById("userEmailDisplay").innerText = user.email;
+
+                try {
+                    // Consultamos el perfil del usuario firmado en tu colección oficial
+                    const doc = await db.collection("usuarios_encargados").doc(user.uid).get();
+
+                    if (doc.exists) {
+                        const datosUsuario = doc.data();
+                        const rol = datosUsuario.rol; // 'Director', 'Administrador' o 'Encargado'
+
+                        if (rol === "Encargado") {
+                            // --- RESTRICCIÓN DE INTERFAZ PARA ROL ENCARGADO ---
+                            
+                            // Ocultar módulos mayores de la barra lateral
+                            document.getElementById("moduloSeguridad").style.display = "none";
+                            document.getElementById("moduloMantenimiento").style.display = "none";
+                            document.getElementById("moduloReportes").style.display = "none";
+
+                            // Ocultar opciones de administración dentro de Inventario
+                            document.getElementById("optUsuarios").style.display = "none";
+                            document.getElementById("optAreas").style.display = "none";
+
+                            // Guardamos el nombre completo del encargado de forma segura en caché local
+                            // Esto nos permitirá filtrar sus equipos en el paso 3
+                            localStorage.setItem("nombreEncargadoActivo", datosUsuario.nombreCompleto);
+                            localStorage.setItem("rolUsuarioActivo", "Encargado");
+                        } else {
+                            // Si es administrador o director, nos aseguramos de limpiar marcas previas
+                            localStorage.setItem("nombreEncargadoActivo", "Administrador");
+                            localStorage.setItem("rolUsuarioActivo", rol);
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error al recuperar los privilegios del rol: ", error);
+                }
+            } else {
+                // Si no hay sesión válida iniciada en Firebase, redirigir al login
+                window.location.href = "index.html";
+            }
+        });
+
+        // Función global de salida segura por si la necesitas en tu botón
+        window.logout = function() {
+            if (confirm("¿Estás seguro de que deseas cerrar sesión?")) {
+                firebase.auth().signOut().then(() => {
+                    localStorage.clear();
+                    window.location.href = "index.html";
+                });
+            }
+        };
+    </script>
+    
+        
+    <script>
+        // AQUI INICIA VALIDACION ROLES ANEXADA 
+        // 1. Inicialización de Firebase (Usando las credenciales de tu proyecto)
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyDDcGT88IspX4-_TOKtQcdeo-93favOuoY",
+            authDomain: "://firebaseapp.com",
+            projectId: "gestion-mantenimiento-ap-20f51",
+            storageBucket: "gestion-mantenimiento-ap-20f51.firebasestorage.app",
+            messagingSenderId: "792321276987",
+            appId: "1:792321276987:web:3494cc6f399b0d83e5301e",
+            measurementId: "G-XLE9Y7FPGM"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.firestore();
+
+        // 2. Escuchador de sesión activa para control de roles en tiempo real
+        firebase.auth().onAuthStateChanged(async (user) => {
+            if (user) {
+                // Actualizar el correo en la barra superior de la pantalla
+                document.getElementById("userEmailDisplay").innerText = user.email;
+
+                try {
+                    // Consultamos el perfil del usuario firmado en tu colección oficial
+                    const doc = await db.collection("usuarios_encargados").doc(user.uid).get();
+
+                    if (doc.exists) {
+                        const datosUsuario = doc.data();
+                        const rol = datosUsuario.rol; // 'Director', 'Administrador' o 'Encargado'
+
+                        if (rol === "Encargado") {
+                            // --- RESTRICCIÓN DE INTERFAZ PARA ROL ENCARGADO ---
+                            
+                            // Ocultar módulos mayores de la barra lateral
+                            document.getElementById("moduloSeguridad").style.display = "none";
+                            document.getElementById("moduloMantenimiento").style.display = "none";
+                            document.getElementById("moduloReportes").style.display = "none";
+
+                            // Ocultar opciones de administración dentro de Inventario
+                            document.getElementById("optUsuarios").style.display = "none";
+                            document.getElementById("optAreas").style.display = "none";
+
+                            // Guardamos el nombre completo del encargado de forma segura en caché local
+                            // Esto nos permitirá filtrar sus equipos en el paso 3
+                            localStorage.setItem("nombreEncargadoActivo", datosUsuario.nombreCompleto);
+                            localStorage.setItem("rolUsuarioActivo", "Encargado");
+                        } else {
+                            // Si es administrador o director, nos aseguramos de limpiar marcas previas
+                            localStorage.setItem("nombreEncargadoActivo", "Administrador");
+                            localStorage.setItem("rolUsuarioActivo", rol);
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error al recuperar los privilegios del rol: ", error);
+                }
+            } else {
+                // Si no hay sesión válida iniciada en Firebase, redirigir al login
+                window.location.href = "index.html";
+            }
+        });
+
+        // Función global de salida segura por si la necesitas en tu botón
+        window.logout = function() {
+            if (confirm("¿Estás seguro de que deseas cerrar sesión?")) {
+                firebase.auth().signOut().then(() => {
+                    localStorage.clear();
+                    window.location.href = "index.html";
+                });
+            }
+        };
+    </script>
+
 </body>
 </html>
 
