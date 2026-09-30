@@ -6,9 +6,9 @@
     <title>Menú Principal - H. Ayuntamiento de Calnali</title>
     <link rel="stylesheet" href="styles_menu.css">
     
-    <!-- LIBRERÍAS DE FIREBASE -->
+    <!-- LIBRERÍAS DE FIREBASE OFICIALES -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>   
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 </head>
 <body>
@@ -28,7 +28,7 @@
                 <!-- Sección Dashboard -->
                 <div class="nav-section" id="seccionDashboard">
                     <div class="section-title">📊 Dashboard</div>
-                    <ul class="sub-menu">
+                    <ul class="sub-menu" id="subMenuDashboard">
                         <li>• Reporte del equipo</li>
                         <li>• Gráfica de mantenimiento</li>
                     </ul>
@@ -51,13 +51,11 @@
                 <div class="nav-item" id="moduloReportes">📊 REPORTES</div>
             </nav>
             
-
-            <button class="btn-logout-sidebar" onclick="logout()">Cerrar Sesión</button>
+            <button class="btn-logout-sidebar" id="btnCerrarSesionCompleto">Cerrar Sesión</button>
         </aside>
 
         <!-- CONTENIDO PRINCIPAL (FONDO BEIGE) -->
         <main class="main-content">
-            
             <!-- Barra superior de búsqueda y usuario -->
             <header class="top-bar">
                 <div class="search-box">
@@ -66,186 +64,96 @@
                 </div>
                 <div class="user-profile">
                     <span class="notification-icon">🔔</span>
-                    <span id="userEmailDisplay" class="user-email-text">admin@calnali.gob.mx</span>
-                    <img src="https://placeholder.com" alt="Avatar" class="avatar-img">
+                    <span id="userEmailDisplay" class="user-email-text">Cargando usuario...</span>
                 </div>
             </header>
 
-            <h1 class="page-title">RESUMEN DEL EQUIPO DE CÓMPUTO</h1>
+            <h1 class="page-title" id="tituloDashboard">RESUMEN DEL EQUIPO DE CÓMPUTO</h1>
 
-            <!-- TARJETAS DE MÉTRICAS PRINCIPALES -->
-            <section class="metrics-grid">
-                <div class="metric-card bg-cream">
-                    <h2>1,000</h2>
-                    <p>Total de Equipos</p>
-                </div>
-                <div class="metric-card bg-gold">
-                    <h2>900</h2>
-                    <p>Mantenimiento Preventivo Al Día</p>
-                </div>
-                <div class="metric-card bg-darkcream">
-                    <h2>100</h2>
-                    <p>Correctivo Pendiente</p>
-                </div>
-            </section>
-
-            <!-- CONTENEDOR DE GRÁFICAS Y RESUMEN ESTADÍSTICO -->
-            <h2 class="section-heading">RESUMEN DE ESTADO Y MANTENIMIENTO</h2>
-            
-            <section class="charts-container">
-                <!-- Bloque Izquierdo: Simulación de Distribución Circular -->
-                <div class="chart-box">
-                    <h3>DISTRIBUCIÓN DE EQUIPOS POR ESTADO</h3>
-                    <div class="mock-donut-chart">
-                        <div class="donut-inner">85%</div>
+            <!-- CONTENEDOR ENMASCARADO DE GRÁFICAS (ID PARA OCULTAR AL ENCARGADO) -->
+            <div id="panelMetricasYGraficas">
+                <!-- TARJETAS DE MÉTRICAS PRINCIPALES -->
+                <section class="metrics-grid">
+                    <div class="metric-card bg-cream">
+                        <h2>1,000</h2>
+                        <p>Total de Equipos</p>
                     </div>
-                    <div class="chart-legends">
-                        <span class="legend"><span class="dot maroon"></span> Operativo (85%)</span>
-                        <span class="legend"><span class="dot gold"></span> En Reparación (10%)</span>
-                        <span class="legend"><span class="dot brown"></span> Baja (5%)</span>
+                    <div class="metric-card bg-gold">
+                        <h2>900</h2>
+                        <p>Mantenimiento Preventivo Al Día</p>
                     </div>
-                </div>
-
-                <!-- Bloque Central: Simulación de Barras por Departamento -->
-                <div class="chart-box">
-                    <h3>MANTENIMIENTO POR DEPARTAMENTO</h3>
-                    <div class="mock-bar-chart">
-                        <div class="bar-container"><div class="bar h-80 bg-maroon"></div><span>Soporte</span></div>
-                        <div class="bar-container"><div class="bar h-60 bg-gold"></div><span>Ventas</span></div>
-                        <div class="bar-container"><div class="bar h-40 bg-maroon"></div><span>Contab.</span></div>
-                        <div class="bar-container"><div class="bar h-20 bg-gold"></div><span>Soporte</span></div>
+                    <div class="metric-card bg-darkcream">
+                        <h2>100</h2>
+                        <p>Correctivo Pendiente</p>
                     </div>
-                </div>
+                </section>
 
-                <!-- Bloque Derecho: Resumen lateral de Equipos Totales -->
-                <div class="summary-sidebar-box">
-                    <div class="summary-row">
-                        <div class="summary-icon bg-maroon">👥</div>
-                        <div>
-                            <h4>EQUIPOS TOTALES</h4>
-                            <h3>1,000</h3>
+                <h2 class="section-heading">RESUMEN DE ESTADO Y MANTENIMIENTO</h2>
+                
+                <section class="charts-container">
+                    <div class="chart-box">
+                        <h3>DISTRIBUCIÓN DE EQUIPOS POR ESTADO</h3>
+                        <div class="mock-donut-chart"><div class="donut-inner">85%</div></div>
+                        <div class="chart-legends">
+                            <span class="legend"><span class="dot maroon"></span> Operativo (85%)</span>
+                            <span class="legend"><span class="dot gold"></span> En Reparación (10%)</span>
+                            <span class="legend"><span class="dot brown"></span> Baja (5%)</span>
                         </div>
                     </div>
-                    <div class="summary-row">
-                        <div class="summary-icon bg-gold">🛠️</div>
-                        <div>
-                            <h4>MANTENIMIENTOS AL DÍA</h4>
-                            <h3>900</h3>
+
+                    <div class="chart-box">
+                        <h3>MANTENIMIENTO POR DEPARTAMENTO</h3>
+                        <div class="mock-bar-chart">
+                            <div class="bar-container"><div class="bar h-80 bg-maroon"></div><span>Soporte</span></div>
+                            <div class="bar-container"><div class="bar h-60 bg-gold"></div><span>Ventas</span></div>
+                            <div class="bar-container"><div class="bar h-40 bg-maroon"></div><span>Contab.</span></div>
+                            <div class="bar-container"><div class="bar h-20 bg-gold"></div><span>Soporte</span></div>
                         </div>
                     </div>
-                    <div class="summary-row">
-                        <div class="summary-icon bg-brown">📋</div>
-                        <div>
-                            <h4>CORRECTIVOS EN ESPERA</h4>
-                            <h3>100</h3>
+
+                    <div class="summary-sidebar-box">
+                        <div class="summary-row">
+                            <div class="summary-icon bg-maroon">👥</div>
+                            <div><h4>EQUIPOS TOTALES</h4><h3>1,000</h3></div>
+                        </div>
+                        <div class="summary-row">
+                            <div class="summary-icon bg-gold">🛠️</div>
+                            <div><h4>MANTENIMIENTOS AL DÍA</h4><h3>900</h3></div>
+                        </div>
+                        <div class="summary-row">
+                            <div class="summary-icon bg-brown">📋</div>
+                            <div><h4>CORRECTIVOS EN ESPERA</h4><h3>100</h3></div>
                         </div>
                     </div>
-                </div>
-            </section>
+                </section>
 
-            <!-- TENDENCIA DE PROBLEMAS FRECUENTES -->
-            <section class="trend-section">
-                <h3>TENDENCIA DE PROBLEMAS FRECUENTES (ÚLTIMOS 6 MESES)</h3>
-                <div class="chart-legends-top">
-                    <span><span class="line-dot color-1"></span> Fallo de Red</span>
-                    <span><span class="line-dot color-2"></span> Sistemas</span>
-                    <span><span class="line-dot color-3"></span> Impresoras</span>
-                    <span><span class="line-dot color-4"></span> Hardware</span>
-                </div>
-                <div class="mock-line-chart">
-                    <!-- Las líneas finales las renderizaremos dinámicamente con CSS y SVG o Chart.js más adelante -->
-                    <div class="months-axis">
-                        <span>Ene</span><span>Feb</span><span>Mar</span><span>Abr</span><span>Mai</span><span>Jun</span>
+                <section class="trend-section">
+                    <h3>TENDENCIA DE PROBLEMAS FRECUENTES (ÚLTIMOS 6 MESES)</h3>
+                    <div class="chart-legends-top">
+                        <span><span class="line-dot color-1"></span> Fallo de Red</span>
+                        <span><span class="line-dot color-2"></span> Sistemas</span>
+                        <span><span class="line-dot color-3"></span> Impresoras</span>
+                        <span><span class="line-dot color-4"></span> Hardware</span>
                     </div>
-                </div>
-            </section>
+                    <div class="mock-line-chart">
+                        <div class="months-axis">
+                            <span>Ene</span><span>Feb</span><span>Mar</span><span>Abr</span><span>Mai</span><span>Jun</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
 
-            <footer class="main-footer">
-                H. AYUNTAMIENTO 2024-2027
-            </footer>
+            <!-- MENSAJE DE BIENVENIDA EXCLUSIVO PARA EL ENCARGADO -->
+            <div id="mensajeBienvenidaEncargado" style="display: none; background: white; padding: 30px; border-radius: 8px; border: 1px solid #dcdcdc; margin-top: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                <h2 style="color: #5c1424; margin-bottom: 10px;">¡Bienvenido al Sistema de Gestión de Inventario!</h2>
+                <p style="font-size: 14px; color: #555; line-height: 1.6;">Desde este panel puedes supervisar los dispositivos tecnológicos institucionales vinculados a tu nombre. Dirígete a la sección de <strong>📦 INVENTARIO ➔ Registro del equipo de cómputo</strong> en tu barra lateral para visualizar tus equipos asignados y levantar peticiones de mantenimiento técnico en caso de fallas.</p>
+            </div>
+
+            <footer class="main-footer">H. AYUNTAMIENTO 2024-2027</footer>
         </main>
     </div>
-
-    <!-- Enlazamos tu lógica JavaScript existente -->
-    <script src="auth.js"></script>
-        <script>
-        // 1. Inicialización de Firebase (Usando las credenciales de tu proyecto)
-        const firebaseConfig = {
-            apiKey: "AIzaSyDDcGT88IspX4-_TOKtQcdeo-93favOuoY",
-            authDomain: "://firebaseapp.com",
-            projectId: "gestion-mantenimiento-ap-20f51",
-            storageBucket: "gestion-mantenimiento-ap-20f51.firebasestorage.app",
-            messagingSenderId: "792321276987",
-            appId: "1:792321276987:web:3494cc6f399b0d83e5301e",
-            measurementId: "G-XLE9Y7FPGM"
-        };
-
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-        const db = firebase.firestore();
-
-        // 2. Escuchador de sesión activa para control de roles en tiempo real
-        firebase.auth().onAuthStateChanged(async (user) => {
-            if (user) {
-                // Actualizar el correo en la barra superior de la pantalla
-                document.getElementById("userEmailDisplay").innerText = user.email;
-
-                try {
-                    // Consultamos el perfil del usuario firmado en tu colección oficial
-                    const doc = await db.collection("usuarios_encargados").doc(user.uid).get();
-
-                    if (doc.exists) {
-                        const datosUsuario = doc.data();
-                        const rol = datosUsuario.rol; // 'Director', 'Administrador' o 'Encargado'
-
-                        if (rol === "Encargado") {
-                            // --- RESTRICCIÓN DE INTERFAZ PARA ROL ENCARGADO ---
-                            
-                            // Ocultar módulos mayores de la barra lateral
-                            document.getElementById("moduloSeguridad").style.display = "none";
-                            document.getElementById("moduloMantenimiento").style.display = "none";
-                            document.getElementById("moduloReportes").style.display = "none";
-
-                            // Ocultar opciones de administración dentro de Inventario
-                            document.getElementById("optUsuarios").style.display = "none";
-                            document.getElementById("optAreas").style.display = "none";
-
-                            // Guardamos el nombre completo del encargado de forma segura en caché local
-                            // Esto nos permitirá filtrar sus equipos en el paso 3
-                            localStorage.setItem("nombreEncargadoActivo", datosUsuario.nombreCompleto);
-                            localStorage.setItem("rolUsuarioActivo", "Encargado");
-                        } else {
-                            // Si es administrador o director, nos aseguramos de limpiar marcas previas
-                            localStorage.setItem("nombreEncargadoActivo", "Administrador");
-                            localStorage.setItem("rolUsuarioActivo", rol);
-                        }
-                    }
-                } catch (error) {
-                    console.error("Error al recuperar los privilegios del rol: ", error);
-                }
-            } else {
-                // Si no hay sesión válida iniciada en Firebase, redirigir al login
-                window.location.href = "index.html";
-            }
-        });
-
-        // Función global de salida segura por si la necesitas en tu botón
-        window.logout = function() {
-            if (confirm("¿Estás seguro de que deseas cerrar sesión?")) {
-                firebase.auth().signOut().then(() => {
-                    localStorage.clear();
-                    window.location.href = "index.html";
-                });
-            }
-        };
-    </script>
-    
-        
     <script>
-        // AQUI INICIA VALIDACION ROLES ANEXADA 
-        // 1. Inicialización de Firebase (Usando las credenciales de tu proyecto)
-        
+        // 1. Inicialización de Firebase (Credenciales Corregidas)
         const firebaseConfig = {
             apiKey: "AIzaSyDDcGT88IspX4-_TOKtQcdeo-93favOuoY",
             authDomain: "://firebaseapp.com",
@@ -261,14 +169,14 @@
         }
         const db = firebase.firestore();
 
-        // 2. Escuchador de sesión activa para control de roles en tiempo real
+        // 2. Control de accesos y visualización según el rol del usuario firmado
         firebase.auth().onAuthStateChanged(async (user) => {
             if (user) {
-                // Actualizar el correo en la barra superior de la pantalla
+                // Inyectamos el correo en el panel superior derecho
                 document.getElementById("userEmailDisplay").innerText = user.email;
 
                 try {
-                    // Consultamos el perfil del usuario firmado en tu colección oficial
+                    // Consultamos el rol guardado en Firestore
                     const doc = await db.collection("usuarios_encargados").doc(user.uid).get();
 
                     if (doc.exists) {
@@ -276,48 +184,63 @@
                         const rol = datosUsuario.rol; // 'Director', 'Administrador' o 'Encargado'
 
                         if (rol === "Encargado") {
-                            // --- RESTRICCIÓN DE INTERFAZ PARA ROL ENCARGADO ---
+                            // --- RESTRICCIÓN VISUAL PARA ENCARGADO ---
                             
-                            // Ocultar módulos mayores de la barra lateral
+                            // 1. Ocultamos los módulos restringidos de la barra lateral
                             document.getElementById("moduloSeguridad").style.display = "none";
                             document.getElementById("moduloMantenimiento").style.display = "none";
                             document.getElementById("moduloReportes").style.display = "none";
 
-                            // Ocultar opciones de administración dentro de Inventario
+                            // 2. Ocultamos submenús de configuración
                             document.getElementById("optUsuarios").style.display = "none";
                             document.getElementById("optAreas").style.display = "none";
 
-                            // Guardamos el nombre completo del encargado de forma segura en caché local
-                            // Esto nos permitirá filtrar sus equipos en el paso 3
+                            // 3. Modificamos el contenido central (No ve gráficas de la presidencia)
+                            document.getElementById("panelMetricasYGraficas").style.display = "none";
+                            document.getElementById("tituloDashboard").innerText = "PANEL DE CONTROL DE SERVICIOS";
+                            document.getElementById("mensajeBienvenidaEncargado").style.display = "block";
+
+                            // 4. Guardamos datos en el navegador para el filtrado del paso 3
                             localStorage.setItem("nombreEncargadoActivo", datosUsuario.nombreCompleto);
                             localStorage.setItem("rolUsuarioActivo", "Encargado");
+
                         } else {
-                            // Si es administrador o director, nos aseguramos de limpiar marcas previas
+                            // Si es Administrador o Director, nos aseguramos de que vea todo el Dashboard
+                            document.getElementById("moduloSeguridad").style.display = "block";
+                            document.getElementById("moduloMantenimiento").style.display = "block";
+                            document.getElementById("moduloReportes").style.display = "block";
+                            document.getElementById("optUsuarios").style.display = "block";
+                            document.getElementById("optAreas").style.display = "block";
+                            
+                            document.getElementById("panelMetricasYGraficas").style.display = "block";
+                            document.getElementById("mensajeBienvenidaEncargado").style.display = "none";
+
                             localStorage.setItem("nombreEncargadoActivo", "Administrador");
                             localStorage.setItem("rolUsuarioActivo", rol);
                         }
+                    } else {
+                        console.error("El perfil del usuario no existe en Firestore.");
                     }
                 } catch (error) {
-                    console.error("Error al recuperar los privilegios del rol: ", error);
+                    console.error("Error al procesar los roles del usuario: ", error);
                 }
             } else {
-                // Si no hay sesión válida iniciada en Firebase, redirigir al login
+                // Si no hay token de sesión válido, lo expulsa al login
                 window.location.href = "index.html";
             }
         });
 
-        // Función global de salida segura por si la necesitas en tu botón
-        window.logout = function() {
-            if (confirm("¿Estás seguro de que deseas cerrar sesión?")) {
+        // 3. Control del botón Cerrar Sesión
+        document.getElementById("btnCerrarSesionCompleto").addEventListener("click", () => {
+            if (confirm("¿Está seguro de que desea cerrar sesión en el sistema?")) {
                 firebase.auth().signOut().then(() => {
-                    localStorage.clear();
+                    localStorage.clear(); // Limpiamos la memoria caché del navegador
                     window.location.href = "index.html";
+                }).catch((error) => {
+                    alert("Error al cerrar sesión: " + error.message);
                 });
             }
-        };
+        });
     </script>
-
 </body>
 </html>
-
-
