@@ -176,37 +176,38 @@
 
     
     <!-- Enlazamos tu lógica JavaScript existente -->
-    <script src="auth.js">
-        document.addEventListener("DOMContentLoaded", () => {
-    const btnMantenimiento = document.getElementById("btnMantenimiento");
-    const subMenuMantenimiento = document.getElementById("subMenuMantenimiento");
-    const sectionMantenimiento = document.getElementById("sectionMantenimiento");
-
-    // 1. Mostrar/Ocultar el menú al hacer clic en "MANTENIMIENTO"
-    btnMantenimiento.addEventListener("click", (e) => {
-        e.stopPropagation(); // Evita que el clic se propague al resto del documento
-        if (subMenuMantenimiento.style.display === "none") {
-            subMenuMantenimiento.style.display = "flex"; // Se despliega verticalmente
-        } else {
-            subMenuMantenimiento.style.display = "none";
-        }
-    });
-
-    // 2. Ocultar el submenú si el puntero del mouse sale por completo de la sección
-    sectionMantenimiento.addEventListener("mouseleave", () => {
-        subMenuMantenimiento.style.display = "none";
-    });
-
-    // 3. Ocultar el menú si se hace clic en cualquier otra parte de la pantalla
-    document.addEventListener("click", (e) => {
-        if (!sectionMantenimiento.contains(e.target)) {
-            subMenuMantenimiento.style.display = "none";
-        }
-    });
-});
-
-    </script>
+        <script src="auth.js"></script>
     
-</body>
-</html>
-
+        <!-- 2. Nueva etiqueta script para controlar el comportamiento de Mantenimiento -->
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                const btnMantenimiento = document.getElementById("btnMantenimiento");
+                const subMenuMantenimiento = document.getElementById("subMenuMantenimiento");
+                const sectionMantenimiento = document.getElementById("sectionMantenimiento");
+    
+                // 1. Mostrar/Ocultar el menú al hacer clic en "MANTENIMIENTO"
+                btnMantenimiento.addEventListener("click", (e) => {
+                    e.stopPropagation(); // Evita que el clic se propague al documento
+                    if (subMenuMantenimiento.style.display === "none" || subMenuMantenimiento.style.display === "") {
+                        subMenuMantenimiento.style.display = "block"; // Cambiado a block para alinearse al CSS de tus submenús
+                    } else {
+                        subMenuMantenimiento.style.display = "none";
+                    }
+                });
+    
+                // 2. Ocultar el submenú si el puntero del mouse sale de la sección
+                sectionMantenimiento.addEventListener("mouseleave", () => {
+                    subMenuMantenimiento.style.display = "none";
+                });
+    
+                // 3. Ocultar el menú si se hace clic en cualquier otra parte de la pantalla
+                document.addEventListener("click", (e) => {
+                    if (!sectionMantenimiento.contains(e.target)) {
+                        subMenuMantenimiento.style.display = "none";
+                    }
+                });
+            });
+        </script>
+    </body>
+    </html>
+    
