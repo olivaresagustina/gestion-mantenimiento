@@ -37,16 +37,16 @@
                 <div class="nav-item">🛡️ SEGURIDAD</div>
                 
                 <!-- Sección de Inventario Actualizada con tus 4 Opciones -->
-                <div class="nav-section active">
-                    <div class="section-title">📦 INVENTARIO</div>
-                    <ul class="sub-menu">
-                        <li><a href="registro_equipo.html" style="color: inherit; text-decoration: none;">• Registro del equipo de cómputo</a></li>
-                        <li><a href="registro_usuarios.html" style="color: inherit; text-decoration: none;">• Registro de Usuarios encargados</a></li>
-                        <li><a href="registro_areas.html" style="color:inherit; text-decoration:none;">• Registro de Áreas y Departamentos</a></li>
-                        
-                    </ul>
-
-                </div>
+          
+<div class="nav-section" id="sectionInventario">
+    <div class="section-title" id="btnInventario" style="cursor: pointer;">📦 INVENTARIO</div>
+    <ul class="sub-menu" id="subMenuInventario" style="display: none;">
+        <li><a href="registro_equipo.html" style="color: inherit; text-decoration: none;">• Registro del equipo de cómputo</a></li>
+        <li><a href="registro_usuarios.html" style="color: inherit; text-decoration: none;">• Registro de Usuarios encargados</a></li>
+        <li><a href="registro_areas.html" style="color:inherit; text-decoration:none;">• Registro de Áreas y Departamentos</a></li>
+    </ul>
+</div>
+             
 
                 <!-- Sección de Mantenimiento con Submenús Desplegables -->
 <div class="nav-section" id="sectionMantenimiento">
@@ -174,35 +174,62 @@
         </main>
     </div>
 
-        <!-- 1. Enlazamos tu lógica JavaScript externa existente -->
-        <script src="auth.js"></script>
+          <!-- 1. Enlazamos tu lógica JavaScript externa existente -->
+    <script src="auth.js"></script>
     
-        <!-- 2. Lógica de control de clics para Mantenimiento -->
-        <script>
-            document.addEventListener("DOMContentLoaded", () => {
-                const btnMantenimiento = document.getElementById("btnMantenimiento");
-                const subMenuMantenimiento = document.getElementById("subMenuMantenimiento");
-                const sectionMantenimiento = document.getElementById("sectionMantenimiento");
-    
-                // 1. Abrir o cerrar el menú manualmente al hacer clic directo en "MANTENIMIENTO"
-                btnMantenimiento.addEventListener("click", (e) => {
-                    e.stopPropagation(); // Evita que este clic se detecte como un "clic fuera"
-                    if (subMenuMantenimiento.style.display === "none" || subMenuMantenimiento.style.display === "") {
-                        subMenuMantenimiento.style.display = "block";
-                    } else {
-                        subMenuMantenimiento.style.display = "none";
-                    }
-                });
-    
-                // 2. ÚNICO MÉTODO DE CIERRE: Ocultar el menú solo si se hace clic en cualquier otra parte de la pantalla
-                document.addEventListener("click", (e) => {
-                    // Si el clic NO ocurrió dentro de la sección de mantenimiento, lo cerramos
-                    if (!sectionMantenimiento.contains(e.target)) {
-                        subMenuMantenimiento.style.display = "none";
-                    }
-                });
+    <!-- 2. Lógica de control de clics para Inventario y Mantenimiento -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // Elementos de Mantenimiento
+            const btnMantenimiento = document.getElementById("btnMantenimiento");
+            const subMenuMantenimiento = document.getElementById("subMenuMantenimiento");
+            const sectionMantenimiento = document.getElementById("sectionMantenimiento");
+
+            // Elementos de Inventario
+            const btnInventario = document.getElementById("btnInventario");
+            const subMenuInventario = document.getElementById("subMenuInventario");
+            const sectionInventario = document.getElementById("sectionInventario");
+
+            // --- CONTROL DE MANTENIMIENTO ---
+            btnMantenimiento.addEventListener("click", (e) => {
+                e.stopPropagation(); // Evita que este clic se detecte como un "clic fuera"
+                
+                // Opcional: Cierra inventario si está abierto al abrir mantenimiento
+                subMenuInventario.style.display = "none";
+
+                if (subMenuMantenimiento.style.display === "none" || subMenuMantenimiento.style.display === "") {
+                    subMenuMantenimiento.style.display = "block";
+                } else {
+                    subMenuMantenimiento.style.display = "none";
+                }
             });
-        </script>
-    </body>
-    </html>
-    
+
+            // --- CONTROL DE INVENTARIO ---
+            btnInventario.addEventListener("click", (e) => {
+                e.stopPropagation(); // Evita que este clic se detecte como un "clic fuera"
+                
+                // Opcional: Cierra mantenimiento si está abierto al abrir inventario
+                subMenuMantenimiento.style.display = "none";
+
+                if (subMenuInventario.style.display === "none" || subMenuInventario.style.display === "") {
+                    subMenuInventario.style.display = "block";
+                } else {
+                    subMenuInventario.style.display = "none";
+                }
+            });
+
+            // --- DETECTOR GLOBAL DE CLICS FUERA ---
+            document.addEventListener("click", (e) => {
+                // Si el clic ocurre fuera de mantenimiento, lo oculta
+                if (!sectionMantenimiento.contains(e.target)) {
+                    subMenuMantenimiento.style.display = "none";
+                }
+                // Si el clic ocurre fuera de inventario, lo oculta
+                if (!sectionInventario.contains(e.target)) {
+                    subMenuInventario.style.display = "none";
+                }
+            });
+        });
+    </script>
+</body>
+</html>
