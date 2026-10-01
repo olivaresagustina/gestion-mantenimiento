@@ -174,34 +174,29 @@
         </main>
     </div>
 
-    
-    <!-- Enlazamos tu lógica JavaScript existente -->
+        <!-- 1. Enlazamos tu lógica JavaScript externa existente -->
         <script src="auth.js"></script>
     
-        <!-- 2. Nueva etiqueta script para controlar el comportamiento de Mantenimiento -->
+        <!-- 2. Lógica de control de clics para Mantenimiento -->
         <script>
             document.addEventListener("DOMContentLoaded", () => {
                 const btnMantenimiento = document.getElementById("btnMantenimiento");
                 const subMenuMantenimiento = document.getElementById("subMenuMantenimiento");
                 const sectionMantenimiento = document.getElementById("sectionMantenimiento");
     
-                // 1. Mostrar/Ocultar el menú al hacer clic en "MANTENIMIENTO"
+                // 1. Abrir o cerrar el menú manualmente al hacer clic directo en "MANTENIMIENTO"
                 btnMantenimiento.addEventListener("click", (e) => {
-                    e.stopPropagation(); // Evita que el clic se propague al documento
+                    e.stopPropagation(); // Evita que este clic se detecte como un "clic fuera"
                     if (subMenuMantenimiento.style.display === "none" || subMenuMantenimiento.style.display === "") {
-                        subMenuMantenimiento.style.display = "block"; // Cambiado a block para alinearse al CSS de tus submenús
+                        subMenuMantenimiento.style.display = "block";
                     } else {
                         subMenuMantenimiento.style.display = "none";
                     }
                 });
     
-                // 2. Ocultar el submenú si el puntero del mouse sale de la sección
-                sectionMantenimiento.addEventListener("mouseleave", () => {
-                    subMenuMantenimiento.style.display = "none";
-                });
-    
-                // 3. Ocultar el menú si se hace clic en cualquier otra parte de la pantalla
+                // 2. ÚNICO MÉTODO DE CIERRE: Ocultar el menú solo si se hace clic en cualquier otra parte de la pantalla
                 document.addEventListener("click", (e) => {
+                    // Si el clic NO ocurrió dentro de la sección de mantenimiento, lo cerramos
                     if (!sectionMantenimiento.contains(e.target)) {
                         subMenuMantenimiento.style.display = "none";
                     }
