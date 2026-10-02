@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Levantar Ticket - H. Ayuntamiento de Calnali</title>
-    <!-- Enlace a tu archivo CSS existente para conservar el estilo beige y menú guinda -->
-    <link rel="stylesheet" href="menu.css"> 
-    <!-- FontAwesome para iconos de los botones de acción -->
+    <!-- CORRECCIÓN: Enlace exacto a tu archivo de estilos del Dashboard -->
+    <link rel="stylesheet" href="dashboard.css"> 
+    <!-- FontAwesome para los iconos de botones -->
     <link rel="stylesheet" href="https://cloudflare.com">
     <style>
-        /* Estilos específicos del módulo de tickets */
+        /* Estilos específicos complementarios para el módulo de tickets */
         .header-acciones { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .btn-nuevo { background: #5c1424; color: white; border: none; padding: 10px 15px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; }
         .btn-nuevo:hover { background: #440e1a; }
@@ -24,10 +24,10 @@
         
         .btn-action-t { border: none; color: white; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 14px; }
         
-        /* Estilos de la ventana flotante modal */
+        /* Modal del Formulario Flotante */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
         .modal-content { background: white; padding: 30px; border-radius: 12px; width: 100%; max-width: 500px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-        .form-group { margin-bottom: 15px; display: flex; flex-direction: column; gap: 5px; }
+        .form-group { margin-bottom: 15px; display: flex; flex-direction: column; gap: 5px; text-align: left; }
         .form-group label { font-size: 12px; font-weight: 600; color: #555; }
         .form-group input, .form-group select, .form-group textarea { padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; outline: none; }
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #5c1424; }
@@ -37,7 +37,7 @@
 <body>
 
     <div class="dashboard-container">
-        <!-- --- SIDEBAR LATERAL INSTITUCIONAL (GUINDA) --- -->
+        <!-- --- SIDEBAR LATERAL (GUINDA) --- -->
         <aside class="sidebar">
             <div class="sidebar-logo">
                 <a href="menu.html" class="logo-link">
@@ -68,22 +68,21 @@
             <button class="btn-logout-sidebar" onclick="window.logout()">Cerrar Sesión</button>
         </aside>
 
-        <!-- --- SECCIÓN DE CONTENIDO PRINCIPAL --- -->
+        <!-- --- CONTENIDO PRINCIPAL --- -->
         <main class="main-content">
-            <!-- Barra de navegación superior -->
+            <!-- Barra superior -->
             <div class="top-bar">
                 <div class="search-box">
                     <span>🔍</span>
                     <input type="text" id="inputBuscar" placeholder="Buscar ticket...">
                 </div>
                 <div class="user-profile">
-                    <!-- Se pintará dinámicamente el correo de quien inició sesión -->
                     <span id="userEmailDisplay" style="font-size: 13px; font-weight: 600; color: #555;">Cargando usuario...</span>
                     <div class="avatar-img" style="width: 35px; height: 35px; background: #b8904c; border-radius: 50%;"></div>
                 </div>
             </div>
 
-            <!-- Cabecera principal -->
+            <!-- Título de la sección -->
             <h1 class="page-title">Equipos de Cómputo</h1>
             
             <div class="chart-box" style="background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
@@ -94,7 +93,7 @@
                     </button>
                 </div>
 
-                <!-- Tabla de datos según tu diseño -->
+                <!-- Tabla estructurada -->
                 <table class="tabla-tickets">
                     <thead>
                         <tr>
@@ -110,7 +109,7 @@
                     </thead>
                     <tbody id="tablaTicketsCuerpo">
                         <tr>
-                            <td colspan="8" style="text-align: center; color: #777;">Comprobando credenciales e iniciando sincronización...</td>
+                            <td colspan="8" style="text-align: center; color: #777;">Sincronizando registros con la base de datos...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -118,12 +117,11 @@
         </main>
     </div>
 
-    <!-- --- VENTANA MODAL FLOTANTE (FORMULARIO REGISTRO/EDICIÓN) --- -->
+    <!-- --- VENTANA MODAL (FORMULARIO OCULTO) --- -->
     <div class="modal" id="modalTicket">
         <div class="modal-content">
             <h2 id="modalTitulo" style="color: #5c1424; margin-bottom: 20px; font-size: 18px;">Levantar Nuevo Ticket</h2>
             <form id="formRegistroTicket">
-                <!-- Input oculto para almacenar el ID del documento en caso de edición -->
                 <input type="hidden" id="editDocId">
 
                 <div class="form-group">
@@ -134,8 +132,6 @@
                         <option value="Laptop">Laptop</option>
                         <option value="CPU">CPU</option>
                         <option value="Monitor">Monitor</option>
-                        <option value="Teclado">Teclado</option>
-                        <option value="Mouse">Mouse</option>
                     </select>
                 </div>
 
@@ -156,7 +152,7 @@
 
                 <div class="form-group">
                     <label>Detalle / Descripción de la Falla *</label>
-                    <textarea id="ticketDetalle" rows="3" placeholder="Describa el problema que presenta el equipo..." required></textarea>
+                    <textarea id="ticketDetalle" rows="3" placeholder="Describa el problema..." required></textarea>
                 </div>
 
                 <div class="form-group">
@@ -175,12 +171,11 @@
         </div>
     </div>
 
-    <!-- --- LIBRERÍAS OFICIALES DE GOOGLE FIREBASE (Compatibles con tu arquitectura web) --- -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>   
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <!-- SDK de Firebase -->
+    <script src="https://gstatic.com"></script>
+    <script src="https://gstatic.com"></script>
+    <script src="https://gstatic.com"></script>
 
-    <!-- Enlace a la lógica controladora -->
     <script src="ticket.js"></script>
 </body>
 </html>

@@ -1,7 +1,7 @@
-// 1. Credenciales Oficiales Corregidas de Conexión
+// 1. CORRECCIÓN: Credenciales Oficiales de Conexión completas
 const firebaseConfig = {
     apiKey: "AIzaSyDDcGT88IspX4-_TOKtQcdeo-93favOuoY",
-    authDomain: "://firebaseapp.com",
+    authDomain: "://firebaseapp.com", // <--- Arreglado
     projectId: "gestion-mantenimiento-ap-20f51",
     storageBucket: "gestion-mantenimiento-ap-20f51.firebasestorage.app",
     messagingSenderId: "792321276987",
@@ -16,16 +16,16 @@ if (!firebase.apps.length) {
 const db = firebase.firestore();
 const auth = firebase.auth();
 
-// Variables globales para la captura de elementos DOM
+// Captura de elementos DOM
 const modal = document.getElementById('modalTicket');
 const form = document.getElementById('formRegistroTicket');
 const modalTitulo = document.getElementById('modalTitulo');
 const editDocId = document.getElementById('editDocId');
 
-// --- 2. GESTIÓN Y MANEJO DE LA VENTANA MODAL ---
+// --- 2. GESTIÓN DE MODAL ---
 document.getElementById('btnAbrirModal').addEventListener('click', () => {
     modalTitulo.innerText = "Levantar Nuevo Ticket";
-    editDocId.value = ""; // Nos aseguramos de limpiar el id de edición
+    editDocId.value = ""; 
     modal.style.display = 'flex';
 });
 
@@ -35,8 +35,7 @@ document.getElementById('btnCancelarModal').addEventListener('click', () => {
     editDocId.value = "";
 });
 
-
-// --- 3. ESCRITURA Y ACTUALIZACIÓN EN FIRESTORE ENLAZADO AL USUARIO ---
+// --- 3. ESCRITURA / ACTUALIZACIÓN FILTRADA ---
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -48,30 +47,27 @@ form.addEventListener('submit', async (e) => {
     const condicion = document.getElementById('ticketCondicion').value;
     const idParaEditar = editDocId.value;
 
-    // Recuperamos el correo activo guardado en el inicio de sesión
     const emailUsuarioLogueado = localStorage.getItem("userEmail");
 
     if (!emailUsuarioLogueado) {
-        alert("Error de sesión: No se detectó un usuario activo. Por favor vuelva a iniciar sesión.");
+        alert("Error de sesión: Por favor vuelva a iniciar sesión.");
         window.location.href = "index.html";
         return;
     }
 
     try {
         if (idParaEditar) {
-            // MODO EDICIÓN: Modifica el documento sin alterar el dueño original
             await db.collection("tickets").doc(idParaEditar).update({
                 tipo, marca, modelo, serie, detalle, condicion
             });
-            alert("¡Operación realizada correctamente! El ticket ha sido modificado.");
+            alert("¡Ticket modificado correctamente!");
         } else {
-            // MODO CREACIÓN: Guarda vinculando permanentemente el email de la sesión activa
             await db.collection("tickets").add({
                 tipo, marca, modelo, serie, detalle, condicion,
-                usuarioEmail: emailUsuarioLogueado, // <--- FILTRO CLAVE
+                usuarioEmail: emailUsuarioLogueado,
                 fechaCreacion: firebase.firestore.FieldValue.serverTimestamp()
             });
-            alert("¡Operación realizada correctamente! El ticket ha sido añadido a tu lista.");
+            alert("¡Ticket añadido correctamente!");
         }
 
         form.reset();
@@ -79,40 +75,35 @@ form.addEventListener('submit', async (e) => {
         modal.style.display = 'none';
 
     } catch (error) {
-        console.error("Detalle del error en el servidor: ", error);
-        alert("Error al procesar la operación en el servidor: " + error.message);
+        console.error("Error en el servidor: ", error);
+        alert("Error al procesar la operación: " + error.message);
     }
 });
 
-
-// --- 4. FUNCIÓN DE LECTURA REACTIVA EN TIEMPO REAL CON FILTRO SEGURO (.where) ---
+// --- 4. FUNCIÓN DE LECTURA REACTIVA FILTRADA POR USUARIO ---
 function cargarTicketsDelUsuario(emailUsuario) {
-    // Aplicamos el filtro .where para traer ÚNICAMENTE los registros de este correo específico
     db.collection("tickets")
       .where("usuarioEmail", "==", emailUsuario)
-      .orderBy("fechaCreacion", "desc")
       .onSnapshot((snapshot) => {
         
         const tbody = document.getElementById("tablaTicketsCuerpo");
         if (!tbody) return;
 
-        tbody.innerHTML = ""; // Limpiamos filas previas de la pantalla
-        let index = snapshot.size; // Enumeración descendente estética de los registros del usuario
+        tbody.innerHTML = ""; 
+        let index = 1;
 
         if (snapshot.empty) {
-            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #777; padding: 20px;">No tienes ningún equipo o ticket registrado en tu cuenta actual.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #777; padding: 20px;">No tienes ningún equipo registrado en tu cuenta actual.</td></tr>`;
             return;
         }
 
         snapshot.forEach((doc) => {
             const data = doc.data();
             const tr = document.createElement("tr");
-
-            // Selector dinámico de clases para el diseño de las celdas de condición
             const badgeStyle = data.condicion === 'Mantenimiento' ? 'badge-mantenimiento' : 'badge-funcional';
 
             tr.innerHTML = `
-                <td><strong>${index--}</strong></td>
+                <td><strong>${index++}</strong></td>
                 <td>${data.tipo || ''}</td>
                 <td>${data.marca || ''}</td>
                 <td>${data.modelo || ''}</td>
@@ -133,18 +124,15 @@ function cargarTicketsDelUsuario(emailUsuario) {
             tbody.appendChild(tr);
         });
     }, (error) => {
-        console.error("Error en la lectura reactiva filtrada de Firestore: ", error);
-        
-        // Manejo amigable de la falta de índices compuestos iniciales en Firestore si fuese el caso
+        console.error("Error en Firestore: ", error);
         const tbody = document.getElementById("tablaTicketsCuerpo");
         if (tbody) {
-            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #dc4c64;">Error al cargar la tabla filtrada. Revisa la consola del navegador.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #dc4c64; padding: 20px;">Error al cargar los datos. Revisa las reglas o la consola.</td></tr>`;
         }
     });
 }
 
-
-// --- 5. PREPARAR INTERFAZ PARA EDICIÓN DE DATOS ---
+// --- 5. PREPARAR EDICIÓN ---
 window.prepararEdicionTicket = function(id, tipo, marca, modelo, serie, detalle, condicion) {
     modalTitulo.innerText = "Modificar Ticket de Mantenimiento";
     editDocId.value = id;
@@ -159,18 +147,16 @@ window.prepararEdicionTicket = function(id, tipo, marca, modelo, serie, detalle,
     modal.style.display = 'flex';
 };
 
-
-// --- 6. BAJA / ELIMINACIÓN DE UN REGISTRO ---
+// --- 6. ELIMINACIÓN ---
 window.eliminarTicket = function(id) {
-    if (confirm("¿Está completamente seguro de que desea eliminar permanentemente este registro del inventario?")) {
+    if (confirm("¿Está seguro de que desea eliminar este registro?")) {
         db.collection("tickets").doc(id).delete()
-            .then(() => alert("Registro eliminado de la base de datos correctamente."))
-            .catch((error) => alert("Error al intentar eliminar el registro: " + error.message));
+            .then(() => alert("Registro eliminado correctamente."))
+            .catch((error) => alert("Error al eliminar: " + error.message));
     }
 };
 
-
-// --- 7. CONTROL DE CIERRE DE SESIÓN SEGURO ---
+// --- 7. LOGOUT ---
 window.logout = async () => {
     try {
         await auth.signOut();
@@ -181,18 +167,16 @@ window.logout = async () => {
     }
 };
 
-
-// --- 8. DISPARADOR AUTOMÁTICO INICIAL AL CARGAR LA PÁGINA ---
+// --- 8. INICIALIZADOR ---
 window.addEventListener('DOMContentLoaded', () => {
     const emailDisplay = document.getElementById("userEmailDisplay");
     const storedEmail = localStorage.getItem("userEmail");
 
     if (storedEmail) {
         if (emailDisplay) emailDisplay.innerText = storedEmail;
-        // Lanzamos la carga pasando exclusivamente el email activo detectado
         cargarTicketsDelUsuario(storedEmail);
     } else {
-        alert("Acceso denegado: Por favor inicia sesión primero.");
+        alert("Acceso denegado. Por favor inicia sesión.");
         window.location.href = "index.html";
     }
 });
