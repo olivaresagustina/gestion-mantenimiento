@@ -274,6 +274,8 @@
                 <div class="row-buttons">
                     <button type="button" id="btnGuardarEquipo" class="btn-form btn-save">Guardar Registro</button>
                     <button type="button" id="btnCancelarFormulario" class="btn-form btn-cancel">Cancelar</button>
+                    
+                
                 </div>
             </form>
         </div>
@@ -302,6 +304,36 @@
             firebase.initializeApp(firebaseConfig);
         }
         const db = firebase.firestore();
+
+           
+
+
+
+
+            
+            
+                    // 🚀 NUEVO: Escuchador para cerrar el formulario con la tecla "Esc"
+                    window.addEventListener('keydown', (e) => {
+                        // Comprueba si la tecla presionada es Escape y si el modal está visible
+                        if (e.key === 'Escape' && modalElement.style.display === 'flex') {
+                            // Simula el clic en el botón de cancelar para ejecutar toda su lógica de limpieza
+                            document.getElementById('btnCancelarFormulario').click();
+                        }
+                        // ... Aquí termina la función que conservas de cancelar ...
+    document.getElementById("equipoEncargado").disabled = true;
+    document.getElementById("equipoEncargado").innerHTML = '<option value="">Selecciona primero un departamento...</option>';
+}); // <--- Aquí termina el botón cancelar original
+
+// 🚀 AGREGA ESTO JUSTO AQUÍ ABAJO:
+window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modalElement.style.display === 'flex') {
+        document.getElementById('btnCancelarFormulario').click();
+    }
+});
+
+                    
+                    
+            
 
         // Control de Ventana Modal Flotante
         const modalElement = document.getElementById('modalRegistro');
