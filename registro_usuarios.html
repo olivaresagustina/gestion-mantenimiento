@@ -282,6 +282,17 @@
         document.getElementById("userDepartamento").innerHTML = '<option value="">Selecciona primero un área...</option>';
     });
 
+
+
+    window.addEventListener('keydown', function(e) {
+        // Comprueba si la tecla presionada es Escape y si el modal está abierto
+        if (e.key === 'Escape' && modalElement.style.display === 'flex') {
+            // Dispara el clic del botón cancelar para ocultar y limpiar el formulario
+            document.getElementById('btnCancelarModal').click();
+        }
+    });
+
+    
     // Función para renderizar usuarios encargados en la tabla dinámicamente desde Firestore
     function cargarUsuariosTabla() {
         if (!db) return;
