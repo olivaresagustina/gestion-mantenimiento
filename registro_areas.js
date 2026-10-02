@@ -43,6 +43,20 @@ window.addEventListener('click', (e) => {
     }
 });
 
+
+window.addEventListener('keydown', function(e) {
+    var modalAreas = document.getElementById('modalAreas');
+    if (e.key === 'Escape' && modalAreas && modalAreas.style.display === 'flex') {
+        document.getElementById('btnCancelarModal').click();
+    }
+});
+
+
+
+
+
+
+
 // 4. Función de Registro y Edición unificada (Escritura / Actualización en Firestore)
 form.addEventListener('submit', async (e) => {
     e.preventDefault(); // Evitamos que la página se recargue
