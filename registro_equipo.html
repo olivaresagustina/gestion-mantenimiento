@@ -556,6 +556,21 @@ function inicializarFiltroAvanzadoEquipos() {
     });
 }
 
+
+  
+  // Código automático para pintar el correo real del usuario en el Dashboard al entrar
+  window.addEventListener('DOMContentLoaded', () => {
+      const emailDisplay = document.getElementById("userEmailDisplay");
+      if (emailDisplay) {
+          const storedEmail = localStorage.getItem("userEmail");
+          if (storedEmail) {
+              emailDisplay.innerText = storedEmail;
+          }
+      }
+  });
+  
+
+
 // Inicializaciones del DOM
 window.addEventListener('DOMContentLoaded', () => {
     escucharYMostrarEquipos();
