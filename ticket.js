@@ -95,56 +95,81 @@ form.addEventListener('submit', async (e) => {
 
 
 // --- 4. CONSULTA HISTORIAL DE TICKETS GENERADOS POR EL USUARIO ---
+// --- VARIABLES GLOBALES PARA EL BUSCADOR EN TIEMPO REAL ---
+let ticketsLocales = []; // Almacén en caché local de los tickets del usuario
+
+// --- 4. CONSULTA HISTORIAL DE TICKETS GENERADOS POR EL USUARIO EN SESIÓN ---
 function cargarTicketsDelUsuario(emailUsuario) {
     db.collection("tickets")
       .where("usuarioEmail", "==", emailUsuario)
       .onSnapshot((snapshot) => {
         
-        const tbody = document.getElementById("tablaTicketsCuerpo");
-        if (!tbody) return;
-
-        tbody.innerHTML = ""; 
-        let index = 1;
-
-        if (snapshot.empty) {
-            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #777; padding: 20px;">No has levantado ningún ticket de mantenimiento aún.</td></tr>`;
-            return;
-        }
-
+        // Limpiamos y respaldamos los datos de la base de datos en nuestro arreglo local
+        ticketsLocales = [];
+        
         snapshot.forEach((doc) => {
             const data = doc.data();
-            const tr = document.createElement("tr");
-            const badgeStyle = data.condicion === 'Mantenimiento' ? 'badge-mantenimiento' : 'badge-funcional';
-
-            // Agregamos un indicador visual por si el ticket es urgente
-            const formatoDetalle = data.urgente === 'Sí' ? `⚠️ <strong>[URGENTE]</strong> ${data.detalle}` : data.detalle;
-
-            tr.innerHTML = `
-                <td><strong>${index++}</strong></td>
-                <td>${data.tipo || ''}</td>
-                <td>${data.marca || ''}</td>
-                <td>${data.modelo || ''}</td>
-                <td>${data.serie || ''}</td>
-                <td>${formatoDetalle || ''}</td>
-                <td><span class="badge ${badgeStyle}">${data.condicion || ''}</span></td>
-                <td>
-                    <button class='btn-action-t' style='background-color: #2c9faf; margin-right: 5px;' 
-                        onclick="prepararEdicionTicket('${doc.id}', '${data.tipo}', '${data.marca}', '${data.modelo}', '${data.serie}', '${data.detalle}', '${data.condicion}', '${data.fechaPeticion}', '${data.urgente}')">
-                        ✏️
-                    </button>
-                    <button class='btn-action-t' style='background-color: #dc4c64;' 
-                        onclick="eliminarTicket('${doc.id}')">
-                        🗑️
-                    </button>
-                </td>
-            `;
-            tbody.appendChild(tr);
+            ticketsLocales.push({
+                id: doc.id,
+                ...data
+            });
         });
+
+        // Ejecutamos la función de renderizado inicial con todos los registros
+        inyectarTicketsEnTabla(ticketsLocales);
+
     }, (error) => {
         console.error("Error al cargar historial de tickets: ", error);
+        const tbody = document.getElementById("tablaTicketsCuerpo");
+        if (tbody) {
+            tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: #dc4c64; padding: 20px;">Error de permisos al sincronizar los tickets.</td></tr>`;
+        }
     });
 }
 
+// --- FUNCIÓN AUXILIAR: PINTAR LAS FILAS EN LA TABLA PRINCIPAL ---
+function inyectarTicketsEnTabla(listaDeTickets) {
+    const tbody = document.getElementById("tablaTicketsCuerpo");
+    if (!tbody) return;
+
+    tbody.innerHTML = ""; 
+    let index = 1;
+
+    if (listaDeTickets.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: #777; padding: 20px;">No se encontraron tickets que coincidan con la búsqueda o tu cuenta.</td></tr>`;
+        return;
+    }
+
+    listaDeTickets.forEach((ticket) => {
+        const tr = document.createElement("tr");
+        
+        // Estilos estéticos condicionales para las etiquetas de control
+        const badgeCondicion = ticket.condicion === 'Mantenimiento' ? 'badge-mantenimiento' : 'badge-funcional';
+        const badgeUrgencia = ticket.urgente === 'Sí' ? 'badge-urgente' : 'badge-normal';
+
+        tr.innerHTML = `
+            <td><strong>${index++}</strong></td>
+            <td>${ticket.fechaPeticion || 'S/F'}</td>
+            <td><span class="badge ${badgeUrgencia}">${ticket.urgente || 'No'}</span></td>
+            <td>${ticket.tipo || ''}</td>
+            <td>${ticket.marca || ''}</td>
+            <td>${ticket.modelo || ''}</td>
+            <td>${ticket.detalle || ''}</td>
+            <td><span class="badge ${badgeCondicion}">${ticket.condicion || ''}</span></td>
+            <td>
+                <button class='btn-action-t' style='background-color: #2c9faf; margin-right: 5px;' 
+                    onclick="prepararEdicionTicket('${ticket.id}', '${ticket.tipo}', '${ticket.marca}', '${ticket.modelo}', '${ticket.serie}', '${ticket.detalle}', '${ticket.condicion}', '${ticket.fechaPeticion}', '${ticket.urgente}')">
+                    ✏️
+                </button>
+                <button class='btn-action-t' style='background-color: #dc4c64;' 
+                    onclick="eliminarTicket('${ticket.id}')">
+                    🗑️
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
 
 
 
@@ -266,21 +291,56 @@ window.logout = async () => {
 };
 
 // --- 9. INICIALIZADOR DEL SISTEMA ---
+// --- 9. INICIALIZADOR DE CARGA Y EVENTO DE BÚSQUEDA ---
 window.addEventListener('DOMContentLoaded', () => {
     const emailDisplay = document.getElementById("userEmailDisplay");
     const storedEmail = localStorage.getItem("userEmail");
+    const inputBuscar = document.getElementById("inputBuscar");
 
     if (storedEmail) {
         if (emailDisplay) emailDisplay.innerText = storedEmail;
         
-        // Carga la tabla con los tickets que ha generado el usuario logueado
+        // Pinta la tabla con el historial de tickets generados por la cuenta activa
         cargarTicketsDelUsuario(storedEmail);
         
-        // Filtra el menú desplegable del formulario para mostrar solo sus equipos
+        // Carga los equipos que corresponden al empleado logueado en la ventana flotante
         cargarEquiposDelUsuarioLogueado(storedEmail);
+        
+        // ESCUCHADOR EN TIEMPO REAL PARA EL INPUT DE BÚSQUEDA
+        if (inputBuscar) {
+            inputBuscar.addEventListener("input", (e) => {
+                const textoBusqueda = e.target.value.toLowerCase().trim();
+                
+                // Si la barra está vacía, mostramos todos los registros guardados
+                if (textoBusqueda === "") {
+                    inyectarTicketsEnTabla(ticketsLocales);
+                    return;
+                }
+                
+                // Filtramos la caché local buscando coincidencias en múltiples campos técnicos
+                const ticketsFiltrados = ticketsLocales.filter((ticket) => {
+                    const tipo = (ticket.tipo || "").toLowerCase();
+                    const marca = (ticket.marca || "").toLowerCase();
+                    const modelo = (ticket.modelo || "").toLowerCase();
+                    const detalle = (ticket.detalle || "").toLowerCase();
+                    
+                    return tipo.includes(textoBusqueda) || 
+                           marca.includes(textoBusqueda) || 
+                           modelo.includes(textoBusqueda) || 
+                           detalle.includes(textoBusqueda);
+                });
+                
+                // Actualizamos la interfaz gráfica con los resultados del filtro
+                inyectarTicketsEnTabla(ticketsFiltrados);
+            });
+        }
+        
     } else {
         alert("Acceso denegado. Por favor inicia sesión.");
         window.location.href = "index.html";
     }
 });
+
+
+
 
