@@ -80,57 +80,89 @@ form.addEventListener('submit', async (e) => {
     }
 });
 
+
+
+
 // --- 4. FUNCIÓN DE LECTURA REACTIVA FILTRADA POR USUARIO ---
+// --- FUNCIÓN CORREGIDA CON CAMPOS EXACTOS DE FIRESTORE ---
 function cargarTicketsDelUsuario(emailUsuario) {
-    db.collection("tickets")
+    const tbody = document.getElementById("tablaTicketsCuerpo");
+    if (!tbody) return;
+
+    // 1. Buscamos al empleado usando el campo exacto de tu captura: "usuarioEmail"
+    db.collection("usuarios_encargados")
       .where("usuarioEmail", "==", emailUsuario)
-      .onSnapshot((snapshot) => {
-        
-        const tbody = document.getElementById("tablaTicketsCuerpo");
-        if (!tbody) return;
+      .get()
+      .then((usuarioSnapshot) => {
+          if (usuarioSnapshot.empty) {
+              tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #dc4c64; padding: 20px;">Tu cuenta de correo no está vinculada a ningún empleado en el catálogo de Encargados.</td></tr>`;
+              return;
+          }
 
-        tbody.innerHTML = ""; 
-        let index = 1;
+          // Extraemos el nombre completo del empleado (Ej: "Juan Pérez")
+          let nombreEmpleado = "";
+          usuarioSnapshot.forEach((doc) => {
+              nombreEmpleado = doc.data().nombreCompleto;
+          });
 
-        if (snapshot.empty) {
-            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #777; padding: 20px;">No tienes ningún equipo registrado en tu cuenta actual.</td></tr>`;
-            return;
-        }
+          if (!nombreEmpleado) return;
 
-        snapshot.forEach((doc) => {
-            const data = doc.data();
-            const tr = document.createElement("tr");
-            const badgeStyle = data.condicion === 'Mantenimiento' ? 'badge-mantenimiento' : 'badge-funcional';
+          // 2. Buscamos en 'equipos' usando tu campo de ordenamiento exacto: "fechaRegistro"
+          db.collection("equipos")
+            .where("encargado", "==", nombreEmpleado.trim())
+            .orderBy("fechaRegistro", "asc") // Ajustado a tu campo real de Firebase
+            .onSnapshot((snapshot) => {
+              
+              tbody.innerHTML = ""; 
+              let index = 1;
 
-            tr.innerHTML = `
-                <td><strong>${index++}</strong></td>
-                <td>${data.tipo || ''}</td>
-                <td>${data.marca || ''}</td>
-                <td>${data.modelo || ''}</td>
-                <td>${data.serie || ''}</td>
-                <td>${data.detalle || ''}</td>
-                <td><span class="badge ${badgeStyle}">${data.condicion || ''}</span></td>
-                <td>
-                    <button class='btn-action-t' style='background-color: #2c9faf; margin-right: 5px;' 
-                        onclick="prepararEdicionTicket('${doc.id}', '${data.tipo}', '${data.marca}', '${data.modelo}', '${data.serie}', '${data.detalle}', '${data.condicion}')">
-                        ✏️
-                    </button>
-                    <button class='btn-action-t' style='background-color: #dc4c64;' 
-                        onclick="eliminarTicket('${doc.id}')">
-                        🗑️
-                    </button>
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }, (error) => {
-        console.error("Error en Firestore: ", error);
-        const tbody = document.getElementById("tablaTicketsCuerpo");
-        if (tbody) {
-            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #dc4c64; padding: 20px;">Error al cargar los datos. Revisa las reglas o la consola.</td></tr>`;
-        }
-    });
+              if (snapshot.empty) {
+                  tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #777; padding: 20px;">No tienes ningún equipo de cómputo asignado a tu nombre en el inventario actual.</td></tr>`;
+                  return;
+              }
+
+              snapshot.forEach((doc) => {
+                  const data = doc.data();
+                  const tr = document.createElement("tr");
+                  const badgeStyle = data.condicion === 'Mantenimiento' ? 'badge-mantenimiento' : 'badge-funcional';
+
+                  tr.innerHTML = `
+                      <td><strong>${index++}</strong></td>
+                      <td>${data.tipo || ''}</td>
+                      <td>${data.marca || ''}</td>
+                      <td>${data.modelo || ''}</td>
+                      <td>${data.serie || ''}</td>
+                      <td>${data.comentarios || 'Sin detalles adicionales'}</td>
+                      <td><span class="badge ${badgeStyle}">${data.condicion || ''}</span></td>
+                      <td>
+                          <button class='btn-action-t' style='background-color: #2c9faf; margin-right: 5px;' 
+                              onclick="prepararEdicionTicket('${doc.id}', '${data.tipo}', '${data.marca}', '${data.modelo}', '${data.serie}', '${data.comentarios || ''}', '${data.condicion}')">
+                              ✏️
+                          </button>
+                          <button class='btn-action-t' style='background-color: #dc4c64;' 
+                              onclick="eliminarTicket('${doc.id}')">
+                              🗑️
+                          </button>
+                      </td>
+                  `;
+                  tbody.appendChild(tr);
+              });
+          }, (error) => {
+              console.error("Error en Firestore al cargar equipos:", error);
+              tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #dc4c64; padding: 20px;">Error al cargar tus equipos asignados. Revisa el índice compuesto.</td></tr>`;
+          });
+
+      }).catch((error) => {
+          console.error("Error al buscar el nombre del encargado:", error);
+          tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #dc4c64; padding: 20px;">Error de sincronización de usuario.</td></tr>`;
+      });
 }
+
+
+
+
+
+
 
 // --- 5. PREPARAR EDICIÓN ---
 window.prepararEdicionTicket = function(id, tipo, marca, modelo, serie, detalle, condicion) {
