@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peticiones de Mantenimiento - H. Ayuntamiento de Calnali</title>
+    <link rel="stylesheet" href="styles_menu.css"> 
+    <link rel="stylesheet" href="https://cloudflare.com">
+    <style>
+        .header-acciones { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .tabla-peticiones { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.03); font-size: 13px; }
+        .tabla-peticiones th, .tabla-peticiones td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eeeeee; }
+        .tabla-peticiones th { background-color: #f8f9fa; color: #5c1424; font-weight: 600; }
+        .btn-action-p { border: none; color: white; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 14px; }
+        
+        /* Modal Flotante */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: white; padding: 25px; border-radius: 12px; width: 100%; max-width: 550px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .form-group { margin-bottom: 12px; display: flex; flex-direction: column; gap: 4px; text-align: left; }
+        .form-group label { font-size: 11px; font-weight: 600; color: #555; }
+        .form-group input, .form-group select { padding: 8px 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; outline: none; }
+        .form-group input:disabled { background-color: #f5f5f5; color: #777; cursor: not-allowed; }
+        .modal-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px; }
+        .btn-modal { padding: 8px 15px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <!-- --- SIDEBAR LATERAL (GUINDA) --- -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <a href="menu.html" class="logo-link">
+                    <img src="logo.png" alt="Logo Calnali" class="menu-logo-img">
+                    <div class="logo-text"><span class="logo-top">Juntos Rescatando</span><span class="logo-bottom">Calnali</span></div>
+                </a>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-item" onclick="window.location.href='menu.html'">📊 Dashboard</div>
+                <div class="nav-item">🛡 SEGURIDAD</div>
+                <div class="nav-item" onclick="window.location.href='registro_equipo.html'">📊 INVENTARIO</div>
+                <div class="nav-section active">
+                    <div class="section-title">🛠 MANTENIMIENTO</div>
+                    <ul class="sub-menu">
+                        <li onclick="window.location.href='ticket.html'">• Levantar Ticket</li>
+                        <li class="active-sub" onclick="window.location.href='peticiones.html'">• Peticiones</li>
+                    </ul>
+                </div>
+                <div class="nav-item">📊 REPORTES</div>
+            </nav>
+            <button class="btn-logout-sidebar" onclick="window.logout()">Cerrar Sesión</button>
+        </aside>
+
+        <!-- --- CONTENIDO PRINCIPAL --- -->
+        <main class="main-content">
+            <div class="top-bar">
+                <div class="search-box"><span>🔍</span><input type="text" id="inputBuscarPeticion" placeholder="Buscar petición..."></div>
+                <div class="user-profile">
+                    <span id="userEmailDisplay" style="font-size: 13px; font-weight: 600; color: #555;">Cargando usuario...</span>
+                    <div class="avatar-img" style="width: 35px; height: 35px; background: #b8904c; border-radius: 50%;"></div>
+                </div>
+            </div>
+
+            <h1 class="page-title">Peticiones</h1>
+            <div class="chart-box" style="background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
+                <div class="header-acciones">
+                    <h3 style="font-size: 14px; color: #666;">Lista de Equipos de Cómputo con peticiones de mantenimientos</h3>
+                </div>
+
+                <table class="tabla-peticiones">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Encargado</th>
+                            <th>Departamento</th>
+                            <th>Técnico</th>
+                            <th>Tipo de mantenimiento</th>
+                            <th>Tiempo Estimado (días)</th>
+                            <th>Problema</th>
+                            <th>Fecha de entrada</th>
+                            <th>Fecha de salida</th>
+                            <th>Botones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaPeticionesCuerpo">
+                        <tr><td colspan="10" style="text-align: center; color: #777;">Cargando peticiones globales del Ayuntamiento...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- --- VENTANA MODAL DE GESTIÓN TÉCNICA --- -->
+    <div class="modal" id="modalGestionPeticion">
+        <div class="modal-content">
+            <h2 style="color: #5c1424; margin-bottom: 15px; font-size: 16px;">Gestionar Petición de Mantenimiento</h2>
+            <form id="formGestionPeticion">
+                <input type="hidden" id="ticketDocId"> <!-- ID Vinculado al Ticket Original -->
+
+                <!-- Bloque de Solo Lectura (Gris) -->
+                <div class="form-group"><label>Encargado / Solicitante</label><input type="text" id="modalEncargado" disabled></div>
+                <div class="form-group"><label>Problema / Falla Reportada</label><input type="text" id="modalProblema" disabled></div>
+
+                <!-- Bloque de Escritura (Sujeto a Modificación) -->
+                <div class="form-group">
+                    <label>Técnico Asignado *</label>
+                    <select id="petTecnico" required>
+                        <option value="">-- Seleccione Técnico --</option>
+                        <option value="Ing. Alan Flores">Ing. Alan Flores</option>
+                        <option value="Lic. Ruby Vite">Lic. Ruby Vite</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Tipo de Mantenimiento *</label>
+                    <select id="petTipoMantenimiento" required>
+                        <option value="">-- Seleccione Tipo --</option>
+                        <option value="Correctivo">Correctivo</option>
+                        <option value="Preventivo">Preventivo</option>
+                        <option value="Actualización de software">Actualización de software</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Tiempo Estimado (Días) *</label><input type="number" id="petTiempo" min="1" placeholder="Ej: 3" required></div>
+                <div class="form-group"><label>Fecha de Entrada *</label><input type="date" id="petFechaEntrada" required></div>
+                <div class="form-group"><label>Fecha de Salida (Estimada) *</label><input type="date" id="petFechaSalida" required></div>
+
+                <div class="modal-buttons">
+                    <button type="button" id="btnCerrarModalPet" style="background: #dc4c64; color: white;" class="btn-modal">Cancelar</button>
+                    <button type="submit" style="background: #2c9faf; color: white;" class="btn-modal">✓ Guardar Gestión</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- SDK Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>   
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="peticiones.js"></script>
+</body>
+</html>
