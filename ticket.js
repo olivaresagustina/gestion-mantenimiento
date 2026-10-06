@@ -1,7 +1,7 @@
-// 1. CORRECCIÓN: Credenciales Oficiales de Conexión completas
+// 1. Credenciales Oficiales de Conexión completas
 const firebaseConfig = {
     apiKey: "AIzaSyDDcGT88IspX4-_TOKtQcdeo-93favOuoY",
-    authDomain: "://firebaseapp.com", // <--- Arreglado
+    authDomain: "://firebaseapp.com", 
     projectId: "gestion-mantenimiento-ap-20f51",
     storageBucket: "gestion-mantenimiento-ap-20f51.firebasestorage.app",
     messagingSenderId: "792321276987",
@@ -167,16 +167,72 @@ window.logout = async () => {
     }
 };
 
-// --- 8. INICIALIZADOR ---
+// --- 8. INICIALIZADOR (ACTUALIZADO CON CARGA DE INVENTARIO) ---
 window.addEventListener('DOMContentLoaded', () => {
     const emailDisplay = document.getElementById("userEmailDisplay");
     const storedEmail = localStorage.getItem("userEmail");
 
     if (storedEmail) {
         if (emailDisplay) emailDisplay.innerText = storedEmail;
+        // Carga los tickets del usuario
         cargarTicketsDelUsuario(storedEmail);
+        // NUEVO: Ejecuta la extracción de equipos desde el almacén global
+        cargarEquiposDisponibles(); 
     } else {
         alert("Acceso denegado. Por favor inicia sesión.");
         window.location.href = "index.html";
     }
+});
+
+// --- 9. NUEVAS FUNCIONES DE CONEXIÓN CON LA COLECCIÓN DE EQUIPOS ---
+function cargarEquiposDisponibles() {
+    const selectEquipo = document.getElementById("ticketTipo");
+    if (!selectEquipo) return;
+
+    // Conectamos a la colección global 'equipos'
+    db.collection("equipos").orderBy("fechaRegistro", "asc").get().then((snapshot) => {
+        selectEquipo.innerHTML = '<option value="">-- Seleccione un Equipo del Inventario --</option>';
+        
+        if (snapshot.empty) {
+            selectEquipo.innerHTML = '<option value="">No hay equipos registrados en el inventario</option>';
+            return;
+        }
+
+        snapshot.forEach((doc) => {
+            const datos = doc.data();
+            // Formateamos una etiqueta visual atractiva e informativa para el selector
+            const descripcionEquipo = `${datos.tipo || 'Equipo'} - ${datos.marca || ''} ${datos.modelo || ''} (S/N: ${datos.serie || 'S/S'})`;
+            
+            const option = document.createElement("option");
+            option.value = datos.tipo; // Almacenamos el tipo base (Ej: Laptop)
+            option.textContent = descripcionEquipo; // Texto que verá el usuario encargado
+            
+            // Inyectamos los datos técnicos ocultos usando atributos personalizados
+            option.setAttribute('data-marca', datos.marca || '');
+            option.setAttribute('data-modelo', datos.modelo || '');
+            option.setAttribute('data-serie', datos.serie || '');
+
+            selectEquipo.appendChild(option);
+        });
+    }).catch((error) => {
+        console.error("Error de vinculación al inventario general:", error);
+        selectEquipo.innerHTML = '<option value="">Error al cargar catálogo de inventario</option>';
+    });
+}
+
+// Escuchador dinámico: rellena de forma inteligente Marca, Modelo y Serie al seleccionar el equipo
+document.getElementById("ticketTipo").addEventListener("change", (e) => {
+    const optionSeleccionada = e.target.options[e.target.selectedIndex];
+    if (!optionSeleccionada || e.target.value === "") {
+        // Si vuelve a la opción vacía limpiamos los inputs
+        document.getElementById("ticketMarca").value = "";
+        document.getElementById("ticketModelo").value = "";
+        document.getElementById("ticketSerie").value = "";
+        return;
+    }
+
+    // Extraemos la metadata técnica del atributo e inyectamos directamente en el formulario
+    document.getElementById("ticketMarca").value = optionSeleccionada.getAttribute('data-marca');
+    document.getElementById("ticketModelo").value = optionSeleccionada.getAttribute('data-modelo');
+    document.getElementById("ticketSerie").value = optionSeleccionada.getAttribute('data-serie');
 });
