@@ -89,6 +89,11 @@ form.addEventListener('submit', async (e) => {
         alert("Error al procesar la operación: " + error.message);
     }
 });
+
+
+
+
+
 // --- 4. CONSULTA HISTORIAL DE TICKETS GENERADOS POR EL USUARIO ---
 function cargarTicketsDelUsuario(emailUsuario) {
     db.collection("tickets")
@@ -140,10 +145,17 @@ function cargarTicketsDelUsuario(emailUsuario) {
     });
 }
 
+
+
+
 // --- 5. FILTRAR MENÚ DESPLEGABLE: SOLO EQUIPOS DEL EMPLEADO LOGUEADO ---
+// --- 5. FILTRAR MENÚ DESPLEGABLE: SOLO EQUIPOS DEL EMPLEADO LOGUEADO (OPTIMIZADO) ---
 function cargarEquiposDelUsuarioLogueado(emailUsuario) {
     const selectEquipo = document.getElementById("ticketTipo");
     if (!selectEquipo) return;
+
+    // Limpiamos el selector de inmediato para borrar residuos globales
+    selectEquipo.innerHTML = '<option value="">Cargando tus equipos asignados...</option>';
 
     // Buscamos el nombre del empleado a través de su correo de cuenta activa
     db.collection("usuarios_encargados")
@@ -162,7 +174,7 @@ function cargarEquiposDelUsuarioLogueado(emailUsuario) {
 
           if (!nombreEmpleado) return;
 
-          // Obtenemos de la base de datos de inventario únicamente los equipos de este empleado
+          // Obtenemos de la base de datos de inventario ÚNICAMENTE los equipos de este empleado
           db.collection("equipos")
             .where("encargado", "==", nombreEmpleado.trim())
             .get()
@@ -188,9 +200,19 @@ function cargarEquiposDelUsuarioLogueado(emailUsuario) {
 
                     selectEquipo.appendChild(option);
                 });
+            }).catch((err) => {
+                console.error("Error al obtener equipos del encargado:", err);
+                selectEquipo.innerHTML = '<option value="">Error al cargar tus equipos</option>';
             });
-      }).catch((err) => console.error("Error al cargar selector de equipos:", err));
+      }).catch((err) => {
+          console.error("Error al cargar selector de equipos:", err);
+          selectEquipo.innerHTML = '<option value="">Error de sincronización</option>';
+      });
 }
+
+
+
+
 
 // Escuchador para autocompletar cajas técnicas al cambiar la opción seleccionada
 document.getElementById("ticketTipo").addEventListener("change", (e) => {
