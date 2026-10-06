@@ -120,66 +120,82 @@
         </main>
     </div>
 
-    <!-- --- VENTANA MODAL (FORMULARIO OCULTO) --- -->
-    <div class="modal" id="modalTicket">
-        <div class="modal-content">
-            <h2 id="modalTitulo" style="color: #5c1424; margin-bottom: 20px; font-size: 18px;">Levantar Nuevo Ticket</h2>
-            <form id="formRegistroTicket">
-                <input type="hidden" id="editDocId">
+    
+    <!-- --- VENTANA MODAL ACTUALIZADA CON DATOS COMPLETOS --- -->
+<div class="modal" id="modalTicket">
+    <div class="modal-content" style="max-width: 550px;">
+        <h2 id="modalTitulo" style="color: #5c1424; margin-bottom: 20px; font-size: 18px;">Levantar Nuevo Ticket</h2>
+        <form id="formRegistroTicket">
+            <input type="hidden" id="editDocId">
 
+            <!-- Selector que cargará únicamente los equipos del usuario activo -->
+            <div class="form-group">
+                <label>Seleccionar Equipo de Cómputo Disponible *</label>
+                <select id="ticketTipo" required>
+                    <option value="">Cargando tus equipos asignados...</option>
+                </select>
+            </div>
 
+            <!-- Campos automáticos (Deshabilitados para que no se alteren a mano) -->
+            <div class="form-group">
+                <label>Marca *</label>
+                <input type="text" id="ticketMarca" placeholder="Se autocompleta..." disabled required>
+            </div>
 
+            <div class="form-group">
+                <label>Modelo *</label>
+                <input type="text" id="ticketModelo" placeholder="Se autocompleta..." disabled required>
+            </div>
 
+            <div class="form-group">
+                <label>Número de Serie *</label>
+                <input type="text" id="ticketSerie" placeholder="Se autocompleta..." disabled required>
+            </div>
 
-                
+            <div class="form-group">
+                <label>Detalle / Descripción de la Falla *</label>
+                <textarea id="ticketDetalle" rows="3" placeholder="Describa el problema..." required></textarea>
+            </div>
 
-                <div class="form-group">
-                    <label>Seleccionar Equipo de Cómputo Disponible *</label>
-                    <select id="ticketTipo" required>
-                        <option value="">Cargando equipos disponibles...</option>
+            <div class="form-group">
+                <label>Condición Inicial *</label>
+                <select id="ticketCondicion" required>
+                    <option value="Mantenimiento">Mantenimiento</option>
+                    <option value="Funcional">Funcional</option>
+                </select>
+            </div>
+
+            <!-- NUEVA FILA COPIADA DE LA REQUERIDA (FECHA Y URGENCIA) -->
+            <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                <div class="form-group" style="flex: 1;">
+                    <label>Fecha de la petición:</label>
+                    <input type="date" id="ticketFechaPeticion" required>
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label>¿Es urgente?:</label>
+                    <select id="ticketUrgente" required>
+                        <option value="No">No</option>
+                        <option value="Sí">Sí</option>
                     </select>
                 </div>
+            </div>
 
-                
-
-
-
-
-                <div class="form-group">
-                    <label>Marca *</label>
-                    <input type="text" id="ticketMarca" placeholder="Ej: EPSON, Acer" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Modelo *</label>
-                    <input type="text" id="ticketModelo" placeholder="Ej: L561, A315-56" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Número de Serie *</label>
-                    <input type="text" id="ticketSerie" placeholder="Ej: 123-105-084" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Detalle / Descripción de la Falla *</label>
-                    <textarea id="ticketDetalle" rows="3" placeholder="Describa el problema..." required></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label>Condición Inicial *</label>
-                    <select id="ticketCondicion" required>
-                        <option value="Mantenimiento">Mantenimiento</option>
-                        <option value="Funcional">Funcional</option>
-                    </select>
-                </div>
-
-                <div class="modal-buttons">
-                    <button type="button" id="btnCancelarModal" style="background: #dc4c64; color: white;" class="btn-nuevo">Cancelar</button>
-                    <button type="submit" style="background: #2c9faf; color: white;" class="btn-nuevo">✓ Guardar</button>
-                </div>
-            </form>
-        </div>
+            <div class="modal-buttons">
+                <button type="button" id="btnCancelarModal" style="background: #dc4c64; color: white;" class="btn-nuevo">Cancelar</button>
+                <button type="submit" style="background: #2c9faf; color: white;" class="btn-nuevo">✓ Guardar</button>
+            </div>
+        </form>
     </div>
+</div>
+
+
+
+
+
+
+
+
+
 
     <!-- SDK de Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
