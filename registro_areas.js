@@ -44,15 +44,14 @@ window.addEventListener('click', (e) => {
 });
 
 
+
+//cerrar la ventana con ESC
 window.addEventListener('keydown', function(e) {
     var modalAreas = document.getElementById('modalAreas');
     if (e.key === 'Escape' && modalAreas && modalAreas.style.display === 'flex') {
         document.getElementById('btnCancelarModal').click();
     }
 });
-
-
-
 
 
 
@@ -156,3 +155,29 @@ window.eliminarRegistro = function(id) {
 
 // Carga automática inicial de la tabla
 window.addEventListener('DOMContentLoaded', cargarAreasYDepartamentos);
+
+
+
+  // --- CÓDIGO CORREGIDO: INICIALIZACIÓN DE DATOS Y FUNCIÓN LOGOUT ---
+  window.addEventListener('DOMContentLoaded', () => {
+    // CORRECCIÓN: El elemento en este HTML tiene la clase 'user-email-text'
+    const emailDisplay = document.querySelector(".user-email-text");
+    if (emailDisplay) {
+        const storedEmail = localStorage.getItem("userEmail");
+        if (storedEmail) {
+            emailDisplay.innerText = storedEmail;
+        }
+    }
+});
+
+// FUNCIÓN LOGOUT CONECTADA A GOOGLE FIREBASE AUTH
+window.logout = async () => {
+    try {
+        const auth = firebase.auth(); // Instanciamos Auth localmente de forma segura
+        await auth.signOut();
+        localStorage.clear(); // Limpiamos datos de sesión en el navegador
+        window.location.href = "index.html"; // Redirección al login
+    } catch (error) {
+        alert("Error al cerrar sesión institucional: " + error.message);
+    }
+}
