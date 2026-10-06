@@ -40,6 +40,14 @@ document.getElementById('btnCancelarModal').addEventListener('click', () => {
     form.reset();
     editDocId.value = "";
 });
+// NUEVO: Escuchar la tecla 'ESC' para cerrar la ventana flotante
+window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.style.display === 'flex') {
+        modal.style.display = 'none';
+        form.reset();
+        editDocId.value = "";
+    }
+});
 
 // --- 3. ESCRITURA Y ACTUALIZACIÓN EN LA COLECCIÓN 'TICKETS' ---
 form.addEventListener('submit', async (e) => {
