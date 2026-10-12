@@ -3,7 +3,7 @@
 // ==========================================================================
 const firebaseConfig = {
     apiKey: "AIzaSyDDcGT88IspX4-_TOKlQcdeo-93favOuoY",
-    authDomain: "://firebaseapp.com",
+    authDomain: "://firebaseapp.com", // CORREGIDO E IDENTIFICADO
     projectId: "gestion-mantenimiento-ap-20f51",
     storageBucket: "gestion-mantenimiento-ap-20f51.firebasestorage.app",
     messagingSenderId: "792321276987",
@@ -18,7 +18,6 @@ if (!firebase.apps.length) {
 const db = firebase.firestore();
 const auth = firebase.auth();
 
-// Almacén en caché local para los tickets consultados
 let ticketsLocales = [];
 let idTicketSeleccionado = "";
 
@@ -27,12 +26,9 @@ let idTicketSeleccionado = "";
 // ==========================================================================
 function cargarBandejaDeEntrada(emailUsuario) {
     db.collection("tickets")
-      .where("usuarioEmail", "==", emailUsuario)
       .onSnapshot((snapshot) => {
         
-        // Limpiamos la caché local antes de meter los datos nuevos
         ticketsLocales = [];
-        
         snapshot.forEach((doc) => {
             ticketsLocales.push({
                 id: doc.id,
@@ -62,7 +58,7 @@ function inyectarTicketsComoTarjetas(listaDeTickets) {
     contenedor.innerHTML = "";
 
     if (listaDeTickets.length === 0) {
-        contenedor.innerHTML = `<div style="text-align: center; padding: 30px; color: #858796;">No se encontraron tickets asignados en tu bandeja de entrada.</div>`;
+        contenedor.innerHTML = `<div style="text-align: center; padding: 30px; color: #858796;">No se encontraron tickets registrados en el Ayuntamiento de Calnali.</div>`;
         return;
     }
 
@@ -71,24 +67,23 @@ function inyectarTicketsComoTarjetas(listaDeTickets) {
         card.className = "ticket-card-item";
         card.setAttribute("onclick", `loadTicketDetailInPanel('${ticket.id}')`);
 
-        // Determinar el estilo de la etiqueta de urgencia
         const badgeUrgencia = ticket.urgente === 'Sí' ? 'status-badge-due' : 'status-badge-normal';
 
         card.innerHTML = `
             <div class="ticket-card-left">
                 <div class="user-avatar-circle">👤</div>
                 <div class="ticket-card-info">
-                    <span class="ticket-id-code">[#${ticket.id.substring(0, 6).toUpperCase()}] Falla de ${ticket.tipo || 'Equipo'}</span>
+                    <span class="ticket-id-code" style="color: #5c1424;">[#${ticket.id.substring(0, 6).toUpperCase()}] Falla de ${ticket.tipo || 'Equipo'}</span>
                     <div class="ticket-card-subtext">
-                        De: <span class="subtext-highlight">${ticket.usuarioEmail}</span> | Marca: <span class="subtext-highlight">${ticket.marca || ''}</span> | Modelo: <span class="subtext-highlight">${ticket.modelo || ''}</span>
+                        De: <span class="subtext-highlight">${ticket.usuarioEmail || 'Usuario'}</span> | Marca: <span class="subtext-highlight">${ticket.marca || ''}</span> | Modelo: <span class="subtext-highlight">${ticket.modelo || ''}</span>
                     </div>
                 </div>
             </div>
             <div class="ticket-card-right">
                 <span class="${badgeUrgencia}">${ticket.urgente === 'Sí' ? 'Urgente' : 'Normal'}</span>
                 <div class="ticket-time-counter">
-                    <p>Fecha Petición</p>
-                    <p><strong>${ticket.fechaPeticion || 'S/F'}</strong></p>
+                    <p style="color: #aaa; font-size:11px;">Fecha Petición</p>
+                    <p style="font-size:13px; color:#333;"><strong>${ticket.fechaPeticion || 'S/F'}</strong></p>
                 </div>
             </div>
         `;
@@ -105,9 +100,9 @@ window.loadTicketDetailInPanel = function(ticketId) {
     
     if (!ticket) return;
 
-    // Hacer visible el bloque inferior
+    // Hacer visible el bloque inferior de edición
     document.getElementById("lowerDetailPanel").style.display = "block";
-    document.getElementById("activeTicketTitle").innerText = `Administración del Ticket #${ticketId.toUpperCase()}`;
+    document.getElementById("activeTicketTitle").innerText = `Administración de Ticket #${ticketId.toUpperCase()}`;
 
     // Mapear los datos de la base de datos a las etiquetas del panel inferior
     document.getElementById("lblIdDoc").innerText = ticket.id;
@@ -118,51 +113,40 @@ window.loadTicketDetailInPanel = function(ticketId) {
     document.getElementById("lblSerie").innerText = ticket.serie || "S/S";
     document.getElementById("lblDetalle").innerText = ticket.detalle || "";
     document.getElementById("ticketCondicionEdicion").value = ticket.condicion || "Mantenimiento";
-
-    // Asignar los eventos de clics a los botones de acción del panel
-    document.getElementById("btnEliminarTicket").onclick = () => eliminarTicketIndividual(ticket.id);
-    document.getElementById("btnGuardarCambios").onclick = () => actualizarCondicionTicket(ticket.id);
     
-    // Desplazamiento suave para que el Administrador note que cargaron los datos
+    // Desplazamiento suave para que el usuario aprecie el despliegue
     document.getElementById("lowerDetailPanel").scrollIntoView({ behavior: 'smooth' });
 };
 
 // ==========================================================================
 // 5. ACCIONES OPERATIVAS: ACTUALIZAR CONDICIÓN Y ELIMINAR TICKET
 // ==========================================================================
-async function actualizarCondicionTicket(id) {
+async function actualizarCondicionTicket() {
+    if (!idTicketSeleccionado) return;
     const nuevaCondicion = document.getElementById("ticketCondicionEdicion").value;
     try {
-        await db.collection("tickets").doc(id).update({
+        await db.collection("tickets").doc(idTicketSeleccionado).update({
             condicion: nuevaCondicion
         });
-        alert("¡Condición del equipo actualizada con éxito en la nube!");
+        alert("¡Condición del equipo modificada correctamente en la nube!");
     } catch (error) {
-        alert("Error al intentar actualizar la condición: " + error.message);
+        alert("Error al intentar actualizar el estado: " + error.message);
     }
 }
 
-function eliminarTicketIndividual(id) {
+async function eliminarTicketIndividual() {
+    if (!idTicketSeleccionado) return;
     if (confirm("¿Está completamente segura de que desea eliminar este ticket de forma permanente del sistema?")) {
-        db.collection("tickets").doc(id).delete()
-            .then(() => {
-                alert("Ticket eliminado correctamente del Ayuntamiento.");
-                document.getElementById("lowerDetailPanel").style.display = "none";
-            })
-            .catch((error) => {
-                alert("Error al intentar eliminar el registro: " + error.message);
-            });
+        try {
+            await db.collection("tickets").doc(idTicketSeleccionado).delete();
+            alert("Ticket eliminado correctamente del Ayuntamiento.");
+            document.getElementById("lowerDetailPanel").style.display = "none";
+            idTicketSeleccionado = "";
+        } catch (error) {
+            alert("Error al intentar eliminar el registro: " + error.message);
+        }
     }
 }
-
-// Navegación interna de sub-pestañas inferiores
-window.switchSubTab = function(evt, tabId) {
-    const panels = document.getElementsByClassName("sub-tab-pane");
-    for (let i = 0; i < panels.length; i++) {
-        panels[i].classList.remove("active");
-    }
-    document.getElementById(tabId).classList.add("active");
-};
 
 // ==========================================================================
 // 6. INICIALIZADOR DE SESIÓN Y BARRA DE BÚSQUEDA
@@ -173,6 +157,10 @@ window.addEventListener('DOMContentLoaded', () => {
 
     if (storedEmail) {
         if (emailDisplay) emailDisplay.innerText = storedEmail;
+        
+        // Configuramos las acciones directas de los botones fijos
+        document.getElementById("btnEliminarTicket").onclick = eliminarTicketIndividual;
+        document.getElementById("btnGuardarCambios").onclick = actualizarCondicionTicket;
         
         // Arrancamos la sincronización con Firestore
         cargarBandejaDeEntrada(storedEmail);
@@ -203,7 +191,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Función global de cierre de sesión
+// Función de logout
 window.logout = async () => {
     try {
         await auth.signOut();

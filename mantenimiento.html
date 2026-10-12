@@ -8,58 +8,70 @@
     <link rel="stylesheet" href="styles.css">
     
     <!-- Librerías de Firebase Tradicionales -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>   
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://gstatic.com"></script>
+    <script src="https://gstatic.com"></script>
+    <script src="https://gstatic.com"></script>
 </head>
 <body>
-    <div class="dashboard-layout">
+    <div class="dashboard-container">
         
-        <!-- SIDEBAR IZQUIERDA OFICIAL DE CALNALI -->
+        <!-- SIDEBAR LATERAL IZQUIERDA (GUINDA OFICIAL DE CALNALI) -->
         <aside class="sidebar">
-            <div class="sidebar-header">
-                <img src="logo_Calnali.png" alt="Logo Calnali" class="sidebar-logo">
-                <div class="sidebar-title">
-                    <span class="title-top">H. AYUNTAMIENTO 2024-2027</span>
-                    <span class="title-bottom">CALNALI</span>
+            <div class="sidebar-logo">
+                <div class="logo-link">
+                    <img src="logo_Calnali.png" alt="Logo Calnali" class="menu-logo-img">
+                    <div class="logo-text">
+                        <span class="logo-top">Juntos Rescatando</span>
+                        <span class="logo-bottom">Calnali</span>
+                    </div>
                 </div>
             </div>
 
             <nav class="sidebar-nav">
                 <a href="dashboard.html" class="nav-item">📊 Dashboard</a>
                 <a href="seguridad.html" class="nav-item">🛡️ SEGURIDAD</a>
-                <a href="inventario.html" class="nav-item">💻 INVENTARIO</a>
                 
+                <div class="nav-section active">
+                    <div class="section-title">📦 INVENTARIO</div>
+                    <ul class="sub-menu">
+                        <li><a href="registro_equipo.html" style="color: inherit; text-decoration: none;">• Registro del equipo de cómputo</a></li>
+                        <li><a href="usuarios_encargados.html" style="color: inherit; text-decoration: none;">• Registro de Usuarios encargados</a></li>
+                        <li><a href="areas_departamentos.html" style="color: inherit; text-decoration: none;">• Registro de Áreas y Departamentos</a></li>
+                    </ul>
+                </div>
+
                 <div class="nav-section active">
                     <div class="section-title">🛠️ MANTENIMIENTO</div>
                     <ul class="sub-menu">
-                        <li><a href="ticket.html">• Levantar Ticket</a></li>
-                        <li><a href="mantenimiento.html" class="active">• Bandeja de entrada</a></li>
+                        <li><a href="ticket.html" style="color: inherit; text-decoration: none;">• Levantar Ticket</a></li>
+                        <li><a href="mantenimiento.html" class="active-sub" style="color: inherit; text-decoration: none;">• Bandeja de Entrada</a></li>
                     </ul>
                 </div>
                 
                 <a href="reportes.html" class="nav-item">📈 REPORTES</a>
             </nav>
 
-            <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
+            <button class="btn-logout-sidebar" onclick="logout()">Cerrar Sesión</button>
         </aside>
 
         <!-- CONTENIDO PRINCIPAL DERECHO -->
         <main class="main-content">
-            <header class="content-header">
-                <span id="userEmailDisplay" class="user-email">Cargando usuario...</span>
-            </header>
+            <!-- Barra Superior del Usuario -->
+            <div class="top-bar">
+                <div class="search-box">
+                    🔍 <input type="text" id="inputBuscar" placeholder="Buscar ticket por tipo, marca o falla...">
+                </div>
+                <div class="user-profile">
+                    <span id="userEmailDisplay" style="font-weight: 600; color: #5c1424;">Cargando usuario...</span>
+                </div>
+            </div>
+
+            <h1 class="page-title">Bandeja de Entrada / Tickets de Soporte</h1>
 
             <div class="maint-panel-container">
                 
-                <!-- BLOQUE SUPERIOR: BANDEJA DE ENTRADA -->
+                <!-- CARACTERÍSTICA 1: BARRA DE TICKETS RECIBIDOS (SUPERIOR COMPACTA) -->
                 <div class="ticket-inbox-section">
-                    <div class="inbox-header">
-                        <h3>Bandeja de entrada / Tickets de Soporte</h3>
-                        <input type="text" id="inputBuscar" placeholder="Buscar ticket...">
-                    </div>
-
-                    <!-- Aquí se inyectarán dinámicamente las tarjetas desde Firebase -->
                     <div class="ticket-list-wrapper" id="ticketInboxCardsCuerpo">
                         <div class="loading-text" style="text-align: center; padding: 20px; color: #858796;">
                             Sincronizando tickets con la base de datos de Calnali...
@@ -67,57 +79,54 @@
                     </div>
                 </div>
 
-                <!-- BLOQUE INFERIOR: PANEL DINÁMICO DE DETALLES Y EDICIÓN -->
-                <div id="lowerDetailPanel" class="ticket-detail-edit-section" style="display: none;">
+                <!-- CARACTERÍSTICA 2: PANEL DE DETALLES Y EDICIONES (INFERIOR DESPLEGABLE) -->
+                <div id="lowerDetailPanel" class="ticket-detail-edit-section" style="display: none; margin-top: 20px;">
                     
                     <div class="detail-panel-header">
-                        <h4 id="activeTicketTitle">Detalles del ticket seleccionado</h4>
+                        <h4 id="activeTicketTitle" style="color: #5c1424; font-weight: 700; font-size: 18px;">Detalles del ticket seleccionado</h4>
                     </div>
 
-                    <!-- Barra de herramientas para control del ticket -->
-                    <div class="action-toolbar-buttons">
-                        <button class="tool-btn-c" id="btnEditarTicket">✏️ Editar Campos</button>
-                        <button class="tool-btn-c" id="btnEliminarTicket" style="background-color: #dc4c64; color: white;">🗑️ Eliminar Ticket</button>
+                    <!-- Barra de herramientas para control y acciones del ticket -->
+                    <div class="action-toolbar-buttons" style="background-color: #fcfbf9; padding: 12px; border-radius: 6px; border: 1px solid #eaecf4; display: flex; gap: 10px; align-items: center; margin-bottom: 20px;">
+                        <button class="tool-btn-c" id="btnEliminarTicket" style="background-color: #dc4c64; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: 600;">🗑️ Eliminar Ticket</button>
                         
-                        <div class="state-selector-wrapper">
-                            <span class="label-status">⚙️ Condición del Equipo:</span>
-                            <select id="ticketCondicionEdicion">
+                        <div class="state-selector-wrapper" style="margin-left: auto; display: flex; align-items: center; gap: 10px;">
+                            <span class="label-status" style="font-weight: 600; color: #5c1424; font-size: 14px;">⚙️ Condición del Equipo:</span>
+                            <select id="ticketCondicionEdicion" style="padding: 6px 12px; border-radius: 4px; border: 1px solid #cccccc; outline: none; background: white;">
                                 <option value="Mantenimiento">Mantenimiento</option>
                                 <option value="Funcional">Funcional</option>
                                 <option value="No Funcional">No Funcional</option>
                             </select>
-                            <button class="tool-btn-c" id="btnGuardarCambios" style="background-color: #5c1424; color: white; margin-left: 5px;">Guardar</button>
+                            <button class="tool-btn-c" id="btnGuardarCambios" style="background-color: #5c1424; color: white; border: none; padding: 7px 15px; border-radius: 4px; cursor: pointer; font-weight: 600;">Guardar Cambios</button>
                         </div>
                     </div>
 
-                    <!-- Tabla de Metadatos en formato Grid -->
-                    <div class="meta-data-grid-table">
-                        <div class="grid-row">
-                            <div class="grid-cell"><strong>ID Documento:</strong> <span id="lblIdDoc">-</span></div>
-                            <div class="grid-cell"><strong>Fecha Petición:</strong> <span id="lblFecha">-</span></div>
+                    <!-- Tabla Estructurada de Atributos del Ticket -->
+                    <div class="meta-data-grid-table" style="display: flex; flex-direction: column; border: 1px solid #eaecf4; border-radius: 6px; overflow: hidden; background: white;">
+                        <div class="grid-row" style="display: flex; border-bottom: 1px solid #eaecf4;">
+                            <div class="grid-cell" style="flex: 1; padding: 12px; border-right: 1px solid #eaecf4;"><strong style="color: #b8904c;">ID Documento:</strong> <span id="lblIdDoc">-</span></div>
+                            <div class="grid-cell" style="flex: 1; padding: 12px;"><strong style="color: #b8904c;">Fecha Petición:</strong> <span id="lblFecha">-</span></div>
                         </div>
-                        <div class="grid-row">
-                            <div class="grid-cell"><strong>Tipo Equipo:</strong> <span id="lblTipo">-</span></div>
-                            <div class="grid-cell"><strong>Urgente:</strong> <span id="lblUrgente">-</span></div>
+                        <div class="grid-row" style="display: flex; border-bottom: 1px solid #eaecf4;">
+                            <div class="grid-cell" style="flex: 1; padding: 12px; border-right: 1px solid #eaecf4;"><strong style="color: #b8904c;">Tipo Equipo:</strong> <span id="lblTipo">-</span></div>
+                            <div class="grid-cell" style="flex: 1; padding: 12px;"><strong style="color: #b8904c;">Urgente:</strong> <span id="lblUrgente">-</span></div>
                         </div>
-                        <div class="grid-row">
-                            <div class="grid-cell"><strong>Marca / Modelo:</strong> <span id="lblMarcaModelo">-</span></div>
-                            <div class="grid-cell"><strong>Número Serie:</strong> <span id="lblSerie">-</span></div>
+                        <div class="grid-row" style="display: flex; border-bottom: 1px solid #eaecf4;">
+                            <div class="grid-cell" style="flex: 1; padding: 12px; border-right: 1px solid #eaecf4;"><strong style="color: #b8904c;">Marca / Modelo:</strong> <span id="lblMarcaModelo">-</span></div>
+                            <div class="grid-cell" style="flex: 1; padding: 12px;"><strong style="color: #b8904c;">Número Serie:</strong> <span id="lblSerie">-</span></div>
                         </div>
-                        <div class="grid-row">
-                            <div class="grid-cell" style="flex: 2;"><strong>Detalle / Falla:</strong> <span id="lblDetalle">-</span></div>
+                        <div class="grid-row" style="display: flex;">
+                            <div class="grid-cell" style="flex: 1; padding: 12px;"><strong style="color: #b8904c;">Detalle / Falla:</strong> <span id="lblDetalle">-</span></div>
                         </div>
                     </div>
 
-                    <!-- Sub-pestañas internas -->
-                    <div class="sub-tabs-navigation">
-                        <button class="sub-tab-link active" onclick="switchSubTab(event, 'tab-assets')">Notas Técnicas</button>
+                    <!-- Sub-pestañas de Notas Técnicas -->
+                    <div class="sub-tabs-navigation" style="margin-top: 20px; border-bottom: 2px solid #5c1424;">
+                        <button class="sub-tab-link active" style="background: #5c1424; color: white; border: none; padding: 8px 16px; border-top-left-radius: 4px; border-top-right-radius: 4px; font-weight: 600;">Notas Técnicas de Gestión</button>
                     </div>
                     
-                    <div class="sub-tabs-content">
-                        <div id="tab-assets" class="sub-tab-pane active">
-                            <p>Este panel permite realizar la administración directa de incidencias reportadas en las dependencias de la Presidencia Municipal.</p>
-                        </div>
+                    <div class="sub-tabs-content" style="background: white; padding: 15px; border: 1px solid #eaecf4; border-top: none; border-bottom-left-radius: 6px; border-bottom-right-radius: 6px; color: #666666; font-size: 14px;">
+                        <p>Este panel permite al Administrador modificar la condición de los componentes en tiempo real y coordinar los mantenimientos preventivos y correctivos del H. Ayuntamiento.</p>
                     </div>
 
                 </div>
@@ -125,7 +134,7 @@
         </main>
     </div>
 
-    <!-- Enlazamos el archivo javascript oficial -->
+    <!-- Enlazamos el archivo de control de JavaScript -->
     <script src="mantenimiento.js"></script>
 </body>
 </html>
