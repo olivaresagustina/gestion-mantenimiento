@@ -1,9 +1,9 @@
 // ==========================================================================
-// 1. CONFIGURACIÓN DE FIREBASE E INSTANCIAS DE CONEXIÓN
+// 1. CONFIGURACIÓN DE FIREBASE E INSTANCIAS DE CONEXIÓN (REPARADO)
 // ==========================================================================
 const firebaseConfig = {
     apiKey: "AIzaSyDDcGT88IspX4-_TOKlQcdeo-93favOuoY",
-    authDomain: "://firebaseapp.com", // CORREGIDO E IDENTIFICADO
+    authDomain: "://firebaseapp.com", // Servidor corregido
     projectId: "gestion-mantenimiento-ap-20f51",
     storageBucket: "gestion-mantenimiento-ap-20f51.firebasestorage.app",
     messagingSenderId: "792321276987",
@@ -73,7 +73,7 @@ function inyectarTicketsComoTarjetas(listaDeTickets) {
             <div class="ticket-card-left">
                 <div class="user-avatar-circle">👤</div>
                 <div class="ticket-card-info">
-                    <span class="ticket-id-code" style="color: #5c1424;">[#${ticket.id.substring(0, 6).toUpperCase()}] Falla de ${ticket.tipo || 'Equipo'}</span>
+                    <span class="ticket-id-code" style="color: #5c1424; font-weight: bold;">[#${ticket.id.substring(0, 6).toUpperCase()}] Falla de ${ticket.tipo || 'Equipo'}</span>
                     <div class="ticket-card-subtext">
                         De: <span class="subtext-highlight">${ticket.usuarioEmail || 'Usuario'}</span> | Marca: <span class="subtext-highlight">${ticket.marca || ''}</span> | Modelo: <span class="subtext-highlight">${ticket.modelo || ''}</span>
                     </div>
@@ -82,8 +82,8 @@ function inyectarTicketsComoTarjetas(listaDeTickets) {
             <div class="ticket-card-right">
                 <span class="${badgeUrgencia}">${ticket.urgente === 'Sí' ? 'Urgente' : 'Normal'}</span>
                 <div class="ticket-time-counter">
-                    <p style="color: #aaa; font-size:11px;">Fecha Petición</p>
-                    <p style="font-size:13px; color:#333;"><strong>${ticket.fechaPeticion || 'S/F'}</strong></p>
+                    <p style="color: #aaa; font-size:11px; margin:0;">Fecha Petición</p>
+                    <p style="font-size:13px; color:#333; margin:0;"><strong>${ticket.fechaPeticion || 'S/F'}</strong></p>
                 </div>
             </div>
         `;
@@ -114,7 +114,6 @@ window.loadTicketDetailInPanel = function(ticketId) {
     document.getElementById("lblDetalle").innerText = ticket.detalle || "";
     document.getElementById("ticketCondicionEdicion").value = ticket.condicion || "Mantenimiento";
     
-    // Desplazamiento suave para que el usuario aprecie el despliegue
     document.getElementById("lowerDetailPanel").scrollIntoView({ behavior: 'smooth' });
 };
 
@@ -159,8 +158,11 @@ window.addEventListener('DOMContentLoaded', () => {
         if (emailDisplay) emailDisplay.innerText = storedEmail;
         
         // Configuramos las acciones directas de los botones fijos
-        document.getElementById("btnEliminarTicket").onclick = eliminarTicketIndividual;
-        document.getElementById("btnGuardarCambios").onclick = actualizarCondicionTicket;
+        const btnEliminar = document.getElementById("btnEliminarTicket");
+        const btnGuardar = document.getElementById("btnGuardarCambios");
+        
+        if (btnEliminar) btnEliminar.onclick = eliminarTicketIndividual;
+        if (btnGuardar) btnGuardar.onclick = actualizarCondicionTicket;
         
         // Arrancamos la sincronización con Firestore
         cargarBandejaDeEntrada(storedEmail);

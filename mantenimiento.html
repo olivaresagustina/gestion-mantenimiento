@@ -11,6 +11,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>   
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
 </head>
 <body>
     <div class="dashboard-container">
@@ -28,10 +29,10 @@
             </div>
 
             <nav class="sidebar-nav">
-                <a href="dashboard.html" class="nav-item">📊 Dashboard</a>
-                <a href="seguridad.html" class="nav-item">🛡️ SEGURIDAD</a>
+                <a href="dashboard.html" class="nav-item" style="color: inherit; text-decoration: none;">📊 Dashboard</a>
+                <a href="seguridad.html" class="nav-item" style="color: inherit; text-decoration: none;">🛡️ SEGURIDAD</a>
                 
-                <div class="nav-section active">
+                <div class="nav-section">
                     <div class="section-title">📦 INVENTARIO</div>
                     <ul class="sub-menu">
                         <li><a href="registro_equipo.html" style="color: inherit; text-decoration: none;">• Registro del equipo de cómputo</a></li>
@@ -48,7 +49,7 @@
                     </ul>
                 </div>
                 
-                <a href="reportes.html" class="nav-item">📈 REPORTES</a>
+                <a href="reportes.html" class="nav-item" style="color: inherit; text-decoration: none;">📈 REPORTES</a>
             </nav>
 
             <button class="btn-logout-sidebar" onclick="logout()">Cerrar Sesión</button>
@@ -70,7 +71,7 @@
 
             <div class="maint-panel-container">
                 
-                <!-- CARACTERÍSTICA 1: BARRA DE TICKETS RECIBIDOS (SUPERIOR COMPACTA) -->
+                <!-- BARRA DE TICKETS RECIBIDOS (SUPERIOR COMPACTA) -->
                 <div class="ticket-inbox-section">
                     <div class="ticket-list-wrapper" id="ticketInboxCardsCuerpo">
                         <div class="loading-text" style="text-align: center; padding: 20px; color: #858796;">
@@ -79,7 +80,7 @@
                     </div>
                 </div>
 
-                <!-- CARACTERÍSTICA 2: PANEL DE DETALLES Y EDICIONES (INFERIOR DESPLEGABLE) -->
+                <!-- PANEL DE DETALLES Y EDICIONES (INFERIOR DESPLEGABLE) -->
                 <div id="lowerDetailPanel" class="ticket-detail-edit-section" style="display: none; margin-top: 20px;">
                     
                     <div class="detail-panel-header">
@@ -104,19 +105,19 @@
                     <!-- Tabla Estructurada de Atributos del Ticket -->
                     <div class="meta-data-grid-table" style="display: flex; flex-direction: column; border: 1px solid #eaecf4; border-radius: 6px; overflow: hidden; background: white;">
                         <div class="grid-row" style="display: flex; border-bottom: 1px solid #eaecf4;">
-                            <div class="grid-cell" style="flex: 1; padding: 12px; border-right: 1px solid #eaecf4;"><strong style="color: #b8904c;">ID Documento:</strong> <span id="lblIdDoc">-</span></div>
-                            <div class="grid-cell" style="flex: 1; padding: 12px;"><strong style="color: #b8904c;">Fecha Petición:</strong> <span id="lblFecha">-</span></div>
+                            <div class="grid-cell" style="flex: 1; padding: 12px; border-right: 1px solid #eaecf4;"><strong style="color: #b8904c; display:inline-block; width:120px;">ID Documento:</strong> <span id="lblIdDoc">-</span></div>
+                            <div class="grid-cell" style="flex: 1; padding: 12px;"><strong style="color: #b8904c; display:inline-block; width:120px;">Fecha Petición:</strong> <span id="lblFecha">-</span></div>
                         </div>
                         <div class="grid-row" style="display: flex; border-bottom: 1px solid #eaecf4;">
-                            <div class="grid-cell" style="flex: 1; padding: 12px; border-right: 1px solid #eaecf4;"><strong style="color: #b8904c;">Tipo Equipo:</strong> <span id="lblTipo">-</span></div>
-                            <div class="grid-cell" style="flex: 1; padding: 12px;"><strong style="color: #b8904c;">Urgente:</strong> <span id="lblUrgente">-</span></div>
+                            <div class="grid-cell" style="flex: 1; padding: 12px; border-right: 1px solid #eaecf4;"><strong style="color: #b8904c; display:inline-block; width:120px;">Tipo Equipo:</strong> <span id="lblTipo">-</span></div>
+                            <div class="grid-cell" style="flex: 1; padding: 12px;"><strong style="color: #b8904c; display:inline-block; width:120px;">Urgente:</strong> <span id="lblUrgente">-</span></div>
                         </div>
                         <div class="grid-row" style="display: flex; border-bottom: 1px solid #eaecf4;">
-                            <div class="grid-cell" style="flex: 1; padding: 12px; border-right: 1px solid #eaecf4;"><strong style="color: #b8904c;">Marca / Modelo:</strong> <span id="lblMarcaModelo">-</span></div>
-                            <div class="grid-cell" style="flex: 1; padding: 12px;"><strong style="color: #b8904c;">Número Serie:</strong> <span id="lblSerie">-</span></div>
+                            <div class="grid-cell" style="flex: 1; padding: 12px; border-right: 1px solid #eaecf4;"><strong style="color: #b8904c; display:inline-block; width:120px;">Marca / Modelo:</strong> <span id="lblMarcaModelo">-</span></div>
+                            <div class="grid-cell" style="flex: 1; padding: 12px;"><strong style="color: #b8904c; display:inline-block; width:120px;">Número Serie:</strong> <span id="lblSerie">-</span></div>
                         </div>
                         <div class="grid-row" style="display: flex;">
-                            <div class="grid-cell" style="flex: 1; padding: 12px;"><strong style="color: #b8904c;">Detalle / Falla:</strong> <span id="lblDetalle">-</span></div>
+                            <div class="grid-cell" style="flex: 1; padding: 12px;"><strong style="color: #b8904c; display:inline-block; width:120px;">Detalle / Falla:</strong> <span id="lblDetalle">-</span></div>
                         </div>
                     </div>
 
