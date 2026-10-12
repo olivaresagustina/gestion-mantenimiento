@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mantenimiento - Presidencia Municipal</title>
+    <!-- Enlazamos tus mismos estilos institucionales -->
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Librerías de Firebase tradicionales (Para evitar bloqueos de red) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script> 
+</head>
+<body>
+
+
+
+
+
+
+
+        <div class="dashboard-container">
+            <!-- --- SIDEBAR LATERAL (GUINDA) --- -->
+            <aside class="sidebar">
+                <div class="sidebar-logo">
+                    <a href="menu.html" class="logo-link">
+                        <img src="logo.png" alt="Logo Calnali" class="menu-logo-img">
+                        <div class="logo-text">
+                            <span class="logo-top">Juntos Rescatando</span>
+                            <span class="logo-bottom">Calnali</span>
+                        </div>
+                    </a>
+                </div>
+                
+                <nav class="sidebar-nav">
+                    <div class="nav-item" onclick="window.location.href='menu.html'">📊 Dashboard</div>
+                    <div class="nav-item">🛡 SEGURIDAD</div>
+                    <div class="nav-item" onclick="window.location.href='registro_equipo.html'">📊 INVENTARIO</div>
+                    
+                    <div class="nav-section active">
+                        <div class="section-title">🛠 MANTENIMIENTO</div>
+                        <ul class="sub-menu">
+                            <li class="active-sub" onclick="window.location.href='ticket.html'">• Levantar Ticket</li>
+    
+    
+    
+                            <li>• Bandeja de entrada</li>
+    
+                            
+    
+    
+                            
+                        </ul>
+                    </div>
+                    
+                    <div class="nav-item">📊 REPORTES</div>
+                </nav>
+    
+                <button class="btn-logout-sidebar" onclick="window.logout()">Cerrar Sesión</button>
+            </aside>       
+
+
+
+
+
+
+
+
+            <div class="maint-panel-container">
+        
+        <!-- BLOQUE SUPERIOR: Bandeja de Entrada de Tickets (Estilo Imagen 1) -->
+        <div class="ticket-inbox-section">
+            <div class="inbox-header">
+                <h3>Bandeja de entrada / Tickets de Soporte</h3>
+                <input type="text" id="searchTicketInput" placeholder="Buscar ticket...">
+            </div>
+
+            <div class="ticket-list-wrapper" id="ticketInboxList">
+                <!-- Tarjeta de Ticket de Prueba 1 -->
+                <div class="ticket-card-item" onclick="loadTicketDetailInPanel('TK-AAAA-0002')">
+                    <div class="ticket-card-left">
+                        <div class="user-avatar-circle">👤</div>
+                        <div class="ticket-card-info">
+                            <span class="ticket-id-code">[#HDSK-AAAA-0002] Ayuda con redsys</span>
+                            <div class="ticket-card-subtext">
+                                De: <span class="subtext-highlight">Demo Client</span> Asignado a: <span class="subtext-danger">Sin asignar</span> Depto: <span class="subtext-highlight">Support</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ticket-card-right">
+                        <span class="status-badge-due">Due Today</span>
+                        <div class="ticket-time-counter">
+                            <p>Creado: Hace 4 min</p>
+                            <p>Actualizado: Hace 2 min</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BLOQUE INFERIOR: Panel Dinámico de Edición y Detalles (Estilo Imagen 2) -->
+        <div id="lowerDetailPanel" class="ticket-detail-edit-section" style="display: none;">
+            
+            <div class="detail-panel-header">
+                <h4 id="activeTicketTitle">[#HDSK-AAAA-0002] Ayuda con redsys</h4>
+            </div>
+
+            <!-- Barra de herramientas para ediciones rápidas -->
+            <div class="action-toolbar-buttons">
+                <button class="tool-btn" onclick="triggerEditMode()">✏️ Editar</button>
+                <button class="tool-btn" onclick="triggerAssignUser()">👥 Asignar</button>
+                <button class="tool-btn" onclick="generateTicketPDF()">📄 Generar PDF</button>
+                
+                <div class="state-selector-wrapper">
+                    <span class="label-status">⚙️ Cambiar Estado:</span>
+                    <select id="ticketStateSelect" onchange="updateTicketStatusInFirebase()">
+                        <option value="Open">🟢 Open</option>
+                        <option value="Closed">🔴 Closed</option>
+                        <option value="Deleted">⚫ Deleted</option>
+                        <option value="Spam">🟡 Spam</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Tabla de resumen de información básica -->
+            <div class="meta-data-grid-table">
+                <div class="grid-row">
+                    <div class="grid-cell"><strong>Status:</strong> <span id="metaStatus">Open</span></div>
+                    <div class="grid-cell"><strong>Fuente:</strong> <span id="metaFuente">Web</span></div>
+                </div>
+                <div class="grid-row">
+                    <div class="grid-cell"><strong>Tipo:</strong> <span id="metaTipo">Question</span></div>
+                    <div class="grid-cell"><strong>Prioridad:</strong> <span id="metaPrioridad">Emergency</span></div>
+                </div>
+                <div class="grid-row">
+                    <div class="grid-cell"><strong>Departamento:</strong> <span id="metaDept">Support</span></div>
+                    <div class="grid-cell"><strong>Solicitante:</strong> <span id="metaRequester">Demo Client</span></div>
+                </div>
+            </div>
+
+            <!-- Pestañas secundarias internas -->
+            <div class="sub-tabs-navigation">
+                <button class="sub-tab-link active" onclick="switchSubTab(event, 'tab-assets')">Associated Assets</button>
+                <button class="sub-tab-link" onclick="switchSubTab(event, 'tab-changes')">Associated Changes</button>
+            </div>
+            
+            <div class="sub-tabs-content">
+                <div id="tab-assets" class="sub-tab-pane active">
+                    <p>Equipos de cómputo vinculados a este reporte en la Presidencia Municipal.</p>
+                </div>
+                <div id="tab-changes" class="sub-tab-pane">
+                    <p>Historial de cambios e intervenciones técnicas efectuadas.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Enlazamos la lógica de programación lógica -->
+    <script src="mantenimiento.js"></script>
+</body>
+</html>
