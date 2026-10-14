@@ -1,4 +1,4 @@
-// 1. Configuración de Firebase e Inicialización de Servicios
+// 1. Configuración de Firebase e Inicialización de Servicios Oficiales
 const firebaseConfig = {
     apiKey: "AIzaSyDDcGT88IspX4-_TOKtQcdeo-93favOuoY",
     authDomain: "://firebaseapp.com",
@@ -15,29 +15,35 @@ if (!firebase.apps.length) {
 const db = firebase.firestore();
 const auth = firebase.auth();
 
-// Captura de elementos del DOM
-const modal = document.getElementById('modalGestionPeticion');
-const form = document.getElementById('formGestionPeticion');
-let registrosGlobales = []; // Caché para el filtro del buscador en tiempo real
+// Referencias del DOM para el Panel de Control Inferior
+const panelDetalles = document.getElementById('panelGestionInSitu');
+const formPanel = document.getElementById('formPanelPeticion');
+let registrosGlobales = []; // Resguardo local para optimizar las búsquedas
 
-// --- 2. GESTIÓN DEL MODAL FLOTANTE ---
-document.getElementById('btnCerrarModalPet').addEventListener('click', () => {
-    modal.style.display = 'none';
-    form.reset();
-    document.getElementById('ticketDocId').value = "";
-});
+// --- 2. CONTROLADORES DE APAGADO / CIERRE DEL PANEL INFERIOR ---
+const ocultarYLimpiarPanel = () => {
+    panelDetalles.style.display = 'none';
+    formPanel.reset();
+    document.getElementById('panelTicketDocId').value = "";
+    
+    // Limpiar el estado visual activo de cualquier renglón en la tabla
+    document.querySelectorAll('#tablaPeticionesCuerpo tr').forEach(tr => {
+        tr.classList.remove('fila-seleccionada');
+    });
+};
 
-// Accesibilidad con la tecla ESC
+document.getElementById('btnCerrarPanelInferior').addEventListener('click', ocultarYLimpiarPanel);
+document.getElementById('btnCancelarPanel').addEventListener('click', ocultarYLimpiarPanel);
+
+// Gestión de accesibilidad con el teclado: Tecla Escape (ESC)
 window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && modal.style.display === 'flex') {
-        modal.style.display = 'none';
-        form.reset();
-        document.getElementById('ticketDocId').value = "";
+    if (e.key === 'Escape' && panelDetalles.style.display === 'block') {
+        ocultarYLimpiarPanel();
     }
 });
-// --- 3. LECTURA REACTIVA GLOBAL Y CRUCE DE DATOS ---
+
+// --- 3. EXTRACCIÓN REACTIVA EN TIEMPO REAL DESDE CLOUD FIRESTORE ---
 function cargarPeticionesGlobales() {
-    // 1. Escuchamos en tiempo real la colección de tickets (sin importar el usuario)
     db.collection("tickets").onSnapshot(async (ticketsSnapshot) => {
         const tbody = document.getElementById("tablaPeticionesCuerpo");
         if (!tbody) return;
@@ -47,16 +53,14 @@ function cargarPeticionesGlobales() {
             return;
         }
 
-        // Limpiamos caché global para el buscador
         registrosGlobales = [];
 
-        // Descargamos en paralelo los catálogos auxiliares para agilizar el cruce
+        // Descarga simultánea de colecciones secundarias (Cruces de datos)
         const [encargadosSnap, peticionesSnap] = await Promise.all([
             db.collection("usuarios_encargados").get(),
             db.collection("peticiones").get()
         ]);
 
-        // Mapeamos encargados por correo electrónico para obtener su nombre y departamento
         const mapaEncargados = {};
         encargadosSnap.forEach(doc => {
             const d = doc.data();
@@ -68,31 +72,25 @@ function cargarPeticionesGlobales() {
             }
         });
 
-        // Mapeamos las peticiones ya gestionadas usando el ID del ticket como llave
         const mapaPeticiones = {};
         peticionesSnap.forEach(doc => {
             mapaPeticiones[doc.data().ticketId] = doc.data();
         });
 
-        // Procesamos cada ticket levantado
         ticketsSnapshot.forEach((docTicket) => {
             const ticketData = docTicket.data();
             const ticketId = docTicket.id;
             const correoKey = (ticketData.usuarioEmail || "").trim().toLowerCase();
 
-            // Obtenemos datos del encargado mediante el cruce por correo electrónico
             const infoEncargado = mapaEncargados[correoKey] || { nombre: "Desconocido", departamento: "No Asignado" };
-            
-            // Obtenemos datos de gestión previa si ya existen en la colección 'peticiones'
             const gestionPrevia = mapaPeticiones[ticketId] || {};
 
-            // Consolidamos el objeto completo para la tabla y el buscador
             registrosGlobales.push({
                 ticketId: ticketId,
                 encargado: infoEncargado.nombre,
                 departamento: infoEncargado.departamento,
                 problema: ticketData.detalle || "Sin descripción de falla",
-                fechaEntrada: ticketData.fechaPeticion || "S/F", // Jalado directamente del registro original del ticket
+                fechaEntrada: ticketData.fechaPeticion || "S/F",
                 tecnico: gestionPrevia.tecnico || "",
                 tipoMantenimiento: gestionPrevia.tipoMantenimiento || "",
                 tiempoEstimado: gestionPrevia.tiempoEstimado || "",
@@ -104,19 +102,17 @@ function cargarPeticionesGlobales() {
             });
         });
 
-        // Pintamos la tabla con la caché unificada
         inyectarPeticionesEnTabla(registrosGlobales);
 
     }, (error) => {
-        console.error("Error crítico en la lectura global de Firestore:", error);
+        console.error("Falla en la consulta sincrónica del servidor:", error);
         const tbody = document.getElementById("tablaPeticionesCuerpo");
         if (tbody) {
-            tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #dc4c64; padding: 20px;">Error de autenticación o reglas al sincronizar el panel.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #dc4c64; padding: 20px;">Error al enlazar los datos.</td></tr>`;
         }
     });
 }
-
-// --- 4. RENDERIZADO DINÁMICO DE FILAS EN LA TABLA ---
+// --- 4. CONSTRUCCIÓN DE FILAS CON EVENTO INTEGRADO DE CLIC (MASTER-DETAIL) ---
 function inyectarPeticionesEnTabla(listaRegistros) {
     const tbody = document.getElementById("tablaPeticionesCuerpo");
     if (!tbody) return;
@@ -126,6 +122,7 @@ function inyectarPeticionesEnTabla(listaRegistros) {
 
     listaRegistros.forEach((reg) => {
         const tr = document.createElement("tr");
+        tr.setAttribute("id", `fila-${reg.ticketId}`);
 
         tr.innerHTML = `
             <td><strong>${index++}</strong></td>
@@ -138,75 +135,90 @@ function inyectarPeticionesEnTabla(listaRegistros) {
             <td>${reg.fechaEntrada}</td>
             <td>${reg.fechaSalida || '<em style="color:#aaa;">Vacío</em>'}</td>
             <td>
-                <button class="btn-action-p" style="background-color: #2c9faf;" 
-                    onclick="abrirGestionModal('${reg.ticketId}', '${reg.encargado.replace(/'/g, "\\'")}', '${reg.problema.replace(/'/g, "\\'")}', '${reg.fechaEntrada}', '${reg.tecnico}', '${reg.tipoMantenimiento}', '${reg.tiempoEstimado}', '${reg.fechaSalida}')">
+                <button class="btn-action-p" style="background-color: #2c9faf;">
                     <i class="fa-solid fa-pen-to-square"></i>
                 </button>
             </td>
         `;
+
+        // FUNCIONALIDAD ADQUIRIDA: Dar clic en cualquier celda de la fila levanta el panel integrado inferior
+        tr.addEventListener('click', () => {
+            document.querySelectorAll('#tablaPeticionesCuerpo tr').forEach(row => row.classList.remove('fila-seleccionada'));
+            tr.classList.add('fila-seleccionada');
+            
+            mostrarPanelModificaciones(reg);
+        });
+
         tbody.appendChild(tr);
     });
 }
-// --- 5. DISPARADOR DE LA VENTANA MODAL DE GESTIÓN TÉCNICA ---
-window.abrirGestionModal = function(ticketId, encargado, problema, fechaEntrada, tecnico, tipoMantenimiento, tiempoEstimado, fechaSalida) {
-    // Inyectamos el ID del documento original en el input oculto
-    document.getElementById('ticketDocId').value = ticketId;
 
-    // Pintamos los datos que se jalan del ticket original en los campos bloqueados (grises)
-    document.getElementById('modalEncargado').value = encargado;
-    document.getElementById('modalProblema').value = problema;
+// --- 5. TRANSFERENCIA DE DATOS HACIA LOS CASILLEROS DEL PANEL ---
+function mostrarPanelModificaciones(registro) {
+    document.getElementById('panelTicketDocId').value = registro.ticketId;
+    document.getElementById('panelEncargado').value = registro.encargado;
+    document.getElementById('panelDepartamento').value = registro.departamento;
+    document.getElementById('panelProblema').value = registro.problema;
 
-    // Rellenamos los campos de escritura con datos previos si ya existía una gestión, o los dejamos vacíos
-    document.getElementById('petTecnico').value = tecnico !== "undefined" && tecnico !== "" ? tecnico : "";
-    document.getElementById('petTipoMantenimiento').value = tipoMantenimiento !== "undefined" && tipoMantenimiento !== "" ? tipoMantenimiento : "";
-    document.getElementById('petTiempo').value = tiempoEstimado !== "undefined" && tiempoEstimado !== "" ? tiempoEstimado : "";
-    document.getElementById('petFechaSalida').value = fechaSalida !== "undefined" && fechaSalida !== "" ? fechaSalida : "";
+    document.getElementById('panelTecnico').value = registro.tecnico || "";
+    document.getElementById('panelTipoMantenimiento').value = registro.tipoMantenimiento || "";
+    document.getElementById('panelTiempo').value = registro.tiempoEstimado || "";
+    document.getElementById('panelFechaEntrada').value = registro.fechaEntrada !== "S/F" ? registro.fechaEntrada : "";
+    document.getElementById('panelFechaSalida').value = registro.fechaSalida || "";
 
-    // Desplegamos la ventana modal con animación flex
-    modal.style.display = 'flex';
-};
+    // Activar visibilidad en bloque
+    panelDetalles.style.display = 'block';
+    
+    // Auto-scrolling suave hacia abajo para agilizar la edición del usuario
+    panelDetalles.scrollIntoView({ behavior: 'smooth' });
+}
 
-// --- 6. ACCIÓN DE GUARDADO EN LA NUEVA COLECCIÓN 'PETICIONES' ---
-form.addEventListener('submit', async (e) => {
+// --- 6. GUARDAR COMO NUEVO REGISTRO EN COLECCIÓN HISTÓRICA INDEPENDIENTE ---
+formPanel.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const ticketId = document.getElementById('ticketDocId').value;
-    const tecnico = document.getElementById('petTecnico').value;
-    const tipoMantenimiento = document.getElementById('petTipoMantenimiento').value;
-    const tiempoEstimado = document.getElementById('petTiempo').value.trim();
-    const fechaSalida = document.getElementById('petFechaSalida').value;
+    const ticketId = document.getElementById('panelTicketDocId').value;
+    const encargado = document.getElementById('panelEncargado').value;
+    const departamento = document.getElementById('panelDepartamento').value;
+    const problema = document.getElementById('panelProblema').value;
+    
+    const tecnico = document.getElementById('panelTecnico').value;
+    const tipoMantenimiento = document.getElementById('panelTipoMantenimiento').value;
+    const tiempoEstimado = document.getElementById('panelTiempo').value.trim();
+    const fechaEntrada = document.getElementById('panelFechaEntrada').value;
+    const fechaSalida = document.getElementById('panelFechaSalida').value;
 
     if (!ticketId) {
-        alert("Error crítico: No se reconoció el ID del ticket original.");
+        alert("Error de proceso: Por favor, seleccione un ticket válido de la tabla.");
         return;
     }
 
     try {
-        // Guardamos los datos vinculando el registro directamente al ID del ticket original
-        // Usamos .doc(ticketId).set() para que si ya existe lo actualice, y si no, lo cree de cero
-        await db.collection("peticiones").doc(ticketId).set({
-            ticketId: ticketId,
-            tecnico: tecnico,
+        // ESPECIFICACIÓN: Guardado mediante .add en una nueva colección histórica independiente
+        await db.collection("historico_peticiones_modificadas").add({
+            ticketOriginalId: ticketId,
+            solicitante: encargado,
+            departamento: departamento,
+            fallaReportada: problema,
+            tecnicoAsignado: tecnico,
             tipoMantenimiento: tipoMantenimiento,
-            tiempoEstimado: tiempoEstimado,
-            fechaSalida: fechaSalida,
-            fechaGestion: firebase.firestore.FieldValue.serverTimestamp()
+            tiempoEstimadoDias: Number(tiempoEstimado),
+            fechaEntrada: fechaEntrada,
+            fechaSalidaEstimada: fechaSalida,
+            fechaRegistroCambio: firebase.firestore.FieldValue.serverTimestamp(),
+            operadorEmail: localStorage.getItem("userEmail")
         });
 
-        alert("¡Gestión técnica de la petición guardada con éxito!");
-        
-        // Cerramos el modal de forma limpia y restablecemos los controles del formulario
-        modal.style.display = 'none';
-        form.reset();
-        document.getElementById('ticketDocId').value = "";
+        alert("¡Operación realizada correctamente! Modificación guardada como un nuevo registro histórico en la base de datos.");
+        ocultarYLimpiarPanel();
 
     } catch (error) {
-        console.error("Error al almacenar la petición de soporte:", error);
-        alert("Error al procesar la operación: " + error.message);
+        console.error("Error al almacenar el cambio en Firestore:", error);
+        alert("Error al procesar la operación en el servidor: " + error.message);
     }
 });
 
-// --- 7. BARRA DE BÚSQUEDA MULTICAMPO EN TIEMPO REAL ---
+// --- 7. BUSCADOR MULTICAMPO EN TIEMPO REAL ---
 const inputBuscar = document.getElementById("inputBuscarPeticion");
 if (inputBuscar) {
     inputBuscar.addEventListener("input", (e) => {
@@ -217,7 +229,6 @@ if (inputBuscar) {
             return;
         }
 
-        // Filtramos la caché local analizando múltiples parámetros de la celda
         const registrosFiltrados = registrosGlobales.filter((reg) => {
             return reg.encargado.toLowerCase().includes(textoBusqueda) ||
                    reg.departamento.toLowerCase().includes(textoBusqueda) ||
@@ -236,19 +247,17 @@ window.logout = async () => {
         localStorage.clear();
         window.location.href = "index.html";
     } catch (error) {
-        alert("Error al cerrar sesión municipal: " + error.message);
+        alert("Error al cerrar sesión: " + error.message);
     }
 };
 
-// --- 9. INICIALIZADOR DE SEGURIDAD AL CARGAR LA PÁGINA ---
+// --- 9. VERIFICADOR DE SESIÓN INICIAL ---
 window.addEventListener('DOMContentLoaded', () => {
     const emailDisplay = document.getElementById("userEmailDisplay");
     const storedEmail = localStorage.getItem("userEmail");
 
     if (storedEmail) {
         if (emailDisplay) emailDisplay.innerText = storedEmail;
-        
-        // Ejecuta el motor reactivo de cruce de datos global
         cargarPeticionesGlobales();
     } else {
         alert("Acceso denegado. Por favor inicia sesión.");

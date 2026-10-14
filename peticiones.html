@@ -8,20 +8,112 @@
     <link rel="stylesheet" href="https://cloudflare.com">
     <style>
         .header-acciones { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .tabla-peticiones { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.03); font-size: 13px; }
-        .tabla-peticiones th, .tabla-peticiones td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eeeeee; }
-        .tabla-peticiones th { background-color: #f8f9fa; color: #5c1424; font-weight: 600; }
-        .btn-action-p { border: none; color: white; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 14px; }
         
-        /* Modal Flotante */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: white; padding: 25px; border-radius: 12px; width: 100%; max-width: 550px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-        .form-group { margin-bottom: 12px; display: flex; flex-direction: column; gap: 4px; text-align: left; }
-        .form-group label { font-size: 11px; font-weight: 600; color: #555; }
-        .form-group input, .form-group select { padding: 8px 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; outline: none; }
-        .form-group input:disabled { background-color: #f5f5f5; color: #777; cursor: not-allowed; }
-        .modal-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px; }
-        .btn-modal { padding: 8px 15px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; }
+        /* === TABLA DESPLAZABLE (SCROLLABLE) DE MAXIMO 10 REGISTROS === */
+        .tabla-scroll-container {
+            width: 100%;
+            max-height: 440px; /* Altura máxima para limitar a 10 registros aproximados con scroll */
+            overflow-y: auto;
+            border: 1px solid #e1dccb;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            background: white;
+        }
+        
+        .tabla-peticiones { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .tabla-peticiones th, .tabla-peticiones td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eeeeee; }
+        
+        /* Cabecera Fija para el Scroll vertical */
+        .tabla-peticiones th { 
+            background-color: #f8f5ed; 
+            color: #5c1424; 
+            font-weight: 600; 
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: inset 0 -1px 0 #eeeeee;
+        }
+        
+        /* Fila seleccionada dinámicamente */
+        .tabla-peticiones tbody tr.fila-seleccionada {
+            background-color: #f5ebd5 !important;
+            border-left: 4px solid #b8904c;
+        }
+        
+        .tabla-peticiones tbody tr { cursor: pointer; transition: background 0.2s; }
+        .tabla-peticiones tbody tr:hover { background-color: #fbf9f5; }
+        
+        .btn-action-p { border: none; color: white; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 14px; transition: 0.2s; }
+        .btn-action-p:hover { filter: brightness(0.9); }
+        
+        /* === PANEL DE DETALLES INFERIOR INTEGRADO === */
+        .panel-detalles-inferior {
+            display: none; /* Se activa por JS al dar clic en un registro */
+            margin-top: 30px;
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid #e1dccb;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+            overflow: hidden;
+            animation: slideUp 0.3s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .panel-header {
+            background: #5c1424; /* Guinda Institucional */
+            color: #ffffff;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .panel-header h2 { font-size: 15px; font-weight: 600; letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px; }
+        .panel-close-btn { background: transparent; border: none; color: white; font-size: 18px; cursor: pointer; opacity: 0.8; }
+        .panel-close-btn:hover { opacity: 1; }
+        
+        .panel-body-grid {
+            padding: 25px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            background: #fbf6ee; /* Fondo Beige de tu paleta */
+        }
+        
+        .form-group-panel { display: flex; flex-direction: column; gap: 6px; text-align: left; }
+        .form-group-panel label { font-size: 12px; font-weight: 600; color: #5c1424; }
+        .form-group-panel input, .form-group-panel select { 
+            padding: 10px 12px; 
+            border: 1.5px solid #cccccc; 
+            border-radius: 6px; 
+            font-size: 13px; 
+            outline: none; 
+            background: white;
+            transition: 0.3s;
+        }
+        .form-group-panel input:focus, .form-group-panel select:focus { border-color: #b8904c; }
+        .form-group-panel input:disabled { background-color: #f0eae1; color: #666; cursor: not-allowed; border-color: #dcd6c8; }
+        
+        .panel-full-width { grid-column: span 2; }
+        
+        .panel-acciones-footer {
+            grid-column: span 2;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 10px;
+            padding-top: 15px;
+            border-top: 1px solid #e1dccb;
+        }
+        
+        .btn-panel { padding: 10px 22px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px; transition: 0.2s; }
+        .btn-panel-cancelar { background: #dc4c64; color: white; }
+        .btn-panel-guardar { background: #2c9faf; color: white; }
+        .btn-panel:hover { filter: brightness(0.9); transform: translateY(-1px); }
     </style>
 </head>
 <body>
@@ -67,71 +159,96 @@
                     <h3 style="font-size: 14px; color: #666;">Lista de Equipos de Cómputo con peticiones de mantenimientos</h3>
                 </div>
 
-                <table class="tabla-peticiones">
-                    <thead>
-                        <tr>
-                            <th>No</th>
-                            <th>Encargado</th>
-                            <th>Departamento</th>
-                            <th>Técnico</th>
-                            <th>Tipo de mantenimiento</th>
-                            <th>Tiempo Estimado (días)</th>
-                            <th>Problema</th>
-                            <th>Fecha de entrada</th>
-                            <th>Fecha de salida</th>
-                            <th>Botones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tablaPeticionesCuerpo">
-                        <tr><td colspan="10" style="text-align: center; color: #777;">Cargando peticiones globales del Ayuntamiento...</td></tr>
-                    </tbody>
-                </table>
+                <!-- CONTENEDOR CON SCROLL OPTIMIZADO -->
+                <div class="tabla-scroll-container">
+                    <table class="tabla-peticiones">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Encargado</th>
+                                <th>Departamento</th>
+                                <th>Técnico</th>
+                                <th>Tipo de mantenimiento</th>
+                                <th>Tiempo Estimado (días)</th>
+                                <th>Problema</th>
+                                <th>Fecha de entrada</th>
+                                <th>Fecha de salida</th>
+                                <th>Botones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaPeticionesCuerpo">
+                            <tr><td colspan="10" style="text-align: center; color: #777;">Cargando peticiones globales del Ayuntamiento...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- === NUEVO PANEL INFERIOR DE MODIFICACIONES INTEGRADO === -->
+                <div class="panel-detalles-inferior" id="panelGestionInSitu">
+                    <div class="panel-header">
+                        <h2><i class="fa-solid fa-file-invoice"></i> Detalles y Modificación del Ticket Seleccionado</h2>
+                        <button type="button" class="panel-close-btn" id="btnCerrarPanelInferior">×</button>
+                    </div>
+                    
+                    <form id="formPanelPeticion">
+                        <div class="panel-body-grid">
+                            <input type="hidden" id="panelTicketDocId"> <!-- ID original vinculado -->
+
+                            <!-- Datos de solo lectura del solicitante -->
+                            <div class="form-group-panel">
+                                <label><i class="fa-solid fa-user"></i> Encargado / Solicitante</label>
+                                <input type="text" id="panelEncargado" disabled>
+                            </div>
+                            <div class="form-group-panel">
+                                <label><i class="fa-solid fa-building"></i> Departamento</label>
+                                <input type="text" id="panelDepartamento" disabled>
+                            </div>
+                            <div class="form-group-panel panel-full-width">
+                                <label><i class="fa-solid fa-triangle-exclamation"></i> Problema / Falla Reportada</label>
+                                <input type="text" id="panelProblema" disabled>
+                            </div>
+
+                            <!-- Campos Editables Técnicos -->
+                            <div class="form-group-panel">
+                                <label>Técnico Asignado *</label>
+                                <select id="panelTecnico" required>
+                                    <option value="">-- Seleccione Técnico --</option>
+                                    <option value="Ing. Alan Flores">Ing. Alan Flores</option>
+                                    <option value="Lic. Ruby Vite">Lic. Ruby Vite</option>
+                                </select>
+                            </div>
+                            <div class="form-group-panel">
+                                <label>Tipo de Mantenimiento *</label>
+                                <select id="panelTipoMantenimiento" required>
+                                    <option value="">-- Seleccione Tipo --</option>
+                                    <option value="Correctivo">Correctivo</option>
+                                    <option value="Preventivo">Preventivo</option>
+                                    <option value="Actualización de software">Actualización de software</option>
+                                </select>
+                            </div>
+                            <div class="form-group-panel">
+                                <label>Tiempo Estimado (Días) *</label>
+                                <input type="number" id="panelTiempo" min="1" placeholder="Ej: 3" required>
+                            </div>
+                            <div class="form-group-panel">
+                                <label>Fecha de Entrada *</label>
+                                <input type="date" id="panelFechaEntrada" required>
+                            </div>
+                            <div class="form-group-panel panel-full-width">
+                                <label>Fecha de Salida (Estimada) *</label>
+                                <input type="date" id="panelFechaSalida" required>
+                            </div>
+
+                            <div class="panel-acciones-footer">
+                                <button type="button" id="btnCancelarPanel" class="btn-panel btn-panel-cancelar">Cancelar</button>
+                                <button type="submit" class="btn-panel btn-panel-guardar"><i class="fa-solid fa-floppy-disk"></i> Modificar y Guardar Histórico</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
         </main>
     </div>
-
-    <!-- --- VENTANA MODAL DE GESTIÓN TÉCNICA --- -->
-    <div class="modal" id="modalGestionPeticion">
-        <div class="modal-content">
-            <h2 style="color: #5c1424; margin-bottom: 15px; font-size: 16px;">Gestionar Petición de Mantenimiento</h2>
-            <form id="formGestionPeticion">
-                <input type="hidden" id="ticketDocId"> <!-- ID Vinculado al Ticket Original -->
-
-                <!-- Bloque de Solo Lectura (Gris) -->
-                <div class="form-group"><label>Encargado / Solicitante</label><input type="text" id="modalEncargado" disabled></div>
-                <div class="form-group"><label>Problema / Falla Reportada</label><input type="text" id="modalProblema" disabled></div>
-
-                <!-- Bloque de Escritura (Sujeto a Modificación) -->
-                <div class="form-group">
-                    <label>Técnico Asignado *</label>
-                    <select id="petTecnico" required>
-                        <option value="">-- Seleccione Técnico --</option>
-                        <option value="Ing. Alan Flores">Ing. Alan Flores</option>
-                        <option value="Lic. Ruby Vite">Lic. Ruby Vite</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Tipo de Mantenimiento *</label>
-                    <select id="petTipoMantenimiento" required>
-                        <option value="">-- Seleccione Tipo --</option>
-                        <option value="Correctivo">Correctivo</option>
-                        <option value="Preventivo">Preventivo</option>
-                        <option value="Actualización de software">Actualización de software</option>
-                    </select>
-                </div>
-                <div class="form-group"><label>Tiempo Estimado (Días) *</label><input type="number" id="petTiempo" min="1" placeholder="Ej: 3" required></div>
-                <div class="form-group"><label>Fecha de Entrada *</label><input type="date" id="petFechaEntrada" required></div>
-                <div class="form-group"><label>Fecha de Salida (Estimada) *</label><input type="date" id="petFechaSalida" required></div>
-
-                <div class="modal-buttons">
-                    <button type="button" id="btnCerrarModalPet" style="background: #dc4c64; color: white;" class="btn-modal">Cancelar</button>
-                    <button type="submit" style="background: #2c9faf; color: white;" class="btn-modal">✓ Guardar Gestión</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- SDK Firebase -->
+    <!-- Cierre del documento HTML e invocación de Scripts -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>   
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
