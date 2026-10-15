@@ -112,7 +112,8 @@ function cargarPeticionesGlobales() {
         }
     });
 }
-// --- 4. CONSTRUCCIÓN DE FILAS CON EVENTO INTEGRADO DE CLIC (MASTER-DETAIL) ---
+
+// --- 4. CONSTRUCCIÓN DE FILAS CON EVENTO INTEGRADO DE CLIC (MÓDULO CORREGIDO) ---
 function inyectarPeticionesEnTabla(listaRegistros) {
     const tbody = document.getElementById("tablaPeticionesCuerpo");
     if (!tbody) return;
@@ -124,16 +125,14 @@ function inyectarPeticionesEnTabla(listaRegistros) {
         const tr = document.createElement("tr");
         tr.setAttribute("id", `fila-${reg.ticketId}`);
 
+        // Corrección directa: Se eliminaron las celdas de Técnico, Tipo de mantenimiento, Tiempo y Fecha de Salida
+        // Ahora coincide perfectamente con el diseño de 6 columnas de tu tabla HTML
         tr.innerHTML = `
             <td><strong>${index++}</strong></td>
             <td>${reg.encargado}</td>
             <td>${reg.departamento}</td>
-            <td>${reg.tecnico || '<em style="color:#aaa;">Vacío</em>'}</td>
-            <td>${reg.tipoMantenimiento || '<em style="color:#aaa;">Vacío</em>'}</td>
-            <td>${reg.tiempoEstimado || '<em style="color:#aaa;">Vacío</em>'}</td>
             <td>${reg.problema}</td>
             <td>${reg.fechaEntrada}</td>
-            <td>${reg.fechaSalida || '<em style="color:#aaa;">Vacío</em>'}</td>
             <td>
                 <button class="btn-action-p" style="background-color: #2c9faf;">
                     <i class="fa-solid fa-pen-to-square"></i>
@@ -141,7 +140,7 @@ function inyectarPeticionesEnTabla(listaRegistros) {
             </td>
         `;
 
-        // FUNCIONALIDAD ADQUIRIDA: Dar clic en cualquier celda de la fila levanta el panel integrado inferior
+        // Al hacer clic en la fila se sigue enviando el objeto completo con todos sus campos al panel inferior
         tr.addEventListener('click', () => {
             document.querySelectorAll('#tablaPeticionesCuerpo tr').forEach(row => row.classList.remove('fila-seleccionada'));
             tr.classList.add('fila-seleccionada');
@@ -152,6 +151,8 @@ function inyectarPeticionesEnTabla(listaRegistros) {
         tbody.appendChild(tr);
     });
 }
+
+
 
 // --- 5. TRANSFERENCIA DE DATOS HACIA LOS CASILLEROS DEL PANEL ---
 function mostrarPanelModificaciones(registro) {
