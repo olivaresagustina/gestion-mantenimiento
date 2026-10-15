@@ -207,11 +207,11 @@
                             <div class="form-group-panel">
                                 <label>Técnico Asignado *</label>
                                 <select id="panelTecnico" required>
-                                    <option value="">-- Seleccione Técnico --</option>
-                                    <option value="Ing. Alan Flores">Ing. Alan Flores</option>
-                                    <option value="Lic. Ruby Vite">Lic. Ruby Vite</option>
+                                    <option value="">-- Cargando Administradores --</option>
                                 </select>
                             </div>
+
+
                             <div class="form-group-panel">
                                 <label>Tipo de Mantenimiento *</label>
                                 <select id="panelTipoMantenimiento" required>
@@ -225,14 +225,30 @@
                                 <label>Tiempo Estimado (Días) *</label>
                                 <input type="number" id="panelTiempo" min="1" placeholder="Ej: 3" required>
                             </div>
+
+
+
                             <div class="form-group-panel">
-                                <label>Fecha de Entrada *</label>
-                                <input type="date" id="panelFechaEntrada" required>
+                                <label>Fecha de Entrada</label>
+                                <input type="date" id="panelFechaEntrada" disabled>
                             </div>
+
                             <div class="form-group-panel panel-full-width">
                                 <label>Fecha de Salida (Estimada) *</label>
                                 <input type="date" id="panelFechaSalida" required>
                             </div>
+
+                            
+                            <div class="form-group-panel panel-full-width">
+                                <label>Status del Ticket *</label>
+                                <select id="panelStatusTicket" required>
+                                    <option value="Abierto">ABIERTO</option>
+                                    <option value="Asignado">ASIGNADO</option>
+                                    <option value="Cerrado">CERRADO</option>
+                                </select>
+                            </div>
+
+
 
                             <div class="panel-acciones-footer">
                                 <button type="button" id="btnCancelarPanel" class="btn-panel btn-panel-cancelar">Cancelar</button>

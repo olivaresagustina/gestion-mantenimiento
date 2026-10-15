@@ -1,4 +1,4 @@
-// 1. Configuración de Firebase e Inicialización de Servicios Oficiales Corregida
+// 1. Configuración de Firebase e Inicialización de Servicios Oficiales
 const firebaseConfig = {
     apiKey: "AIzaSyDDcGT88IspX4-_TOKtQcdeo-93favOuoY",
     authDomain: "://firebaseapp.com",
@@ -37,7 +37,40 @@ window.addEventListener('keydown', (e) => {
     }
 });
 
-// --- 3. EXTRACCIÓN REACTIVA INYECTANDO EL CAMPO STATUS ---
+// --- NUEVA FUNCIÓN: JALAR ADMINISTRADORES PARA EL CAMPO TÉCNICO ---
+function cargarTecnicosAdministradores() {
+    const selectTecnico = document.getElementById("panelTecnico");
+    if (!selectTecnico) return;
+
+    // Buscamos en tu colección de usuarios aquellos cuyo rol sea "Administrador"
+    db.collection("usuarios_encargados")
+      .where("rol", "==", "Administrador")
+      .get()
+      .then((snapshot) => {
+          selectTecnico.innerHTML = '<option value="">-- Seleccione Técnico --</option>';
+          
+          if (snapshot.empty) {
+              selectTecnico.innerHTML = '<option value="">No hay administradores registrados</option>';
+              return;
+          }
+
+          snapshot.forEach((doc) => {
+              const datosUser = doc.data();
+              if (datosUser.nombreCompleto) {
+                  const option = document.createElement("option");
+                  option.value = datosUser.nombreCompleto;
+                  option.textContent = datosUser.nombreCompleto;
+                  selectTecnico.appendChild(option);
+              }
+          });
+      })
+      .catch((error) => {
+          console.error("Error al obtener los administradores: ", error);
+          selectTecnico.innerHTML = '<option value="">Error al cargar técnicos</option>';
+      });
+}
+
+// --- 3. EXTRACCIÓN REACTIVA EN TIEMPO REAL DESDE CLOUD FIRESTORE ---
 function cargarPeticionesGlobales() {
     db.collection("tickets").onSnapshot(async (ticketsSnapshot) => {
         const tbody = document.getElementById("tablaPeticionesCuerpo");
@@ -76,7 +109,7 @@ function cargarPeticionesGlobales() {
             const ticketId = docTicket.id;
             const correoKey = (ticketData.usuarioEmail || "").trim().toLowerCase();
 
-            const infoEncargado = mapaEncargados[correoKey] || { nombre: "Desconocido", departamento: "No Asignado" };
+            const infoEncargado = mapaEncargados[correoKey] || { nombre: "Desconocido", department: "No Asignado" };
             const gestionPrevia = mapaPeticiones[ticketId] || {};
 
             registrosGlobales.push({
@@ -85,12 +118,11 @@ function cargarPeticionesGlobales() {
                 departamento: infoEncargado.departamento,
                 problema: ticketData.detalle || "Sin descripción de falla",
                 fechaEntrada: ticketData.fechaPeticion || "S/F",
-                // CAPTURA DEL ATRIBUTO STATUS EN LA CACHÉ
                 status: ticketData.status || "Abierto", 
-                tecnico: gestionPrevia.tecnico || "",
-                tipoMantenimiento: gestionPrevia.tipoMantenimiento || "",
-                tiempoEstimado: gestionPrevia.tiempoEstimado || "",
-                fechaSalida: gestionPrevia.fechaSalida || "",
+                tecnico: ticketData.tecnicoAsignado || gestionPrevia.tecnico || "",
+                tipoMantenimiento: ticketData.tipoMantenimiento || gestionPrevia.tipoMantenimiento || "",
+                tiempoEstimado: ticketData.tiempoEstimadoDias || gestionPrevia.tiempoEstimado || "",
+                fechaSalida: ticketData.fechaSalidaEstimada || gestionPrevia.fechaSalida || "",
                 serie: ticketData.serie || "",
                 tipoEquipo: ticketData.tipo || "",
                 marca: ticketData.marca || "",
@@ -108,7 +140,7 @@ function cargarPeticionesGlobales() {
         }
     });
 }
-// --- 4. CONSTRUCCIÓN DE FILAS CON REEMPLAZO DE COLUMNA A STATUS ---
+// --- 4. CONSTRUCCIÓN DE FILAS CON ENLACE DE DATOS ---
 function inyectarPeticionesEnTabla(listaRegistros) {
     const tbody = document.getElementById("tablaPeticionesCuerpo");
     if (!tbody) return;
@@ -120,7 +152,6 @@ function inyectarPeticionesEnTabla(listaRegistros) {
         const tr = document.createElement("tr");
         tr.setAttribute("id", `fila-${reg.ticketId}`);
 
-        // REQUERIMIENTO CUMPLIDO: Se sustituyó la columna de botones por una celda de Status estética
         tr.innerHTML = `
             <td><strong>${index++}</strong></td>
             <td>${reg.encargado}</td>
@@ -134,7 +165,6 @@ function inyectarPeticionesEnTabla(listaRegistros) {
             </td>
         `;
 
-        // Mantiene la funcionalidad intacta: seleccionar la fila abre el panel inferior de edición
         tr.addEventListener('click', () => {
             document.querySelectorAll('#tablaPeticionesCuerpo tr').forEach(row => row.classList.remove('fila-seleccionada'));
             tr.classList.add('fila-seleccionada');
@@ -146,7 +176,7 @@ function inyectarPeticionesEnTabla(listaRegistros) {
     });
 }
 
-// --- 5. TRANSFERENCIA DE DATOS HACIA LOS CASILLEROS DEL PANEL ---
+// --- 5. TRANSFERENCIA DE DATOS Y RENDERIZADO DEL STATUS EN EL PANEL ---
 function mostrarPanelModificaciones(registro) {
     document.getElementById('panelTicketDocId').value = registro.ticketId;
     document.getElementById('panelEncargado').value = registro.encargado;
@@ -156,27 +186,31 @@ function mostrarPanelModificaciones(registro) {
     document.getElementById('panelTecnico').value = registro.tecnico || "";
     document.getElementById('panelTipoMantenimiento').value = registro.tipoMantenimiento || "";
     document.getElementById('panelTiempo').value = registro.tiempoEstimado || "";
+    
+    // Asignación de la fecha original sin alteración (Se queda bloqueada por el HTML)
     document.getElementById('panelFechaEntrada').value = registro.fechaEntrada !== "S/F" ? registro.fechaEntrada : "";
     document.getElementById('panelFechaSalida').value = registro.fechaSalida || "";
+
+    // REQUERIMIENTO CUMPLIDO: Sincroniza el selector deslizable con el status real del documento
+    const selectorStatus = document.getElementById('panelStatusTicket');
+    if (selectorStatus) {
+        selectorStatus.value = registro.status || "Abierto";
+    }
 
     panelDetalles.style.display = 'block';
     panelDetalles.scrollIntoView({ behavior: 'smooth' });
 }
 
-// --- 6. GUARDAR COMO NUEVO REGISTRO EN COLECCIÓN HISTÓRICA INDEPENDIENTE ---
+// --- 6. GUARDAR Y ACTUALIZAR EN LA COLECCIÓN 'TICKETS' EXISTENTE ---
 formPanel.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const ticketId = document.getElementById('panelTicketDocId').value;
-    const encargado = document.getElementById('panelEncargado').value;
-    const departamento = document.getElementById('panelDepartamento').value;
-    const problema = document.getElementById('panelProblema').value;
-    
     const tecnico = document.getElementById('panelTecnico').value;
     const tipoMantenimiento = document.getElementById('panelTipoMantenimiento').value;
     const tiempoEstimado = document.getElementById('panelTiempo').value.trim();
-    const fechaEntrada = document.getElementById('panelFechaEntrada').value;
     const fechaSalida = document.getElementById('panelFechaSalida').value;
+    const nuevoStatus = document.getElementById('panelStatusTicket').value; // Captura del nuevo selector
 
     if (!ticketId) {
         alert("Error de proceso: Por favor, seleccione un ticket válido de la tabla.");
@@ -184,25 +218,23 @@ formPanel.addEventListener('submit', async (e) => {
     }
 
     try {
-        await db.collection("historico_peticiones_modificadas").add({
-            ticketOriginalId: ticketId,
-            solicitante: encargado,
-            departamento: departamento,
-            fallaReportada: problema,
+        // SOLUCIÓN OPTIMIZADA: Se guardan y anexan los campos en la colección existente 'tickets'
+        // Esto unifica el registro para que tu nueva página lo consuma de forma limpia y directa
+        await db.collection("tickets").doc(ticketId).update({
             tecnicoAsignado: tecnico,
             tipoMantenimiento: tipoMantenimiento,
             tiempoEstimadoDias: Number(tiempoEstimado),
-            fechaEntrada: fechaEntrada,
             fechaSalidaEstimada: fechaSalida,
-            fechaRegistroCambio: firebase.firestore.FieldValue.serverTimestamp(),
-            operadorEmail: localStorage.getItem("userEmail")
+            status: nuevoStatus, // Actualiza el string ("Abierto", "Asignado", "Cerrado")
+            fechaUltimaGestion: firebase.firestore.FieldValue.serverTimestamp(),
+            gestionadoPorEmail: localStorage.getItem("userEmail")
         });
 
-        alert("¡Operación realizada correctamente! Modificación guardada como un nuevo registro histórico en la base de datos.");
+        alert("¡Operación realizada correctamente! El ticket ha sido gestionado y actualizado en la base de datos.");
         ocultarYLimpiarPanel();
 
     } catch (error) {
-        console.error("Error al almacenar el cambio en Firestore:", error);
+        console.error("Error al actualizar el ticket en Firestore:", error);
         alert("Error al procesar la operación en el servidor: " + error.message);
     }
 });
@@ -240,14 +272,19 @@ window.logout = async () => {
     }
 };
 
-// --- 9. VERIFICADOR DE SESIÓN INICIAL ---
+// --- 9. VERIFICADOR DE SESIÓN E INICIALIZACIÓN MUNICIPAL ---
 window.addEventListener('DOMContentLoaded', () => {
     const emailDisplay = document.getElementById("userEmailDisplay");
     const storedEmail = localStorage.getItem("userEmail");
 
     if (storedEmail) {
         if (emailDisplay) emailDisplay.innerText = storedEmail;
+        
+        // Ejecuta el motor reactivo de cruce de datos global
         cargarPeticionesGlobales();
+        
+        // REQUERIMIENTO CUMPLIDO: Carga los administradores de la BD en el selector de técnicos
+        cargarTecnicosAdministradores();
     } else {
         alert("Acceso denegado. Por favor inicia sesión.");
         window.location.href = "index.html";
