@@ -1,4 +1,4 @@
-// 1. Configuración de Firebase y Servicios Institucionales
+// 1. Configuración de Firebase y Servicios Institucionales Oficiales
 const firebaseConfig = {
     apiKey: "AIzaSyDDcGT88IspX4-_TOKtQcdeo-93favOuoY",
     authDomain: "://firebaseapp.com",
@@ -9,29 +9,24 @@ const firebaseConfig = {
     measurementId: "G-XLE9Y7FPGM"
 };
 
-// Inicializar de manera segura para evitar duplicidad de instancias
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
 const db = firebase.firestore();
 const auth = firebase.auth();
 
-// Referencias a los elementos del DOM de la interfaz
 const modal = document.getElementById('modalTicket');
 const form = document.getElementById('formRegistroTicket');
 const modalTitulo = document.getElementById('modalTitulo');
 const editDocId = document.getElementById('editDocId');
 
-// --- 2. GESTIÓN DEL PANEL MODAL (FLOTANTE) ---
+// --- 2. GESTIÓN DEL PANEL MODAL FLOTANTE ---
 document.getElementById('btnAbrirModal').addEventListener('click', () => {
     modalTitulo.innerText = "Levantar Nuevo Ticket";
     editDocId.value = ""; 
-    
-    // Autoseleccionar la fecha actual por defecto al abrir el panel
     const hoy = new Date().toISOString().split('T')[0];
     const inputFecha = document.getElementById('ticketFechaPeticion');
     if (inputFecha) inputFecha.value = hoy;
-    
     modal.style.display = 'flex';
 });
 
@@ -40,7 +35,7 @@ document.getElementById('btnCancelarModal').addEventListener('click', () => {
     form.reset();
     editDocId.value = "";
 });
-// NUEVO: Escuchar la tecla 'ESC' para cerrar la ventana flotante
+
 window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && modal.style.display === 'flex') {
         modal.style.display = 'none';
@@ -49,7 +44,7 @@ window.addEventListener('keydown', (e) => {
     }
 });
 
-// --- 3. ESCRITURA Y ACTUALIZACIÓN EN LA COLECCIÓN 'TICKETS' ---
+// --- 3. ESCRITURA, ALMACENAMIENTO Y CONTROL DEL STATUS DEFAULT ---
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -78,11 +73,12 @@ form.addEventListener('submit', async (e) => {
         };
 
         if (idParaEditar) {
-            // Edición de un registro existente
+            // Edición: Actualiza manteniendo sus datos previos
             await db.collection("tickets").doc(idParaEditar).update(datosTicket);
             alert("¡Ticket modificado correctamente!");
         } else {
-            // Creación de un nuevo registro con marca de tiempo del servidor
+            // REQUERIMIENTO COMPLETADO: Inyección automática del Status por defecto al crear
+            datosTicket.status = "Abierto";
             datosTicket.fechaCreacion = firebase.firestore.FieldValue.serverTimestamp();
             await db.collection("tickets").add(datosTicket);
             alert("¡Ticket añadido correctamente!");
@@ -97,24 +93,15 @@ form.addEventListener('submit', async (e) => {
         alert("Error al procesar la operación: " + error.message);
     }
 });
-
-
-
-
-
-// --- 4. CONSULTA HISTORIAL DE TICKETS GENERADOS POR EL USUARIO ---
-// --- VARIABLES GLOBALES PARA EL BUSCADOR EN TIEMPO REAL ---
-let ticketsLocales = []; // Almacén en caché local de los tickets del usuario
-
 // --- 4. CONSULTA HISTORIAL DE TICKETS GENERADOS POR EL USUARIO EN SESIÓN ---
+let ticketsLocales = []; 
+
 function cargarTicketsDelUsuario(emailUsuario) {
     db.collection("tickets")
       .where("usuarioEmail", "==", emailUsuario)
       .onSnapshot((snapshot) => {
         
-        // Limpiamos y respaldamos los datos de la base de datos en nuestro arreglo local
         ticketsLocales = [];
-        
         snapshot.forEach((doc) => {
             const data = doc.data();
             ticketsLocales.push({
@@ -123,19 +110,18 @@ function cargarTicketsDelUsuario(emailUsuario) {
             });
         });
 
-        // Ejecutamos la función de renderizado inicial con todos los registros
         inyectarTicketsEnTabla(ticketsLocales);
 
     }, (error) => {
         console.error("Error al cargar historial de tickets: ", error);
         const tbody = document.getElementById("tablaTicketsCuerpo");
         if (tbody) {
-            tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: #dc4c64; padding: 20px;">Error de permisos al sincronizar los tickets.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #dc4c64; padding: 20px;">Error de permisos al sincronizar los tickets.</td></tr>`;
         }
     });
 }
 
-// --- FUNCIÓN AUXILIAR: PINTAR LAS FILAS EN LA TABLA PRINCIPAL ---
+// --- FUNCIÓN AUXILIAR: PINTAR LAS FILAS E INYECTAR LA COLUMNA STATUS ---
 function inyectarTicketsEnTabla(listaDeTickets) {
     const tbody = document.getElementById("tablaTicketsCuerpo");
     if (!tbody) return;
@@ -144,17 +130,20 @@ function inyectarTicketsEnTabla(listaDeTickets) {
     let index = 1;
 
     if (listaDeTickets.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: #777; padding: 20px;">No se encontraron tickets que coincidan con la búsqueda o tu cuenta.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #777; padding: 20px;">No se encontraron tickets que coincidan con la búsqueda o tu cuenta.</td></tr>`;
         return;
     }
 
     listaDeTickets.forEach((ticket) => {
         const tr = document.createElement("tr");
         
-        // Estilos estéticos condicionales para las etiquetas de control
         const badgeCondicion = ticket.condicion === 'Mantenimiento' ? 'badge-mantenimiento' : 'badge-funcional';
         const badgeUrgencia = ticket.urgente === 'Sí' ? 'badge-urgente' : 'badge-normal';
+        
+        // REQUERIMIENTO COMPLETADO: Si el ticket es nuevo o no tiene status asignado en Firestore, pintará "Abierto"
+        const statusActual = ticket.status || "Abierto";
 
+        // Renderizado de las 10 columnas en perfecta sincronía con tu cabecera HTML
         tr.innerHTML = `
             <td><strong>${index++}</strong></td>
             <td>${ticket.fechaPeticion || 'S/F'}</td>
@@ -164,6 +153,7 @@ function inyectarTicketsEnTabla(listaDeTickets) {
             <td>${ticket.modelo || ''}</td>
             <td>${ticket.detalle || ''}</td>
             <td><span class="badge ${badgeCondicion}">${ticket.condicion || ''}</span></td>
+            <td><span class="badge badge-funcional" style="background-color: #2c9faf; color: white; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 11px;">${statusActual}</span></td>
             <td>
                 <button class='btn-action-t' style='background-color: #2c9faf; margin-right: 5px;' 
                     onclick="prepararEdicionTicket('${ticket.id}', '${ticket.tipo}', '${ticket.marca}', '${ticket.modelo}', '${ticket.serie}', '${ticket.detalle}', '${ticket.condicion}', '${ticket.fechaPeticion}', '${ticket.urgente}')">
@@ -179,18 +169,13 @@ function inyectarTicketsEnTabla(listaDeTickets) {
     });
 }
 
-
-
 // --- 5. FILTRAR MENÚ DESPLEGABLE: SOLO EQUIPOS DEL EMPLEADO LOGUEADO ---
-// --- 5. FILTRAR MENÚ DESPLEGABLE: SOLO EQUIPOS DEL EMPLEADO LOGUEADO (OPTIMIZADO) ---
 function cargarEquiposDelUsuarioLogueado(emailUsuario) {
     const selectEquipo = document.getElementById("ticketTipo");
     if (!selectEquipo) return;
 
-    // Limpiamos el selector de inmediato para borrar residuos globales
     selectEquipo.innerHTML = '<option value="">Cargando tus equipos asignados...</option>';
 
-    // Buscamos el nombre del empleado a través de su correo de cuenta activa
     db.collection("usuarios_encargados")
       .where("usuarioEmail", "==", emailUsuario)
       .get()
@@ -207,7 +192,6 @@ function cargarEquiposDelUsuarioLogueado(emailUsuario) {
 
           if (!nombreEmpleado) return;
 
-          // Obtenemos de la base de datos de inventario ÚNICAMENTE los equipos de este empleado
           db.collection("equipos")
             .where("encargado", "==", nombreEmpleado.trim())
             .get()
@@ -243,11 +227,6 @@ function cargarEquiposDelUsuarioLogueado(emailUsuario) {
       });
 }
 
-
-
-
-
-// Escuchador para autocompletar cajas técnicas al cambiar la opción seleccionada
 document.getElementById("ticketTipo").addEventListener("change", (e) => {
     const option = e.target.options[e.target.selectedIndex];
     if (!option || e.target.value === "") {
@@ -261,7 +240,7 @@ document.getElementById("ticketTipo").addEventListener("change", (e) => {
     document.getElementById("ticketSerie").value = option.getAttribute('data-serie');
 });
 
-// --- 6. PREPARAR EDICIÓN (CON NUEVOS CAMPOS) ---
+// --- 6. PREPARAR EDICIÓN (PRESERVA LOS CAMPOS ANTERIORES) ---
 window.prepararEdicionTicket = function(id, tipo, marca, modelo, serie, detalle, condicion, fechaPeticion, urgente) {
     modalTitulo.innerText = "Modificar Ticket de Mantenimiento";
     editDocId.value = id;
@@ -278,7 +257,7 @@ window.prepararEdicionTicket = function(id, tipo, marca, modelo, serie, detalle,
     modal.style.display = 'flex';
 };
 
-// --- 7. ELIMINACIÓN ---
+// --- 7. ELIMINACIÓN DE REGISTROS ---
 window.eliminarTicket = function(id) {
     if (confirm("¿Está seguro de que desea eliminar este ticket de mantenimiento?")) {
         db.collection("tickets").doc(id).delete()
@@ -287,7 +266,7 @@ window.eliminarTicket = function(id) {
     }
 };
 
-// --- 8. LOGOUT ---
+// --- 8. LOGOUT INSTITUCIONAL ---
 window.logout = async () => {
     try {
         await auth.signOut();
@@ -298,7 +277,6 @@ window.logout = async () => {
     }
 };
 
-// --- 9. INICIALIZADOR DEL SISTEMA ---
 // --- 9. INICIALIZADOR DE CARGA Y EVENTO DE BÚSQUEDA ---
 window.addEventListener('DOMContentLoaded', () => {
     const emailDisplay = document.getElementById("userEmailDisplay");
@@ -308,24 +286,18 @@ window.addEventListener('DOMContentLoaded', () => {
     if (storedEmail) {
         if (emailDisplay) emailDisplay.innerText = storedEmail;
         
-        // Pinta la tabla con el historial de tickets generados por la cuenta activa
         cargarTicketsDelUsuario(storedEmail);
-        
-        // Carga los equipos que corresponden al empleado logueado en la ventana flotante
         cargarEquiposDelUsuarioLogueado(storedEmail);
         
-        // ESCUCHADOR EN TIEMPO REAL PARA EL INPUT DE BÚSQUEDA
         if (inputBuscar) {
             inputBuscar.addEventListener("input", (e) => {
                 const textoBusqueda = e.target.value.toLowerCase().trim();
                 
-                // Si la barra está vacía, mostramos todos los registros guardados
                 if (textoBusqueda === "") {
                     inyectarTicketsEnTabla(ticketsLocales);
                     return;
                 }
                 
-                // Filtramos la caché local buscando coincidencias en múltiples campos técnicos
                 const ticketsFiltrados = ticketsLocales.filter((ticket) => {
                     const tipo = (ticket.tipo || "").toLowerCase();
                     const marca = (ticket.marca || "").toLowerCase();
@@ -338,7 +310,6 @@ window.addEventListener('DOMContentLoaded', () => {
                            detalle.includes(textoBusqueda);
                 });
                 
-                // Actualizamos la interfaz gráfica con los resultados del filtro
                 inyectarTicketsEnTabla(ticketsFiltrados);
             });
         }
@@ -348,7 +319,3 @@ window.addEventListener('DOMContentLoaded', () => {
         window.location.href = "index.html";
     }
 });
-
-
-
-
