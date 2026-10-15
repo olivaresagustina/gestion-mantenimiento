@@ -1,4 +1,4 @@
-// 1. Configuración de Firebase e Inicialización de Servicios Oficiales
+// 1. Configuración de Firebase e Inicialización de Servicios Oficiales Corregida
 const firebaseConfig = {
     apiKey: "AIzaSyDDcGT88IspX4-_TOKtQcdeo-93favOuoY",
     authDomain: "://firebaseapp.com",
@@ -15,18 +15,14 @@ if (!firebase.apps.length) {
 const db = firebase.firestore();
 const auth = firebase.auth();
 
-// Referencias del DOM para el Panel de Control Inferior
 const panelDetalles = document.getElementById('panelGestionInSitu');
 const formPanel = document.getElementById('formPanelPeticion');
-let registrosGlobales = []; // Resguardo local para optimizar las búsquedas
+let registrosGlobales = [];
 
-// --- 2. CONTROLADORES DE APAGADO / CIERRE DEL PANEL INFERIOR ---
 const ocultarYLimpiarPanel = () => {
     panelDetalles.style.display = 'none';
     formPanel.reset();
     document.getElementById('panelTicketDocId').value = "";
-    
-    // Limpiar el estado visual activo de cualquier renglón en la tabla
     document.querySelectorAll('#tablaPeticionesCuerpo tr').forEach(tr => {
         tr.classList.remove('fila-seleccionada');
     });
@@ -35,27 +31,25 @@ const ocultarYLimpiarPanel = () => {
 document.getElementById('btnCerrarPanelInferior').addEventListener('click', ocultarYLimpiarPanel);
 document.getElementById('btnCancelarPanel').addEventListener('click', ocultarYLimpiarPanel);
 
-// Gestión de accesibilidad con el teclado: Tecla Escape (ESC)
 window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && panelDetalles.style.display === 'block') {
         ocultarYLimpiarPanel();
     }
 });
 
-// --- 3. EXTRACCIÓN REACTIVA EN TIEMPO REAL DESDE CLOUD FIRESTORE ---
+// --- 3. EXTRACCIÓN REACTIVA INYECTANDO EL CAMPO STATUS ---
 function cargarPeticionesGlobales() {
     db.collection("tickets").onSnapshot(async (ticketsSnapshot) => {
         const tbody = document.getElementById("tablaPeticionesCuerpo");
         if (!tbody) return;
 
         if (ticketsSnapshot.empty) {
-            tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #777; padding: 20px;">No hay ningún ticket levantado en el sistema actualmente.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #777; padding: 20px;">No hay ningún ticket levantado en el sistema actualmente.</td></tr>`;
             return;
         }
 
         registrosGlobales = [];
 
-        // Descarga simultánea de colecciones secundarias (Cruces de datos)
         const [encargadosSnap, peticionesSnap] = await Promise.all([
             db.collection("usuarios_encargados").get(),
             db.collection("peticiones").get()
@@ -91,6 +85,8 @@ function cargarPeticionesGlobales() {
                 departamento: infoEncargado.departamento,
                 problema: ticketData.detalle || "Sin descripción de falla",
                 fechaEntrada: ticketData.fechaPeticion || "S/F",
+                // CAPTURA DEL ATRIBUTO STATUS EN LA CACHÉ
+                status: ticketData.status || "Abierto", 
                 tecnico: gestionPrevia.tecnico || "",
                 tipoMantenimiento: gestionPrevia.tipoMantenimiento || "",
                 tiempoEstimado: gestionPrevia.tiempoEstimado || "",
@@ -108,12 +104,11 @@ function cargarPeticionesGlobales() {
         console.error("Falla en la consulta sincrónica del servidor:", error);
         const tbody = document.getElementById("tablaPeticionesCuerpo");
         if (tbody) {
-            tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #dc4c64; padding: 20px;">Error al enlazar los datos.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #dc4c64; padding: 20px;">Error al enlazar los datos.</td></tr>`;
         }
     });
 }
-
-// --- 4. CONSTRUCCIÓN DE FILAS CON EVENTO INTEGRADO DE CLIC (MÓDULO CORREGIDO) ---
+// --- 4. CONSTRUCCIÓN DE FILAS CON REEMPLAZO DE COLUMNA A STATUS ---
 function inyectarPeticionesEnTabla(listaRegistros) {
     const tbody = document.getElementById("tablaPeticionesCuerpo");
     if (!tbody) return;
@@ -125,8 +120,7 @@ function inyectarPeticionesEnTabla(listaRegistros) {
         const tr = document.createElement("tr");
         tr.setAttribute("id", `fila-${reg.ticketId}`);
 
-        // Corrección directa: Se eliminaron las celdas de Técnico, Tipo de mantenimiento, Tiempo y Fecha de Salida
-        // Ahora coincide perfectamente con el diseño de 6 columnas de tu tabla HTML
+        // REQUERIMIENTO CUMPLIDO: Se sustituyó la columna de botones por una celda de Status estética
         tr.innerHTML = `
             <td><strong>${index++}</strong></td>
             <td>${reg.encargado}</td>
@@ -134,13 +128,13 @@ function inyectarPeticionesEnTabla(listaRegistros) {
             <td>${reg.problema}</td>
             <td>${reg.fechaEntrada}</td>
             <td>
-                <button class="btn-action-p" style="background-color: #2c9faf;">
-                    <i class="fa-solid fa-pen-to-square"></i>
-                </button>
+                <span class="badge" style="background-color: #2c9faf; color: white; padding: 5px 12px; border-radius: 4px; font-weight: bold; font-size: 11px;">
+                    ${reg.status}
+                </span>
             </td>
         `;
 
-        // Al hacer clic en la fila se sigue enviando el objeto completo con todos sus campos al panel inferior
+        // Mantiene la funcionalidad intacta: seleccionar la fila abre el panel inferior de edición
         tr.addEventListener('click', () => {
             document.querySelectorAll('#tablaPeticionesCuerpo tr').forEach(row => row.classList.remove('fila-seleccionada'));
             tr.classList.add('fila-seleccionada');
@@ -151,8 +145,6 @@ function inyectarPeticionesEnTabla(listaRegistros) {
         tbody.appendChild(tr);
     });
 }
-
-
 
 // --- 5. TRANSFERENCIA DE DATOS HACIA LOS CASILLEROS DEL PANEL ---
 function mostrarPanelModificaciones(registro) {
@@ -167,10 +159,7 @@ function mostrarPanelModificaciones(registro) {
     document.getElementById('panelFechaEntrada').value = registro.fechaEntrada !== "S/F" ? registro.fechaEntrada : "";
     document.getElementById('panelFechaSalida').value = registro.fechaSalida || "";
 
-    // Activar visibilidad en bloque
     panelDetalles.style.display = 'block';
-    
-    // Auto-scrolling suave hacia abajo para agilizar la edición del usuario
     panelDetalles.scrollIntoView({ behavior: 'smooth' });
 }
 
@@ -195,7 +184,6 @@ formPanel.addEventListener('submit', async (e) => {
     }
 
     try {
-        // ESPECIFICACIÓN: Guardado mediante .add en una nueva colección histórica independiente
         await db.collection("historico_peticiones_modificadas").add({
             ticketOriginalId: ticketId,
             solicitante: encargado,
