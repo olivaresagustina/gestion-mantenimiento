@@ -29,13 +29,11 @@ const cerrarPanelChat = () => {
     formChat.reset();
     document.getElementById('chatTicketDocId').value = "";
     
-    // Detener la escucha en tiempo real del chat anterior si existe
     if (desuscribirChatListener) {
         desuscribirChatListener();
         desuscribirChatListener = null;
     }
 
-    // Quitar selección visual de la tabla
     document.querySelectorAll('#tablaAsignadosCuerpo tr').forEach(tr => {
         tr.classList.remove('fila-seleccionada');
     });
@@ -49,49 +47,24 @@ window.addEventListener('keydown', (e) => {
     }
 });
 
-// --- 3. IDENTIFICAR NOMBRE DEL ADMINISTRADOR Y CARGAR SUS TICKETS ---
-function inicializarMóduloAsignados(emailLogueado) {
-    // Buscamos el nombre del empleado para cruzarlo con sus asignaciones técnicas
-    db.collection("usuarios_encargados")
-      .where("usuarioEmail", "==", emailLogueado)
-      .get()
-      .then((usuarioSnapshot) => {
-          if (usuarioSnapshot.empty) {
-              document.getElementById("tablaAsignadosCuerpo").innerHTML = `<tr><td colspan="6" style="text-align: center; color: #dc4c64; padding: 20px;">Tu cuenta no se encuentra vinculada a la lista de Encargados.</td></tr>`;
-              return;
-          }
+// --- 3. CONSULTA REACTIVA GLOBAL POR STATUS ASIGNADO ---
+function cargarTicketsAsignadosGlobales() {
+    const tbody = document.getElementById("tablaAsignadosCuerpo");
+    if (!tbody) return;
 
-          let nombreAdmin = "";
-          usuarioSnapshot.forEach((doc) => {
-              nombreAdmin = doc.data().nombreCompleto;
-          });
-
-          if (nombreAdmin) {
-              escucharTicketsAsignados(nombreAdmin);
-          }
-      })
-      .catch((error) => {
-          console.error("Error al validar privilegios de administrador:", error);
-      });
-}
-
-// --- 4. CONSULTA REACTIVA FILTRANDO ASIGNACIONES DIRECTAS ---
-function escucharTicketsAsignados(nombreTecnico) {
-    // Escucha en tiempo real la colección de tickets donde este administrador fue seleccionado
+    // REQUERIMIENTO CUMPLIDO: Trae TODOS los tickets con status "Asignado" sin filtrar por usuario de sesión
     db.collection("tickets")
-      .where("tecnicoAsignado", "==", nombreTecnico.trim())
+      .where("status", "==", "Asignado")
       .onSnapshot(async (snapshot) => {
-          const tbody = document.getElementById("tablaAsignadosCuerpo");
-          if (!tbody) return;
 
           if (snapshot.empty) {
-              tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #777; padding: 20px;">No cuentas con tickets bajo tu responsabilidad actualmente.</td></tr>`;
+              tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #777; padding: 20px;">No hay ningún ticket con status 'Asignado' en el Ayuntamiento actualmente.</td></tr>`;
               return;
           }
 
           registrosAsignados = [];
 
-          // Obtenemos los datos de encargados para conocer el solicitante de forma clara
+          // Traemos en paralelo la información de los encargados para realizar el cruce de nombres
           const encargadosSnap = await db.collection("usuarios_encargados").get();
           const mapaEncargados = {};
           encargadosSnap.forEach(doc => {
@@ -110,8 +83,12 @@ function escucharTicketsAsignados(nombreTecnico) {
                   ticketId: doc.id,
                   encargado: nombreSolicitante,
                   departamento: data.departamento || "General",
+                  tecnico: data.tecnicoAsignado || "No Asignado",
+                  tipoMantenimiento: data.tipoMantenimiento || "No Especificado",
+                  tiempoEstimado: data.tiempoEstimadoDias || "0",
                   problema: data.detalle || "Sin especificación",
                   fechaEntrada: data.fechaPeticion || "S/F",
+                  fechaSalida: data.fechaSalidaEstimada || "S/F",
                   status: data.status || "Asignado",
                   tipo: data.tipo || "",
                   marca: data.marca || "",
@@ -122,10 +99,11 @@ function escucharTicketsAsignados(nombreTecnico) {
           inyectarTicketsEnTabla(registrosAsignados);
 
       }, (error) => {
-          console.error("Error en sincronía de asignaciones:", error);
+          console.error("Error en sincronía global de asignaciones:", error);
+          tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #dc4c64; padding: 20px;">Error de sincronización con el servidor de base de datos.</td></tr>`;
       });
 }
-// --- 5. RENDERIZADO DINÁMICO DE FILAS SCROLLABLES ---
+// --- 4. RENDERIZADO DINÁMICO DE 10 COLUMNAS CON SELECTOR EN CELDA ---
 function inyectarTicketsEnTabla(listaRegistros) {
     const tbody = document.getElementById("tablaAsignadosCuerpo");
     if (!tbody) return;
@@ -137,20 +115,48 @@ function inyectarTicketsEnTabla(listaRegistros) {
         const tr = document.createElement("tr");
         tr.setAttribute("id", `fila-${reg.ticketId}`);
 
+        // REQUERIMIENTO CUMPLIDO: Estructura exacta de 10 columnas con selector deslizable integrado en la celda final
         tr.innerHTML = `
             <td><strong>${index++}</strong></td>
             <td>${reg.encargado}</td>
             <td>${reg.departamento}</td>
+            <td>${reg.tecnico}</td>
+            <td>${reg.tipoMantenimiento}</td>
+            <td>${reg.tiempoEstimado}</td>
             <td>${reg.problema}</td>
             <td>${reg.fechaEntrada}</td>
+            <td>${reg.fechaSalida}</td>
             <td>
-                <span class="badge" style="background-color: #b8904c; color: white; padding: 5px 12px; border-radius: 4px; font-weight: bold; font-size: 11px;">
-                    ${reg.status}
-                </span>
+                <select class="select-status-celda" data-id="${reg.ticketId}" style="padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 11px; background-color: #b8904c; color: white; border: none; cursor: pointer;">
+                    <option value="Abierto" ${reg.status === 'Abierto' ? 'selected' : ''}>ABIERTO</option>
+                    <option value="Asignado" ${reg.status === 'Asignado' ? 'selected' : ''}>ASIGNADO</option>
+                    <option value="Cerrado" ${reg.status === 'Cerrado' ? 'selected' : ''}>CERRADO</option>
+                </select>
             </td>
         `;
 
-        // Al hacer clic, se abre e inicializa la sala de chat correspondiente
+        // Detener la propagación del clic en el selector para que no abra el chat por accidente al cambiar el estado
+        const selector = tr.querySelector('.select-status-celda');
+        selector.addEventListener('click', (e) => e.stopPropagation());
+
+        // Evento que actualiza Firebase de forma inmediata al cambiar la opción deslizable
+        selector.addEventListener('change', async (e) => {
+            const ticketIdId = e.target.getAttribute('data-id');
+            const nuevoEstado = e.target.value;
+
+            try {
+                await db.collection("tickets").doc(ticketIdId).update({
+                    status: nuevoEstado,
+                    fechaUltimoCambioStatus: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                alert(`¡Status del ticket actualizado correctamente a: ${nuevoEstado}!`);
+            } catch (error) {
+                console.error("Error al actualizar el status desde la celda:", error);
+                alert("No se pudo actualizar el estado: " + error.message);
+            }
+        });
+
+        // Al hacer clic en cualquier otra parte del renglón, se despliega el panel de chat inferior
         tr.addEventListener('click', () => {
             document.querySelectorAll('#tablaAsignadosCuerpo tr').forEach(row => row.classList.remove('fila-seleccionada'));
             tr.classList.add('fila-seleccionada');
@@ -162,21 +168,18 @@ function inyectarTicketsEnTabla(listaRegistros) {
     });
 }
 
-// --- 6. MONITOREO DE LA SUBCOLECCIÓN DE CHAT EN TIEMPO REAL ---
+// --- 5. MONITOREO DE LA SUBCOLECCIÓN DE CHAT EN TIEMPO REAL ---
 function activarSalaChatInterna(ticket) {
-    // Si ya había una sala abierta, cerramos su listener para liberar recursos
     if (desuscribirChatListener) desuscribirChatListener();
 
     document.getElementById('chatTicketDocId').value = ticket.ticketId;
     
-    // Inyectamos un encabezado informativo para el técnico dentro de la sala
     document.getElementById('chatTicketResumen').innerHTML = `
         <strong>Solicitante:</strong> ${ticket.encargado} (${ticket.departamento}) <br>
         <strong>Equipo afectado:</strong> ${ticket.tipo} ${ticket.marca} ${ticket.modelo} <br>
         <strong>Falla reportada:</strong> "${ticket.problema}"
     `;
 
-    // Escuchamos la subcolección de chat ordenando por fecha de envío de manera ascendente
     desuscribirChatListener = db.collection("tickets")
         .doc(ticket.ticketId)
         .collection("chat")
@@ -194,14 +197,12 @@ function activarSalaChatInterna(ticket) {
                 const burbuja = document.createElement("div");
                 burbuja.classList.add("msg-burbuja");
 
-                // Evaluamos el remitente para aplicar estilos estéticos condicionales
                 if (msg.remitenteRol === "Administrador") {
                     burbuja.classList.add("msg-admin");
                 } else {
                     burbuja.classList.add("msg-usuario");
                 }
 
-                // Formatear hora de envío de manera segura
                 let horaTexto = "S/H";
                 if (msg.fechaEnvio) {
                     const date = msg.fechaEnvio.toDate();
@@ -215,7 +216,6 @@ function activarSalaChatInterna(ticket) {
                 contenedorMensajes.appendChild(burbuja);
             });
 
-            // Hacer scroll automático al último mensaje recibido
             contenedorMensajes.scrollTop = contenedorMensajes.scrollHeight;
         }, (error) => {
             console.error("Error al cargar la sala de chat:", error);
@@ -225,7 +225,7 @@ function activarSalaChatInterna(ticket) {
     panelChat.scrollIntoView({ behavior: 'smooth' });
 }
 
-// --- 7. PERSISTENCIA: ENVIAR MENSAJE A LA SUBCOLECCIÓN ---
+// --- 6. ENVIAR MENSAJE A LA SUBCOLECCIÓN INTERNA ---
 formChat.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -236,7 +236,6 @@ formChat.addEventListener('submit', async (e) => {
     if (!ticketId || !textoMensaje) return;
 
     try {
-        // Añadimos el nuevo documento dentro de la subcolección 'chat' del ticket activo
         await db.collection("tickets").doc(ticketId).collection("chat").add({
             texto: textoMensaje,
             remitenteEmail: correoAdmin,
@@ -252,7 +251,7 @@ formChat.addEventListener('submit', async (e) => {
     }
 });
 
-// --- 8. BUSCADOR INTEGRADO ---
+// --- 7. BUSCADOR MULTICAMPO EN TIEMPO REAL ---
 const inputBuscar = document.getElementById("inputBuscarAsignados");
 if (inputBuscar) {
     inputBuscar.addEventListener("input", (e) => {
@@ -266,6 +265,7 @@ if (inputBuscar) {
         const filtrados = registrosAsignados.filter(reg => {
             return reg.encargado.toLowerCase().includes(texto) ||
                    reg.departamento.toLowerCase().includes(texto) ||
+                   reg.tecnico.toLowerCase().includes(texto) ||
                    reg.problema.toLowerCase().includes(texto);
         });
 
@@ -273,7 +273,7 @@ if (inputBuscar) {
     });
 }
 
-// --- 9. LOGOUT Y AUTENTICACIÓN ---
+// --- 8. LOGOUT INSTITUCIONAL ---
 window.logout = async () => {
     try {
         await auth.signOut();
@@ -284,13 +284,15 @@ window.logout = async () => {
     }
 };
 
+// --- 9. VERIFICADOR DE SESIÓN INICIAL E INSTANCIACIÓN GLOBAL ---
 window.addEventListener('DOMContentLoaded', () => {
     const emailDisplay = document.getElementById("userEmailDisplay");
     const storedEmail = localStorage.getItem("userEmail");
 
     if (storedEmail) {
         if (emailDisplay) emailDisplay.innerText = storedEmail;
-        inicializarMóduloAsignados(storedEmail);
+        // Lanza el cargador global sin restricción de cuenta
+        cargarTicketsAsignadosGlobales();
     } else {
         alert("Acceso denegado. Por favor inicia sesión.");
         window.location.href = "index.html";
