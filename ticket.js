@@ -20,6 +20,23 @@ const form = document.getElementById('formRegistroTicket');
 const modalTitulo = document.getElementById('modalTitulo');
 const editDocId = document.getElementById('editDocId');
 
+// --- VARIABLES ADICIONALES DEL DOM PARA EL CHAT INTERACTIVO DEL USUARIO ---
+const panelChatUser = document.getElementById('panelChatUsuario');
+const contenedorMsgsUser = document.getElementById('chatUsuarioMensajes');
+const formChatUser = document.getElementById('formResponderChatUsuario');
+let desuscribirChatUser = null;
+
+// Cierre manual de la sala del chat en espejo
+if (document.getElementById('btnCerrarChatUsuario')) {
+    document.getElementById('btnCerrarChatUsuario').addEventListener('click', () => {
+        panelChatUser.style.display = 'none';
+        if (desuscribirChatUser) { 
+            desuscribirChatUser(); 
+            desuscribirChatUser = null; 
+        }
+    });
+}
+
 // --- 2. GESTIÓN DEL PANEL MODAL FLOTANTE ---
 document.getElementById('btnAbrirModal').addEventListener('click', () => {
     modalTitulo.innerText = "Levantar Nuevo Ticket";
@@ -77,7 +94,7 @@ form.addEventListener('submit', async (e) => {
             await db.collection("tickets").doc(idParaEditar).update(datosTicket);
             alert("¡Ticket modificado correctamente!");
         } else {
-            // REQUERIMIENTO COMPLETADO: Inyección automática del Status por defecto al crear
+            // Inyección automática del Status por defecto al crear
             datosTicket.status = "Abierto";
             datosTicket.fechaCreacion = firebase.firestore.FieldValue.serverTimestamp();
             await db.collection("tickets").add(datosTicket);
@@ -90,7 +107,7 @@ form.addEventListener('submit', async (e) => {
 
     } catch (error) {
         console.error("Error al procesar el ticket: ", error);
-        alert("Error al procesar la operación: " + error.message);
+        alert("Error al procesar la operation: " + error.message);
     }
 });
 // --- 4. CONSULTA HISTORIAL DE TICKETS GENERADOS POR EL USUARIO EN SESIÓN ---
@@ -121,7 +138,7 @@ function cargarTicketsDelUsuario(emailUsuario) {
     });
 }
 
-// --- FUNCIÓN AUXILIAR: PINTAR LAS FILAS E INYECTAR LA COLUMNA STATUS ---
+// --- FUNCIÓN AUXILIAR: PINTAR LAS FILAS E INYECTAR LA COLUMNA STATUS Y EVENTO CHAT ---
 function inyectarTicketsEnTabla(listaDeTickets) {
     const tbody = document.getElementById("tablaTicketsCuerpo");
     if (!tbody) return;
@@ -136,14 +153,13 @@ function inyectarTicketsEnTabla(listaDeTickets) {
 
     listaDeTickets.forEach((ticket) => {
         const tr = document.createElement("tr");
+        tr.style.cursor = "pointer"; // Indica visualmente que toda la fila es interactiva
         
         const badgeCondicion = ticket.condicion === 'Mantenimiento' ? 'badge-mantenimiento' : 'badge-funcional';
         const badgeUrgencia = ticket.urgente === 'Sí' ? 'badge-urgente' : 'badge-normal';
-        
-        // REQUERIMIENTO COMPLETADO: Si el ticket es nuevo o no tiene status asignado en Firestore, pintará "Abierto"
         const statusActual = ticket.status || "Abierto";
 
-        // Renderizado de las 10 columnas en perfecta sincronía con tu cabecera HTML
+        // Renderizado de las 10 columnas alineadas exactamente con la estructura de tu HTML
         tr.innerHTML = `
             <td><strong>${index++}</strong></td>
             <td>${ticket.fechaPeticion || 'S/F'}</td>
@@ -155,21 +171,133 @@ function inyectarTicketsEnTabla(listaDeTickets) {
             <td><span class="badge ${badgeCondicion}">${ticket.condicion || ''}</span></td>
             <td><span class="badge badge-funcional" style="background-color: #2c9faf; color: white; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 11px;">${statusActual}</span></td>
             <td>
-                <button class='btn-action-t' style='background-color: #2c9faf; margin-right: 5px;' 
-                    onclick="prepararEdicionTicket('${ticket.id}', '${ticket.tipo}', '${ticket.marca}', '${ticket.modelo}', '${ticket.serie}', '${ticket.detalle}', '${ticket.condicion}', '${ticket.fechaPeticion}', '${ticket.urgente}')">
+                <button class='btn-action-t' style='background-color: #2c9faf; margin-right: 5px;' id="btnEditar-${ticket.id}">
                     ✏️
                 </button>
-                <button class='btn-action-t' style='background-color: #dc4c64;' 
-                    onclick="eliminarTicket('${ticket.id}')">
+                <button class='btn-action-t' style='background-color: #dc4c64;' id="btnEliminar-${ticket.id}">
                     🗑️
                 </button>
             </td>
         `;
+
+        // Detener la propagación del clic en el botón de edición para que no abra el chat por accidente
+        tr.querySelector(`#btnEditar-${ticket.id}`).addEventListener('click', (e) => {
+            e.stopPropagation();
+            prepararEdicionTicket(ticket.id, ticket.tipo, ticket.marca, ticket.modelo, ticket.serie, ticket.detalle, ticket.condicion, ticket.fechaPeticion, ticket.urgente);
+        });
+
+        // Detener la propagación del clic en el botón de eliminación
+        tr.querySelector(`#btnEliminar-${ticket.id}`).addEventListener('click', (e) => {
+            e.stopPropagation();
+            eliminarTicket(ticket.id);
+        });
+
+        // COMPORTAMIENTO INTEGRADOR: Dar clic en cualquier parte libre de la fila despliega el chat en espejo abajo
+        tr.addEventListener('click', () => {
+            activarChatDesdeUsuario(ticket);
+        });
+
         tbody.appendChild(tr);
     });
 }
+// --- 5. ENLACE REACTIVO CON LA SUBCOLECCIÓN DE CHAT DESDE EL USUARIO ---
+function activarChatDesdeUsuario(ticket) {
+    if (desuscribirChatUser) desuscribirChatUser();
 
-// --- 5. FILTRAR MENÚ DESPLEGABLE: SOLO EQUIPOS DEL EMPLEADO LOGUEADO ---
+    document.getElementById('chatUsuarioTicketId').value = ticket.id;
+    
+    document.getElementById('chatUsuarioResumen').innerHTML = `
+        <strong>Equipo en Revisión:</strong> ${ticket.tipo || 'Computadora'} ${ticket.marca || ''} (${ticket.modelo || ''})<br>
+        <strong>Falla reportada:</strong> "${ticket.detalle || 'Sin detalle'}"
+    `;
+
+    desuscribirChatUser = db.collection("tickets")
+        .doc(ticket.id)
+        .collection("chat")
+        .orderBy("fechaEnvio", "asc")
+        .onSnapshot((snapshot) => {
+            contenedorMsgsUser.innerHTML = "";
+
+            if (snapshot.empty) {
+                contenedorMsgsUser.innerHTML = `<em style="color: #aaa; text-align: center; display: block; margin-top: 15px;">No hay mensajes previos. El personal de Soporte Técnico iniciará el contacto por aquí.</em>`;
+                return;
+            }
+
+            snapshot.forEach((doc) => {
+                const msg = doc.data();
+                const burbuja = document.createElement("div");
+                
+                burbuja.style.maxWidth = "75%";
+                burbuja.style.padding = "8px 14px";
+                burbuja.style.borderRadius = "8px";
+                burbuja.style.fontSize = "13px";
+                burbuja.style.lineHeight = "1.4";
+                burbuja.style.display = "flex";
+                burbuja.style.flexDirection = "column";
+
+                if (msg.remitenteRol === "Administrador") {
+                    burbuja.style.backgroundColor = "#eef2f3";
+                    burbuja.style.color = "#333";
+                    burbuja.style.alignSelf = "flex-start";
+                    burbuja.style.border = "1px solid #ddd";
+                    burbuja.style.borderBottomLeftRadius = "0";
+                } else {
+                    burbuja.style.backgroundColor = "#5c1424"; 
+                    burbuja.style.color = "white";
+                    burbuja.style.alignSelf = "flex-end";
+                    burbuja.style.borderBottomRightRadius = "0";
+                }
+
+                let horaTexto = "S/H";
+                if (msg.fechaEnvio) {
+                    const date = msg.fechaEnvio.toDate();
+                    horaTexto = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                }
+
+                burbuja.innerHTML = `
+                    <span>${msg.texto}</span>
+                    <span style="font-size: 9px; margin-top: 4px; text-align: right; opacity: 0.7;">
+                        ${msg.remitenteNombre} • ${horaTexto}
+                    </span>
+                `;
+                contenedorMsgsUser.appendChild(burbuja);
+            });
+
+            contenedorMsgsUser.scrollTop = contenedorMsgsUser.scrollHeight;
+        }, (error) => {
+            console.error("Error al sincronizar el chat del usuario:", error);
+        });
+
+    panelChatUser.style.display = 'block';
+    panelChatUser.scrollIntoView({ behavior: 'smooth' });
+}
+
+// --- 6. PERSISTENCIA: ENVIAR RESPUESTA DEL USUARIO A LA SUBCOLECCIÓN ---
+formChatUser.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const ticketId = document.getElementById('chatUsuarioTicketId').value;
+    const textoMensaje = document.getElementById('inputMensajeUsuario').value.trim();
+    const correoUsuario = localStorage.getItem("userEmail");
+
+    if (!ticketId || !textoMensaje) return;
+
+    try {
+        await db.collection("tickets").doc(ticketId).collection("chat").add({
+            texto: textoMensaje,
+            remitenteEmail: correoUsuario,
+            remitenteNombre: "Usuario / Solicitante",
+            remitenteRol: "Usuario",
+            fechaEnvio: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        formChatUser.reset();
+    } catch (error) {
+        console.error("Error al registrar el mensaje del usuario:", error);
+        alert("No se pudo enviar la respuesta: " + error.message);
+    }
+});
+// --- 7. FILTRAR MENÚ DESPLEGABLE: SOLO EQUIPOS DEL EMPLEADO LOGUEADO ---
 function cargarEquiposDelUsuarioLogueado(emailUsuario) {
     const selectEquipo = document.getElementById("ticketTipo");
     if (!selectEquipo) return;
@@ -240,7 +368,7 @@ document.getElementById("ticketTipo").addEventListener("change", (e) => {
     document.getElementById("ticketSerie").value = option.getAttribute('data-serie');
 });
 
-// --- 6. PREPARAR EDICIÓN (PRESERVA LOS CAMPOS ANTERIORES) ---
+// --- 8. PREPARAR EDICIÓN (PRESERVA LOS CAMPOS ANTERIORES) ---
 window.prepararEdicionTicket = function(id, tipo, marca, modelo, serie, detalle, condicion, fechaPeticion, urgente) {
     modalTitulo.innerText = "Modificar Ticket de Mantenimiento";
     editDocId.value = id;
@@ -257,7 +385,7 @@ window.prepararEdicionTicket = function(id, tipo, marca, modelo, serie, detalle,
     modal.style.display = 'flex';
 };
 
-// --- 7. ELIMINACIÓN DE REGISTROS ---
+// --- 9. ELIMINACIÓN DE REGISTROS ---
 window.eliminarTicket = function(id) {
     if (confirm("¿Está seguro de que desea eliminar este ticket de mantenimiento?")) {
         db.collection("tickets").doc(id).delete()
@@ -266,7 +394,7 @@ window.eliminarTicket = function(id) {
     }
 };
 
-// --- 8. LOGOUT INSTITUCIONAL ---
+// --- 10. LOGOUT INSTITUCIONAL ---
 window.logout = async () => {
     try {
         await auth.signOut();
@@ -277,7 +405,7 @@ window.logout = async () => {
     }
 };
 
-// --- 9. INICIALIZADOR DE CARGA Y EVENTO DE BÚSQUEDA ---
+// --- 11. INICIALIZADOR DE CARGA Y EVENTO DE BÚSQUEDA ---
 window.addEventListener('DOMContentLoaded', () => {
     const emailDisplay = document.getElementById("userEmailDisplay");
     const storedEmail = localStorage.getItem("userEmail");
