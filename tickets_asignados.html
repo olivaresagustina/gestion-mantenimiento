@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tickets Asignados - H. Ayuntamiento de Calnali</title>
+    <link rel="stylesheet" href="styles_menu.css"> 
+    <link rel="stylesheet" href="https://cloudflare.com">
+    <style>
+        .header-acciones { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        
+        /* === TABLA DESPLAZABLE (SCROLLABLE) MAXIMO 10 REGISTROS === */
+        .tabla-scroll-container {
+            width: 100%;
+            max-height: 440px; 
+            overflow-y: auto;
+            border: 1px solid #e1dccb;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            background: white;
+        }
+        
+        .tabla-peticiones { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .tabla-peticiones th, .tabla-peticiones td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eeeeee; }
+        
+        .tabla-peticiones th { 
+            background-color: #f8f5ed; 
+            color: #5c1424; 
+            font-weight: 600; 
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: inset 0 -1px 0 #eeeeee;
+        }
+        
+        .tabla-peticiones tbody tr.fila-seleccionada {
+            background-color: #f5ebd5 !important;
+            border-left: 4px solid #b8904c;
+        }
+        
+        .tabla-peticiones tbody tr { cursor: pointer; transition: background 0.2s; }
+        .tabla-peticiones tbody tr:hover { background-color: #fbf9f5; }
+        
+        /* === PANEL DE INTERCOMUNICACIÓN / CHAT INFERIOR === */
+        .panel-chat-inferior {
+            display: none; 
+            margin-top: 30px;
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid #e1dccb;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+            overflow: hidden;
+            animation: slideUp 0.3s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .chat-header {
+            background: #5c1424; 
+            color: #ffffff;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .chat-header h2 { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .chat-close-btn { background: transparent; border: none; color: white; font-size: 18px; cursor: pointer; opacity: 0.8; }
+        .chat-close-btn:hover { opacity: 1; }
+        
+        .chat-area-container {
+            padding: 20px;
+            background: #fbf6ee; 
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .ticket-info-summary {
+            background: #ffffff;
+            padding: 12px 15px;
+            border-radius: 6px;
+            border: 1px solid #e1dccb;
+            font-size: 12px;
+            color: #555;
+            line-height: 1.5;
+        }
+        
+        .chat-box-mensajes {
+            height: 250px;
+            overflow-y: auto;
+            background: #ffffff;
+            border: 1.5px solid #cccccc;
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        /* Burbujas de chat estéticas */
+        .msg-burbuja { max-width: 75%; padding: 8px 14px; border-radius: 8px; font-size: 13px; line-height: 1.4; position: relative; }
+        .msg-admin { background: #5c1424; color: white; align-self: flex-end; border-bottom-right-radius: 0; }
+        .msg-usuario { background: #eef2f3; color: #333; align-self: flex-start; border-bottom-left-radius: 0; border: 1px solid #ddd; }
+        
+        .msg-meta { font-size: 9px; display: block; margin-top: 4px; text-align: right; opacity: 0.7; }
+        
+        .chat-input-form { display: flex; gap: 10px; }
+        .chat-input-form input {
+            flex: 1;
+            padding: 12px;
+            border: 1.5px solid #cccccc;
+            border-radius: 6px;
+            font-size: 13px;
+            outline: none;
+        }
+        .chat-input-form input:focus { border-color: #b8904c; }
+        
+        .btn-enviar-msg { background: #2c9faf; color: white; border: none; padding: 0 20px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-enviar-msg:hover { filter: brightness(0.9); }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <!-- --- SIDEBAR LATERAL (GUINDA) --- -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <a href="menu.html" class="logo-link">
+                    <img src="logo.png" alt="Logo Calnali" class="menu-logo-img">
+                    <div class="logo-text"><span class="logo-top">Juntos Rescatando</span><span class="logo-bottom">Calnali</span></div>
+                </a>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-item" onclick="window.location.href='menu.html'">📊 Dashboard</div>
+                <div class="nav-item">🛡 SEGURIDAD</div>
+                <div class="nav-item" onclick="window.location.href='registro_equipo.html'">📊 INVENTARIO</div>
+                <div class="nav-section active">
+                    <div class="section-title">🛠 MANTENIMIENTO</div>
+                    <ul class="sub-menu">
+                        <li onclick="window.location.href='ticket.html'">• Levantar Ticket</li>
+                        <li onclick="window.location.href='peticiones.html'">• Bandeja de Entrada</li>
+                        <!-- NUEVO SUBMENÚ INCORPORADO -->
+                        <li class="active-sub" onclick="window.location.href='tickets_asignados.html'">• Tickets Asignados</li>
+                    </ul>
+                </div>
+                <div class="nav-item">📊 REPORTES</div>
+            </nav>
+            <button class="btn-logout-sidebar" onclick="window.logout()">Cerrar Sesión</button>
+        </aside>
+
+        <!-- --- CONTENIDO PRINCIPAL --- -->
+        <main class="main-content">
+            <div class="top-bar">
+                <div class="search-box"><span>🔍</span><input type="text" id="inputBuscarAsignados" placeholder="Buscar ticket asignado..."></div>
+                <div class="user-profile">
+                    <span id="userEmailDisplay" style="font-size: 13px; font-weight: 600; color: #555;">Cargando usuario...</span>
+                    <div class="avatar-img" style="width: 35px; height: 35px; background: #b8904c; border-radius: 50%;"></div>
+                </div>
+            </div>
+
+            <h1 class="page-title">Tickets Asignados</h1>
+            <div class="chart-box" style="background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
+                <div class="header-acciones">
+                    <h3 style="font-size: 14px; color: #666;">Historial de Mantenimientos bajo mi Responsabilidad</h3>
+                </div>
+
+                <!-- CONTENEDOR CON SCROLL DE MAXIMO 10 REGISTROS -->
+                <div class="tabla-scroll-container">
+                    <table class="tabla-peticiones">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Encargado</th>
+                                <th>Departamento</th>
+                                <th>Problema</th>
+                                <th>Fecha Entrada</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaAsignadosCuerpo">
+                            <tr><td colspan="6" style="text-align: center; color: #777;">Cargando tus asignaciones directas...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- === NUEVO PANEL DE COMUNICACIÓN / CHAT INTERACTIVO === -->
+                <div class="panel-chat-inferior" id="panelChatInSitu">
+                    <div class="chat-header">
+                        <h2><i class="fa-solid fa-comments"></i> Sala de Chat y Seguimiento Técnico</h2>
+                        <button type="button" class="chat-close-btn" id="btnCerrarChatInferior">×</button>
+                    </div>
+                    
+                    <div class="chat-area-container">
+                        <input type="hidden" id="chatTicketDocId"> <!-- ID del ticket seleccionado -->
+                        
+                        <!-- Resumen breve del reporte activo -->
+                        <div class="ticket-info-summary" id="chatTicketResumen">
+                            Selecciona un ticket de la tabla para visualizar el historial técnico.
+                        </div>
+                        
+                        <!-- Caja interactiva donde se pintan las burbujas -->
+                        <div class="chat-box-mensajes" id="chatContenedorMensajes">
+                            <!-- Inyección dinámica de mensajes -->
+                        </div>
+                        
+                        <!-- Caja de envío de texto -->
+                        <form id="formEnviarMensaje" class="chat-input-form">
+                            <input type="text" id="inputTextoMensaje" placeholder="Escribe un mensaje interno o aviso para el usuario..." required autocomplete="off">
+                            <button type="submit" class="btn-enviar-msg"><i class="fa-solid fa-paper-plane"></i> Enviar</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- SDK Firebase y Cierre de documento -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>   
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="tickets_asignados.js"></script>
+</body>
+</html>
