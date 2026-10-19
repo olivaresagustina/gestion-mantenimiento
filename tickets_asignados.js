@@ -22,6 +22,7 @@ const formChat = document.getElementById('formEnviarMensaje');
 
 let registrosAsignados = []; // Caché local para optimizar el buscador
 let desuscribirChatListener = null; // Guardado del listener activo para evitar fugas de memoria
+let esUsuarioAdministrador = false; // Variable de control de privilegios del frontend
 
 // --- 2. GESTIÓN Y LIMPIEZA DEL PANEL DE CHAT ---
 const cerrarPanelChat = () => {
@@ -78,7 +79,6 @@ function cargarTicketsAsignadosGlobales() {
               const correoKey = (data.usuarioEmail || "").trim().toLowerCase();
               const nombreSolicitante = mapaEncargados[correoKey] || "Desconocido";
 
-              // Realizamos una subconsulta rápida al último mensaje registrado de este chat
               const chatSnapshot = await db.collection("tickets")
                                              .doc(ticketId)
                                              .collection("chat")
@@ -90,7 +90,6 @@ function cargarTicketsAsignadosGlobales() {
 
               if (!chatSnapshot.empty) {
                   const ultimoMsg = chatSnapshot.docs[0].data();
-                  // REQUERIMIENTO COMPLETADO: Si el remitente es "Usuario", el Administrador tiene una alerta pendiente
                   if (ultimoMsg.remitenteRol === "Usuario") {
                       tieneRespuestaUsuario = true;
                   }
@@ -99,7 +98,7 @@ function cargarTicketsAsignadosGlobales() {
               return {
                   ticketId: ticketId,
                   encargado: nombreSolicitante,
-                  hasNewAnswer: tieneRespuestaUsuario, // Bandera de control para el indicador visual
+                  hasNewAnswer: tieneRespuestaUsuario,
                   departamento: data.departamento || "General",
                   tecnico: data.tecnicoAsignado || "No Asignado",
                   tipoMantenimiento: data.tipoMantenimiento || "No Especificado",
@@ -114,7 +113,6 @@ function cargarTicketsAsignadosGlobales() {
               };
           });
 
-          // Resolvemos todas las consultas en paralelo y actualizamos la caché global
           registrosAsignados = await Promise.all(promesasTickets);
           inyectarTicketsEnTabla(registrosAsignados);
 
@@ -123,7 +121,7 @@ function cargarTicketsAsignadosGlobales() {
           tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #dc4c64; padding: 20px;">Error de sincronización con el servidor de base de datos.</td></tr>`;
       });
 }
-// --- 4. RENDERIZADO DINÁMICO DE 10 COLUMNAS CON ALERTA DE RESPUESTA EN CELDA ---
+// --- 4. RENDERIZADO DINÁMICO DE 10 COLUMNAS CON IDENTIFICACIÓN DE PRIVILEGIOS ---
 function inyectarTicketsEnTabla(listaRegistros) {
     const tbody = document.getElementById("tablaAsignadosCuerpo");
     if (!tbody) return;
@@ -135,7 +133,6 @@ function inyectarTicketsEnTabla(listaRegistros) {
         const tr = document.createElement("tr");
         tr.setAttribute("id", `fila-${reg.ticketId}`);
 
-        // REQUERIMIENTO COMPLETADO: Si el usuario contestó el chat, se pinta un badge parpadeante guinda/oro
         let alertaRespuestaHTML = "";
         if (reg.hasNewAnswer) {
             alertaRespuestaHTML = `
@@ -153,7 +150,9 @@ function inyectarTicketsEnTabla(listaRegistros) {
             `;
         }
 
-        // Estructura de 10 columnas con el selector deslizable y la alerta visual integrada
+        // REQUERIMIENTO COMPLETADO: El atributo 'disabled' se inyecta dinámicamente si NO es Administrador
+        const atributoDisabled = esUsuarioAdministrador ? "" : "disabled";
+
         tr.innerHTML = `
             <td><strong>${index++}</strong></td>
             <td>${reg.encargado}</td>
@@ -166,21 +165,20 @@ function inyectarTicketsEnTabla(listaRegistros) {
             <td>${reg.fechaSalida}</td>
             <td>
                 <div style="display: flex; align-items: center; gap: 4px;">
-                    <select class="select-status-celda" data-id="${reg.ticketId}" style="padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 11px; background-color: #b8904c; color: white; border: none; cursor: pointer;">
+                    <select class="select-status-celda" data-id="${reg.ticketId}" ${atributoDisabled} style="padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 11px; background-color: #b8904c; color: white; border: none; cursor: ${esUsuarioAdministrador ? 'pointer' : 'not-allowed'}; outline: none;">
                         <option value="Abierto" ${reg.status === 'Abierto' ? 'selected' : ''}>ABIERTO</option>
                         <option value="Asignado" ${reg.status === 'Asignado' ? 'selected' : ''}>ASIGNADO</option>
                         <option value="Cerrado" ${reg.status === 'Cerrado' ? 'selected' : ''}>CERRADO</option>
                     </select>
-                    ${alertaRespuestaHTML} <!-- Indicador reactivo -->
+                    ${alertaRespuestaHTML}
                 </div>
             </td>
         `;
 
-        // Detener la propagación del clic en el selector para que no abra el chat por accidente
         const selector = tr.querySelector('.select-status-celda');
         selector.addEventListener('click', (e) => e.stopPropagation());
 
-        // Evento que actualiza Firebase de forma inmediata al cambiar la opción deslizable
+        // Evento de actualización (Solo se activará si el Administrador interactúa)
         selector.addEventListener('change', async (e) => {
             const ticketIdId = e.target.getAttribute('data-id');
             const nuevoEstado = e.target.value;
@@ -197,7 +195,6 @@ function inyectarTicketsEnTabla(listaRegistros) {
             }
         });
 
-        // Al hacer clic en cualquier otra parte del renglón, se despliega el panel de chat inferior
         tr.addEventListener('click', () => {
             document.querySelectorAll('#tablaAsignadosCuerpo tr').forEach(row => row.classList.remove('fila-seleccionada'));
             tr.classList.add('fila-seleccionada');
@@ -325,14 +322,34 @@ window.logout = async () => {
     }
 };
 
-// --- 9. VERIFICADOR DE SESIÓN INICIAL E INSTANCIACIÓN GLOBAL ---
+// --- 9. VERIFICADOR DE SESIÓN INICIAL E IDENTIFICACIÓN DEL ROL ---
 window.addEventListener('DOMContentLoaded', () => {
     const emailDisplay = document.getElementById("userEmailDisplay");
     const storedEmail = localStorage.getItem("userEmail");
 
     if (storedEmail) {
         if (emailDisplay) emailDisplay.innerText = storedEmail;
-        cargarTicketsAsignadosGlobales();
+
+        // Comprobamos el rol de la cuenta en la colección de encargados antes de pintar la tabla
+        db.collection("usuarios_encargados")
+          .where("usuarioEmail", "==", storedEmail.trim())
+          .get()
+          .then((snapshot) => {
+              if (!snapshot.empty) {
+                  snapshot.forEach((doc) => {
+                      if (doc.data().rol === "Administrador") {
+                          esUsuarioAdministrador = true;
+                      }
+                  });
+              }
+              // Lanzamos la descarga global con los privilegios ya configurados en memoria
+              cargarTicketsAsignadosGlobales();
+          })
+          .catch((error) => {
+              console.error("Error al validar rol del usuario:", error);
+              cargarTicketsAsignadosGlobales();
+          });
+
     } else {
         alert("Acceso denegado. Por favor inicia sesión.");
         window.location.href = "index.html";
