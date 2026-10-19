@@ -47,12 +47,11 @@ window.addEventListener('keydown', (e) => {
     }
 });
 
-// --- 3. CONSULTA REACTIVA GLOBAL POR STATUS ASIGNADO ---
+// --- 3. CONSULTA REACTIVA GLOBAL POR STATUS ASIGNADO CON VERIFICACIÓN DE MENSAJES ---
 function cargarTicketsAsignadosGlobales() {
     const tbody = document.getElementById("tablaAsignadosCuerpo");
     if (!tbody) return;
 
-    // REQUERIMIENTO CUMPLIDO: Trae TODOS los tickets con status "Asignado" sin filtrar por usuario de sesión
     db.collection("tickets")
       .where("status", "==", "Asignado")
       .onSnapshot(async (snapshot) => {
@@ -61,8 +60,6 @@ function cargarTicketsAsignadosGlobales() {
               tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #777; padding: 20px;">No hay ningún ticket con status 'Asignado' en el Ayuntamiento actualmente.</td></tr>`;
               return;
           }
-
-          registrosAsignados = [];
 
           // Traemos en paralelo la información de los encargados para realizar el cruce de nombres
           const encargadosSnap = await db.collection("usuarios_encargados").get();
@@ -74,14 +71,35 @@ function cargarTicketsAsignadosGlobales() {
               }
           });
 
-          snapshot.forEach((doc) => {
+          // Mapeamos los documentos en un arreglo de promesas para revisar los chats en segundo plano
+          const promesasTickets = snapshot.docs.map(async (doc) => {
               const data = doc.data();
+              const ticketId = doc.id;
               const correoKey = (data.usuarioEmail || "").trim().toLowerCase();
               const nombreSolicitante = mapaEncargados[correoKey] || "Desconocido";
 
-              registrosAsignados.push({
-                  ticketId: doc.id,
+              // Realizamos una subconsulta rápida al último mensaje registrado de este chat
+              const chatSnapshot = await db.collection("tickets")
+                                             .doc(ticketId)
+                                             .collection("chat")
+                                             .orderBy("fechaEnvio", "desc")
+                                             .limit(1)
+                                             .get();
+
+              let tieneRespuestaUsuario = false;
+
+              if (!chatSnapshot.empty) {
+                  const ultimoMsg = chatSnapshot.docs[0].data();
+                  // REQUERIMIENTO COMPLETADO: Si el remitente es "Usuario", el Administrador tiene una alerta pendiente
+                  if (ultimoMsg.remitenteRol === "Usuario") {
+                      tieneRespuestaUsuario = true;
+                  }
+              }
+
+              return {
+                  ticketId: ticketId,
                   encargado: nombreSolicitante,
+                  hasNewAnswer: tieneRespuestaUsuario, // Bandera de control para el indicador visual
                   departamento: data.departamento || "General",
                   tecnico: data.tecnicoAsignado || "No Asignado",
                   tipoMantenimiento: data.tipoMantenimiento || "No Especificado",
@@ -93,9 +111,11 @@ function cargarTicketsAsignadosGlobales() {
                   tipo: data.tipo || "",
                   marca: data.marca || "",
                   modelo: data.modelo || ""
-              });
+              };
           });
 
+          // Resolvemos todas las consultas en paralelo y actualizamos la caché global
+          registrosAsignados = await Promise.all(promesasTickets);
           inyectarTicketsEnTabla(registrosAsignados);
 
       }, (error) => {
@@ -103,7 +123,7 @@ function cargarTicketsAsignadosGlobales() {
           tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #dc4c64; padding: 20px;">Error de sincronización con el servidor de base de datos.</td></tr>`;
       });
 }
-// --- 4. RENDERIZADO DINÁMICO DE 10 COLUMNAS CON SELECTOR EN CELDA ---
+// --- 4. RENDERIZADO DINÁMICO DE 10 COLUMNAS CON ALERTA DE RESPUESTA EN CELDA ---
 function inyectarTicketsEnTabla(listaRegistros) {
     const tbody = document.getElementById("tablaAsignadosCuerpo");
     if (!tbody) return;
@@ -115,7 +135,25 @@ function inyectarTicketsEnTabla(listaRegistros) {
         const tr = document.createElement("tr");
         tr.setAttribute("id", `fila-${reg.ticketId}`);
 
-        // REQUERIMIENTO CUMPLIDO: Estructura exacta de 10 columnas con selector deslizable integrado en la celda final
+        // REQUERIMIENTO COMPLETADO: Si el usuario contestó el chat, se pinta un badge parpadeante guinda/oro
+        let alertaRespuestaHTML = "";
+        if (reg.hasNewAnswer) {
+            alertaRespuestaHTML = `
+                <span class="badge-alerta-admin" style="background-color: #5c1424; color: white; padding: 2px 7px; border-radius: 20px; font-weight: bold; font-size: 10px; margin-left: 5px; display: inline-flex; align-items: center; gap: 4px; animation: pulseAdmin 1.8s infinite; border: 1px solid #b8904c;">
+                    <span style="width: 5px; height: 5px; background-color: #b8904c; border-radius: 50%; display: inline-block;"></span> 
+                    Respuesta
+                </span>
+                <style>
+                    @keyframes pulseAdmin {
+                        0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(92, 20, 36, 0.4); }
+                        70% { transform: scale(1.03); box-shadow: 0 0 0 5px rgba(92, 20, 36, 0); }
+                        100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(92, 20, 36, 0); }
+                    }
+                </style>
+            `;
+        }
+
+        // Estructura de 10 columnas con el selector deslizable y la alerta visual integrada
         tr.innerHTML = `
             <td><strong>${index++}</strong></td>
             <td>${reg.encargado}</td>
@@ -127,15 +165,18 @@ function inyectarTicketsEnTabla(listaRegistros) {
             <td>${reg.fechaEntrada}</td>
             <td>${reg.fechaSalida}</td>
             <td>
-                <select class="select-status-celda" data-id="${reg.ticketId}" style="padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 11px; background-color: #b8904c; color: white; border: none; cursor: pointer;">
-                    <option value="Abierto" ${reg.status === 'Abierto' ? 'selected' : ''}>ABIERTO</option>
-                    <option value="Asignado" ${reg.status === 'Asignado' ? 'selected' : ''}>ASIGNADO</option>
-                    <option value="Cerrado" ${reg.status === 'Cerrado' ? 'selected' : ''}>CERRADO</option>
-                </select>
+                <div style="display: flex; align-items: center; gap: 4px;">
+                    <select class="select-status-celda" data-id="${reg.ticketId}" style="padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 11px; background-color: #b8904c; color: white; border: none; cursor: pointer;">
+                        <option value="Abierto" ${reg.status === 'Abierto' ? 'selected' : ''}>ABIERTO</option>
+                        <option value="Asignado" ${reg.status === 'Asignado' ? 'selected' : ''}>ASIGNADO</option>
+                        <option value="Cerrado" ${reg.status === 'Cerrado' ? 'selected' : ''}>CERRADO</option>
+                    </select>
+                    ${alertaRespuestaHTML} <!-- Indicador reactivo -->
+                </div>
             </td>
         `;
 
-        // Detener la propagación del clic en el selector para que no abra el chat por accidente al cambiar el estado
+        // Detener la propagación del clic en el selector para que no abra el chat por accidente
         const selector = tr.querySelector('.select-status-celda');
         selector.addEventListener('click', (e) => e.stopPropagation());
 
@@ -291,7 +332,6 @@ window.addEventListener('DOMContentLoaded', () => {
 
     if (storedEmail) {
         if (emailDisplay) emailDisplay.innerText = storedEmail;
-        // Lanza el cargador global sin restricción de cuenta
         cargarTicketsAsignadosGlobales();
     } else {
         alert("Acceso denegado. Por favor inicia sesión.");
