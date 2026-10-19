@@ -90,11 +90,9 @@ form.addEventListener('submit', async (e) => {
         };
 
         if (idParaEditar) {
-            // Edición: Actualiza manteniendo sus datos previos
             await db.collection("tickets").doc(idParaEditar).update(datosTicket);
             alert("¡Ticket modificado correctamente!");
         } else {
-            // Inyección automática del Status por defecto al crear
             datosTicket.status = "Abierto";
             datosTicket.fechaCreacion = firebase.firestore.FieldValue.serverTimestamp();
             await db.collection("tickets").add(datosTicket);
@@ -110,23 +108,48 @@ form.addEventListener('submit', async (e) => {
         alert("Error al procesar la operation: " + error.message);
     }
 });
-// --- 4. CONSULTA HISTORIAL DE TICKETS GENERADOS POR EL USUARIO EN SESIÓN ---
+
+// --- 4. MOTOR INTELIGENTE: DETECTAR MENSAJES NUEVOS EN SEGUNDO PLANO ---
 let ticketsLocales = []; 
 
 function cargarTicketsDelUsuario(emailUsuario) {
     db.collection("tickets")
       .where("usuarioEmail", "==", emailUsuario)
-      .onSnapshot((snapshot) => {
+      .onSnapshot(async (snapshot) => {
         
-        ticketsLocales = [];
-        snapshot.forEach((doc) => {
-            const data = doc.data();
-            ticketsLocales.push({
-                id: doc.id,
-                ...data
-            });
+        const listaProvisional = [];
+        
+        // Mapeamos los tickets en un arreglo de promesas para evaluar sus subcolecciones de chat en paralelo
+        const promesasChat = snapshot.docs.map(async (doc) => {
+            const ticketData = doc.data();
+            const ticketId = doc.id;
+            
+            // Consultamos de forma reactiva el último mensaje enviado en el chat de este ticket
+            const chatSnapshot = await db.collection("tickets")
+                                           .doc(ticketId)
+                                           .collection("chat")
+                                           .orderBy("fechaEnvio", "desc")
+                                           .limit(1)
+                                           .get();
+            
+            let tieneMensajeNuevo = false;
+            
+            if (!chatSnapshot.empty) {
+                const ultimoMsg = chatSnapshot.docs[0].data();
+                // Si el último mensaje fue escrito por un Administrador, significa que el usuario tiene una respuesta pendiente
+                if (ultimoMsg.remitenteRol === "Administrador") {
+                    tieneMensajeNuevo = true;
+                }
+            }
+
+            return {
+                id: ticketId,
+                hasNewMessage: tieneMensajeNuevo,
+                ...ticketData
+            };
         });
 
+        ticketsLocales = await Promise.all(promesasChat);
         inyectarTicketsEnTabla(ticketsLocales);
 
     }, (error) => {
@@ -137,8 +160,7 @@ function cargarTicketsDelUsuario(emailUsuario) {
         }
     });
 }
-
-// --- FUNCIÓN AUXILIAR: PINTAR LAS FILAS E INYECTAR LA COLUMNA STATUS Y EVENTO CHAT ---
+// --- 5. FUNCIÓN AUXILIAR: PINTAR FILAS E INTEGRAR BADGES DE NOTIFICACIÓN ---
 function inyectarTicketsEnTabla(listaDeTickets) {
     const tbody = document.getElementById("tablaTicketsCuerpo");
     if (!tbody) return;
@@ -153,13 +175,30 @@ function inyectarTicketsEnTabla(listaDeTickets) {
 
     listaDeTickets.forEach((ticket) => {
         const tr = document.createElement("tr");
-        tr.style.cursor = "pointer"; // Indica visualmente que toda la fila es interactiva
+        tr.style.cursor = "pointer";
         
         const badgeCondicion = ticket.condicion === 'Mantenimiento' ? 'badge-mantenimiento' : 'badge-funcional';
         const badgeUrgencia = ticket.urgente === 'Sí' ? 'badge-urgente' : 'badge-normal';
         const statusActual = ticket.status || "Abierto";
 
-        // Renderizado de las 10 columnas alineadas exactamente con la estructura de tu HTML
+        // NOTIFICACIÓN PROFESIONAL: Si el motor detectó un mensaje del Administrador, genera una alerta visual
+        let alertaMensajeHTML = "";
+        if (ticket.hasNewMessage) {
+            alertaMensajeHTML = `
+                <span class="badge-notificacion-chat" style="background-color: #5c1424; color: white; padding: 3px 8px; border-radius: 20px; font-weight: bold; font-size: 10px; margin-left: 6px; display: inline-flex; align-items: center; gap: 4px; animation: pulseNotification 1.8s infinite; border: 1px solid #b8904c;">
+                    <span style="width: 6px; height: 6px; background-color: #ff4d4d; border-radius: 50%; display: inline-block;"></span> 
+                    Mensaje Nuevo
+                </span>
+                <style>
+                    @keyframes pulseNotification {
+                        0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(92, 20, 36, 0.4); }
+                        70% { transform: scale(1.03); box-shadow: 0 0 0 6px rgba(92, 20, 36, 0); }
+                        100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(92, 20, 36, 0); }
+                    }
+                </style>
+            `;
+        }
+
         tr.innerHTML = `
             <td><strong>${index++}</strong></td>
             <td>${ticket.fechaPeticion || 'S/F'}</td>
@@ -169,7 +208,12 @@ function inyectarTicketsEnTabla(listaDeTickets) {
             <td>${ticket.modelo || ''}</td>
             <td>${ticket.detalle || ''}</td>
             <td><span class="badge ${badgeCondicion}">${ticket.condicion || ''}</span></td>
-            <td><span class="badge badge-funcional" style="background-color: #2c9faf; color: white; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 11px;">${statusActual}</span></td>
+            <td>
+                <span class="badge badge-funcional" style="background-color: #2c9faf; color: white; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 11px;">
+                    ${statusActual}
+                </span>
+                ${alertaMensajeHTML} <!-- Renderizado dinámico de la notificación -->
+            </td>
             <td>
                 <button class='btn-action-t' style='background-color: #2c9faf; margin-right: 5px;' id="btnEditar-${ticket.id}">
                     ✏️
@@ -180,19 +224,16 @@ function inyectarTicketsEnTabla(listaDeTickets) {
             </td>
         `;
 
-        // Detener la propagación del clic en el botón de edición para que no abra el chat por accidente
         tr.querySelector(`#btnEditar-${ticket.id}`).addEventListener('click', (e) => {
             e.stopPropagation();
             prepararEdicionTicket(ticket.id, ticket.tipo, ticket.marca, ticket.modelo, ticket.serie, ticket.detalle, ticket.condicion, ticket.fechaPeticion, ticket.urgente);
         });
 
-        // Detener la propagación del clic en el botón de eliminación
         tr.querySelector(`#btnEliminar-${ticket.id}`).addEventListener('click', (e) => {
             e.stopPropagation();
             eliminarTicket(ticket.id);
         });
 
-        // COMPORTAMIENTO INTEGRADOR: Dar clic en cualquier parte libre de la fila despliega el chat en espejo abajo
         tr.addEventListener('click', () => {
             activarChatDesdeUsuario(ticket);
         });
@@ -200,7 +241,7 @@ function inyectarTicketsEnTabla(listaDeTickets) {
         tbody.appendChild(tr);
     });
 }
-// --- 5. ENLACE REACTIVO CON LA SUBCOLECCIÓN DE CHAT DESDE EL USUARIO ---
+// --- 6. ENLACE REACTIVO CON LA SUBCOLECCIÓN DE CHAT DESDE EL USUARIO ---
 function activarChatDesdeUsuario(ticket) {
     if (desuscribirChatUser) desuscribirChatUser();
 
@@ -211,6 +252,7 @@ function activarChatDesdeUsuario(ticket) {
         <strong>Falla reportada:</strong> "${ticket.detalle || 'Sin detalle'}"
     `;
 
+    // Escucha sincrónica en tiempo real de las burbujas de conversación
     desuscribirChatUser = db.collection("tickets")
         .doc(ticket.id)
         .collection("chat")
@@ -235,6 +277,7 @@ function activarChatDesdeUsuario(ticket) {
                 burbuja.style.display = "flex";
                 burbuja.style.flexDirection = "column";
 
+                // Estilos para diferenciar al Administrador (Gris) del Usuario (Guinda Municipal)
                 if (msg.remitenteRol === "Administrador") {
                     burbuja.style.backgroundColor = "#eef2f3";
                     burbuja.style.color = "#333";
@@ -272,7 +315,7 @@ function activarChatDesdeUsuario(ticket) {
     panelChatUser.scrollIntoView({ behavior: 'smooth' });
 }
 
-// --- 6. PERSISTENCIA: ENVIAR RESPUESTA DEL USUARIO A LA SUBCOLECCIÓN ---
+// --- 7. PERSISTENCIA: ENVIAR RESPUESTA DEL USUARIO A LA SUBCOLECCIÓN ---
 formChatUser.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -297,7 +340,7 @@ formChatUser.addEventListener('submit', async (e) => {
         alert("No se pudo enviar la respuesta: " + error.message);
     }
 });
-// --- 7. FILTRAR MENÚ DESPLEGABLE: SOLO EQUIPOS DEL EMPLEADO LOGUEADO ---
+// --- 8. FILTRAR MENÚ DESPLEGABLE: SOLO EQUIPOS DEL EMPLEADO LOGUEADO ---
 function cargarEquiposDelUsuarioLogueado(emailUsuario) {
     const selectEquipo = document.getElementById("ticketTipo");
     if (!selectEquipo) return;
@@ -368,7 +411,7 @@ document.getElementById("ticketTipo").addEventListener("change", (e) => {
     document.getElementById("ticketSerie").value = option.getAttribute('data-serie');
 });
 
-// --- 8. PREPARAR EDICIÓN (PRESERVA LOS CAMPOS ANTERIORES) ---
+// --- 9. PREPARAR EDICIÓN (PRESERVA LOS CAMPOS ANTERIORES) ---
 window.prepararEdicionTicket = function(id, tipo, marca, modelo, serie, detalle, condicion, fechaPeticion, urgente) {
     modalTitulo.innerText = "Modificar Ticket de Mantenimiento";
     editDocId.value = id;
@@ -385,7 +428,7 @@ window.prepararEdicionTicket = function(id, tipo, marca, modelo, serie, detalle,
     modal.style.display = 'flex';
 };
 
-// --- 9. ELIMINACIÓN DE REGISTROS ---
+// --- 10. ELIMINACIÓN DE REGISTROS ---
 window.eliminarTicket = function(id) {
     if (confirm("¿Está seguro de que desea eliminar este ticket de mantenimiento?")) {
         db.collection("tickets").doc(id).delete()
@@ -394,7 +437,7 @@ window.eliminarTicket = function(id) {
     }
 };
 
-// --- 10. LOGOUT INSTITUCIONAL ---
+// --- 11. LOGOUT INSTITUCIONAL ---
 window.logout = async () => {
     try {
         await auth.signOut();
@@ -405,7 +448,7 @@ window.logout = async () => {
     }
 };
 
-// --- 11. INICIALIZADOR DE CARGA Y EVENTO DE BÚSQUEDA ---
+// --- 12. INICIALIZADOR DE CARGA Y EVENTO DE BÚSQUEDA ---
 window.addEventListener('DOMContentLoaded', () => {
     const emailDisplay = document.getElementById("userEmailDisplay");
     const storedEmail = localStorage.getItem("userEmail");
