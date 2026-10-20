@@ -523,4 +523,64 @@ body {
 /* Ocultar el botón en computadoras de escritorio */
 .toggle-menu-movil {
     display: none;
+
+
+
+
+    /* 5. COHERENCIA ESTÉTICA: Adaptar ventanas modales flotantes a celulares */
+    .modal-overlay {
+        padding: 10px !important;
+        align-items: center !important; /* Mantiene el formulario centrado en vertical y horizontal */
+    }
+
+    /* Modifica el contenedor para que sea flexible en lugar de estático */
+    .form-container, .modal-ticket-container { 
+        width: 100% !important; /* Ocupa todo el ancho disponible del celular */
+        max-width: 95% !important; /* Deja un margen pequeño y estético a los lados */
+        margin: 0 auto !important;
+        border-radius: 8px !important;
+    }
+
+    /* Ajustar el cuerpo interno del formulario para evitar desbordes */
+    .form-body {
+        padding: 15px 12px !important; /* Reduce ligeramente el espacio interior */
+        max-height: 80vh !important; /* Limita la altura para que no se salga de la pantalla */
+        overflow-y: auto !important; /* Permite deslizar hacia abajo si el formulario es largo */
+    }
+
+    /* Ajustar la cuadrícula si el formulario usa columnas */
+    .form-grid {
+        grid-template-columns: 1fr !important; /* Pasa de dos columnas a una sola en celulares */
+        gap: 10px !important;
+        padding: 15px 10px !important;
+    }
+
+    .form-group.full-width {
+        grid-column: span 1 !important;
+    }
+
+    /* Redimensionar las cajas de texto e inputs para que no se estiren de más */
+    input[type="text"], input[type="password"], select, textarea {
+        font-size: 14px !important; /* Tamaño óptimo para que el teclado del móvil no haga zoom automático */
+        padding: 8px !important;
+    }
+
+    /* Ajustar la fila de botones en la parte inferior del modal */
+    .row-buttons {
+        flex-direction: column !important; /* Coloca los botones uno abajo del otro en móviles */
+        gap: 8px !important;
+        padding: 12px 15px !important;
+    }
+
+    .btn-form, .btn-footer {
+        width: 100% !important; /* Los botones ocupan todo el ancho del formulario */
+        justify-content: center !important;
+        padding: 10px !important;
+    }
+
+
+
+
+
+
 }
