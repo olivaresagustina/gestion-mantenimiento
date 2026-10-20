@@ -238,6 +238,42 @@
                 }
             });
         });
+
+
+// ==========================================================================
+// INTERFAZ DE USUARIO: Control Automatizado del Menú de Hamburguesa en Móvil
+// ==========================================================================
+window.addEventListener('DOMContentLoaded', () => {
+    const sidebar = document.querySelector('.sidebar');
+    const navMenu = document.querySelector('.sidebar-nav');
+
+    if (sidebar && navMenu && window.innerWidth <= 768) {
+        // 1. Creamos el botón dinámicamente con las tres líneas institucionales (☰)
+        const botonHamburguesa = document.createElement('button');
+        botonHamburguesa.className = 'toggle-menu-movil';
+        botonHamburguesa.innerHTML = '☰';
+        
+        // 2. Lo insertamos en la barra superior guinda
+        sidebar.appendChild(botonHamburguesa);
+
+        // 3. Evento click para abrir y cerrar el menú al tocar con el dedo
+        botonHamburguesa.addEventListener('click', () => {
+            navMenu.classList.toggle('menu-activo');
+            
+            // Cambia el icono estéticamente a una (X) si está abierto
+            if (navMenu.classList.contains('menu-activo')) {
+                botonHamburguesa.innerHTML = '✕';
+            } else {
+                botonHamburguesa.innerHTML = '☰';
+            }
+        });
+    }
+});
+
+
+
+
+
     </script>      
 </body>
 </html>
