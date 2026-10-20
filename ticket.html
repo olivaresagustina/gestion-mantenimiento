@@ -36,6 +36,56 @@
         .form-group input:disabled { background-color: #f5f5f5; color: #777; cursor: not-allowed; }
         .modal-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
     </style>
+
+
+
+<style>
+    /* FORZAR ADAPTACIÓN DEL MODAL EN CELULARES (MÁXIMA PRIORIDAD) */
+    @media (max-width: 768px) {
+        /* 1. Selecciona cualquier contenedor dentro del overlay flotante */
+        .modal-overlay *, [id*="modal"] *, [class*="modal"] * {
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+        }
+
+        /* 2. Forzar al cuadro blanco del formulario a encuadrarse al celular */
+        .form-container, 
+        .modal-ticket-container,
+        .modal-overlay > div,
+        [id*="modal"] form,
+        [class*="modal"] form { 
+            width: 92% !important; /* Deja un espacio estético en los bordes izquierdo y derecho */
+            max-width: 95% !important;
+            min-width: auto !important;
+            margin: 0 auto !important;
+            position: fixed !important;
+            left: 50% !important;
+            top: 50% !important;
+            transform: translate(-50%, -50%) !important; /* Centrado absoluto perfecto en el celular */
+            border-radius: 8px !important;
+            box-shadow: 0px 4px 20px rgba(0,0,0,0.3) !important;
+        }
+
+        /* 3. Ajustar los campos internos para que no se desborden */
+        .form-body, form > div {
+            padding: 12px !important;
+            max-height: 70vh !important; /* Evita que el formulario se salga por abajo en pantallas chicas */
+            overflow-y: auto !important; /* Permite deslizar si hay muchos campos */
+        }
+
+        /* 4. Pasar inputs y selects a una sola columna */
+        input, select, textarea {
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+        }
+    }
+</style>
+
+
+
+
+
 </head>
 <body>
 
