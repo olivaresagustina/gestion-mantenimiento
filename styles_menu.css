@@ -392,8 +392,9 @@ body {
 
 
 
+
 /* ==========================================================================
-   OPTIMIZACIÓN RESPONSIVA PARA DISPOSITIVOS MÓVILES (CELULARES)
+   OPTIMIZACIÓN RESPONSIVA MEJORADA PARA DISPOSITIVOS MÓVILES (CELULARES)
    ========================================================================== */
 
    @media (max-width: 768px) {
@@ -402,7 +403,7 @@ body {
         flex-direction: column;
     }
 
-    /* 2. Adaptar la Barra Lateral (Sidebar) arriba en móviles */
+    /* 2. Adaptar la Barra Lateral (Sidebar) arriba de forma compacta */
     .sidebar {
         width: 100% !important;
         max-width: 100% !important;
@@ -414,20 +415,37 @@ body {
         margin-bottom: 15px !important;
         justify-content: center;
     }
+    
+    .menu-logo-img {
+        width: 50px !important; /* Reducimos ligeramente el logo en móvil para ahorrar espacio */
+    }
 
-    /* Convertir el menú en una lista compacta horizontal/vertical */
+    /* Convertir el menú en una lista más unificada */
     .sidebar-nav {
-        gap: 8px !important;
+        gap: 5px !important;
+    }
+
+    .nav-item, .section-title {
+        font-size: 13px !important;
+        padding: 6px 8px !important;
     }
 
     .sub-menu {
-        padding-left: 10px !important;
+        padding-left: 15px !important;
+        margin-bottom: 5px;
+    }
+    
+    .sub-menu li {
+        font-size: 12px !important;
+        padding: 4px 0;
     }
 
-    /* Botón cerrar sesión adaptado */
+    /* Botón cerrar sesión adaptado al ancho completo */
     .btn-logout-sidebar {
-        margin-top: 15px;
+        margin-top: 10px;
         width: 100%;
+        padding: 8px !important;
+        font-size: 12px !important;
     }
 
     /* 3. Ajustar el área de contenido principal */
@@ -437,30 +455,48 @@ body {
         padding: 15px !important;
     }
 
-    /* Barra superior en móviles */
+    /* Barra superior (Buscador y Perfil de usuario) */
     .top-bar {
-        flex-direction: column-reverse;
+        display: flex;
+        flex-direction: column-reverse; /* Mandamos el perfil arriba y el buscador abajo */
         align-items: stretch !important;
-        gap: 15px;
+        gap: 12px;
+        margin-bottom: 20px !important;
     }
 
     .search-box {
         width: 100% !important;
+        background: #f1ebd9;
     }
 
     .user-profile {
         justify-content: flex-end;
+        font-size: 13px;
     }
 
-    /* 4. Hacer que la tabla tenga desplazamiento horizontal interno sin romper la pantalla */
+    /* Ajuste para títulos principales */
+    .page-title, h1 {
+        font-size: 20px !important;
+        text-align: center;
+        margin-bottom: 15px !important;
+    }
+
+    /* 4. Control del Contenedor de la Tabla y Scroll Horizontal */
     .table-container {
         width: 100%;
-        overflow-x: auto !important; /* Permite arrastrar la tabla con el dedo hacia los lados */
+        overflow-x: auto !important; /* Permite arrastrar la tabla lateralmente con el dedo */
         -webkit-overflow-scrolling: touch;
-        padding: 10px !important;
+        padding: 8px !important;
+        background: white;
     }
 
+    /* Forzar un ancho mínimo interno para que las columnas no se aplasten */
     .main-table {
-        min-width: 800px; /* Fuerza un ancho mínimo interno para que los datos no se amontonen */
+        min-width: 850px !important; 
+    }
+    
+    .main-table th, .main-table td {
+        padding: 8px !important;
+        font-size: 12px !important;
     }
 }
