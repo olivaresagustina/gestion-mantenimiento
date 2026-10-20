@@ -34,56 +34,50 @@ body {
 .sidebar-logo {
     display: flex;
     align-items: center;
-    gap: 15px; /* Más separación estética entre imagen y letras */
+    gap: 15px;
     margin-bottom: 40px;
     width: 100%;
 }
-/* Remueve estilos por defecto de enlace y alinea los elementos del logo */
+
 .logo-link {
     display: flex;
     align-items: center;
     gap: 15px;
-    text-decoration: none; /* Quita el subrayado */
+    text-decoration: none;
     width: 100%;
 }
 
-/* Asegura que el puntero cambie a mano al pasar el mouse por encima */
 .logo-link:hover {
     cursor: pointer;
 }
 
-
 .menu-logo-img {
-    width: 70px; /* Logotipo duplicado a dos veces su tamaño original */
+    width: 70px;
     height: auto;
     flex-shrink: 0;
 }
 
-/* Alinea los textos en filas verticales */
 .logo-text {
     display: flex;
     flex-direction: column;
     line-height: 1.15;
 }
 
-/* Texto superior: Pequeño, en mayúsculas y espaciado */
 .sidebar-logo .logo-top {
     font-size: 9px;
     font-weight: 600;
-    color: #dfdfdf; /* Tono blanco grisáceo original */
+    color: #dfdfdf;
     letter-spacing: 1.2px;
     text-transform: uppercase;
 }
 
-/* Texto inferior: Grande, imponente y dorado */
 .sidebar-logo .logo-bottom {
-    font-size: 24px; /* Aumentado para emparejar la jerarquía visual */
+    font-size: 24px;
     font-weight: 700;
-    color: #b8904c; /* Dorado institucional */
+    color: #b8904c;
     letter-spacing: 0.5px;
     text-transform: uppercase;
 }
-
 
 .sidebar-nav {
     display: flex;
@@ -205,7 +199,6 @@ body {
     font-weight: 700;
     margin-bottom: 25px;
 }
-
 /* Rejilla de Métricas */
 .metrics-grid {
     display: grid;
@@ -390,19 +383,19 @@ body {
     margin-top: 50px;
 }
 
-
+/* Ocultar el botón de menú flotante por defecto en computadoras */
+.toggle-menu-movil {
+    display: none;
+}
 
 /* ==========================================================================
-   OPTIMIZACIÓN RESPONSIVA FINAL Y MENÚ FLOTANTE MÓVIL
+   OPTIMIZACIÓN RESPONSIVA FINAL Y MENÚ FLOTANTE MÓVIL (MÓVILES Y TABLETS)
    ========================================================================== */
-
-   @media (max-width: 768px) {
-    /* Contenedor en columna para el celular */
+@media (max-width: 768px) {
     .dashboard-container {
         flex-direction: column;
     }
 
-    /* Convertir el sidebar en una barra fija superior compacta */
     .sidebar {
         width: 100% !important;
         max-width: 100% !important;
@@ -412,7 +405,6 @@ body {
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
     }
 
-    /* Alinear el logotipo a la izquierda */
     .sidebar-logo {
         margin-bottom: 0 !important;
         justify-content: flex-start;
@@ -420,10 +412,9 @@ body {
     }
     
     .menu-logo-img {
-        width: 40px !important; /* Logo compacto arriba */
+        width: 40px !important;
     }
 
-    /* Ocultar el menú por defecto en celulares */
     .sidebar-nav {
         display: none !important; 
         flex-direction: column;
@@ -434,7 +425,6 @@ body {
         padding-top: 10px;
     }
 
-    /* Clase que se activará con JS para desplegar el menú con suavidad */
     .sidebar-nav.menu-activo {
         display: flex !important;
     }
@@ -448,7 +438,6 @@ body {
         padding-left: 15px !important;
     }
 
-    /* Botón de cerrar sesión dentro del menú desplegado */
     .btn-logout-sidebar {
         display: none;
         margin-top: 10px;
@@ -456,12 +445,10 @@ body {
         padding: 8px !important;
     }
     
-    /* Si el menú está activo, también mostramos el botón de cerrar sesión */
     .sidebar-nav.menu-activo ~ .btn-logout-sidebar {
         display: block !important;
     }
 
-    /* CREACIÓN DEL BOTÓN DE HAMBURGUESA (Se inyecta dinámicamente) */
     .toggle-menu-movil {
         display: block !important;
         position: absolute;
@@ -478,7 +465,6 @@ body {
         font-weight: bold;
     }
 
-    /* 3. Ajuste fino del área de trabajo inferior */
     .main-content {
         width: 100% !important;
         max-width: 100% !important;
@@ -507,7 +493,6 @@ body {
         margin-bottom: 12px !important;
     }
 
-    /* 4. Tabla y Scroll Deslizable con el Dedo */
     .table-container {
         width: 100%;
         overflow-x: auto !important;
@@ -518,39 +503,29 @@ body {
     .main-table {
         min-width: 850px !important;
     }
-}
 
-/* Ocultar el botón en computadoras de escritorio */
-.toggle-menu-movil {
-    display: none;
-
-
-
-
-    /* 5. COHERENCIA ESTÉTICA: Adaptar ventanas modales flotantes a celulares */
+    /* 5. COHERENCIA ESTÉTICA EN MODALES (CORREGIDO DENTRO DE MEDIA QUERY) */
     .modal-overlay {
         padding: 10px !important;
-        align-items: center !important; /* Mantiene el formulario centrado en vertical y horizontal */
+        align-items: center !important;
+        display: none; /* Se controla el flex por JS */
     }
 
-    /* Modifica el contenedor para que sea flexible en lugar de estático */
     .form-container, .modal-ticket-container { 
-        width: 100% !important; /* Ocupa todo el ancho disponible del celular */
-        max-width: 95% !important; /* Deja un margen pequeño y estético a los lados */
+        width: 100% !important;
+        max-width: 95% !important;
         margin: 0 auto !important;
         border-radius: 8px !important;
     }
 
-    /* Ajustar el cuerpo interno del formulario para evitar desbordes */
     .form-body {
-        padding: 15px 12px !important; /* Reduce ligeramente el espacio interior */
-        max-height: 80vh !important; /* Limita la altura para que no se salga de la pantalla */
-        overflow-y: auto !important; /* Permite deslizar hacia abajo si el formulario es largo */
+        padding: 15px 12px !important;
+        max-height: 75vh !important;
+        overflow-y: auto !important;
     }
 
-    /* Ajustar la cuadrícula si el formulario usa columnas */
     .form-grid {
-        grid-template-columns: 1fr !important; /* Pasa de dos columnas a una sola en celulares */
+        grid-template-columns: 1fr !important;
         gap: 10px !important;
         padding: 15px 10px !important;
     }
@@ -559,28 +534,20 @@ body {
         grid-column: span 1 !important;
     }
 
-    /* Redimensionar las cajas de texto e inputs para que no se estiren de más */
     input[type="text"], input[type="password"], select, textarea {
-        font-size: 14px !important; /* Tamaño óptimo para que el teclado del móvil no haga zoom automático */
+        font-size: 14px !important;
         padding: 8px !important;
     }
 
-    /* Ajustar la fila de botones en la parte inferior del modal */
     .row-buttons {
-        flex-direction: column !important; /* Coloca los botones uno abajo del otro en móviles */
+        flex-direction: column !important;
         gap: 8px !important;
         padding: 12px 15px !important;
     }
 
     .btn-form, .btn-footer {
-        width: 100% !important; /* Los botones ocupan todo el ancho del formulario */
+        width: 100% !important;
         justify-content: center !important;
         padding: 10px !important;
     }
-
-
-
-
-
-
 }
