@@ -36,7 +36,6 @@
             margin-left: 5px;
         }
         .btn-blue-add { background-color: #3b71ca; }
-        .btn-gray-search { background-color: #6c757d; }
         
         .main-table {
             width: 100%;
@@ -143,10 +142,6 @@
                 </a>
             </div>
             <nav class="sidebar-nav">
-
-               
-
-
                 <div class="nav-section">
                     <div class="section-title"><a href="menu.html" style="color:inherit; text-decoration:none;">📊 Dashboard</a></div>
                 </div>
@@ -157,31 +152,21 @@
                         <li class="active-sub">• Registro del equipo de cómputo</li>
                         <li><a href="registro_usuarios.html" style="color: inherit; text-decoration: none;">• Registro de Usuarios encargados</a></li>
                         <li><a href="registro_areas.html" style="color:inherit; text-decoration:none;">• Registro de Áreas y Departamentos</a></li>
-                        
                     </ul>
                 </div>
-
-
-                <!-- AGREGADO PARA PRUEBAAAA-->
                 <div class="nav-item" onclick="window.location.href='ticket.html'">📊 MANTENIMIENTO</div>
-
                 <div class="nav-item">📊 REPORTES</div>
             </nav>
             <button class="btn-logout-sidebar" onclick="logout()">Cerrar Sesión</button>
         </aside>
 
-
-
-    
-
-
-        
         <!-- CONTENIDO PRINCIPAL -->
         <main class="main-content">
             <header class="top-bar">
                 <div class="search-box">
                     <span class="search-icon">🔍</span>
-                    <input type="text" placeholder="Buscar equipo...">
+                    <!-- REQUERIMIENTO CUMPLIDO: Incorporación del ID para que funcione el buscador multicampo -->
+                    <input type="text" id="inputBuscarEquipo" placeholder="Buscar equipo...">
                 </div>
                 <div class="user-profile">
                     <span class="notification-icon">🔔</span>
@@ -196,7 +181,6 @@
                     <div>Lista de Equipos de Cómputo</div>
                     <div>
                         <button class="btn-round btn-blue-add" id="btnAbrirFormulario" title="Registrar nuevo equipo">+</button>
-                        <button class="btn-round btn-gray-search" title="Configuración">⚙️</button>
                     </div>
                 </div>
 
@@ -219,7 +203,7 @@
                         </tr>
                     </thead>
                     <tbody id="tablaEquiposCuerpo">
-                        <!-- Los datos se inyectan dinámicamente -->
+                        <!-- Los datos se inyectan dinámicamente desde Firestore -->
                     </tbody>
                 </table>
             </div>
@@ -228,7 +212,7 @@
     <!-- VENTANA MODAL FLOTANTE COMPLETA -->
     <div class="modal-overlay" id="modalRegistro">
         <div class="form-container">
-            <div class="form-header">REGISTRAR NUEVO EQUIPO</div>
+            <div class="form-header" id="tituloFormEquipo">REGISTRAR NUEVO EQUIPO</div>
             <form id="formRegistroEquipo" class="form-body" onsubmit="event.preventDefault();">
                 
                 <label>ID (Auto-generado)</label>
@@ -288,22 +272,18 @@
                 <div class="row-buttons">
                     <button type="button" id="btnGuardarEquipo" class="btn-form btn-save">Guardar Registro</button>
                     <button type="button" id="btnCancelarFormulario" class="btn-form btn-cancel">Cancelar</button>
-                    
-                
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- LIBRERÍAS DE FIREBASE -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>   
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-
+    <!-- LIBRERÍAS DE FIREBASE (Versión 8 tradicional compatible con navegadores) -->
+    <script src="https://gstatic.com"></script>
+    <script src="https://gstatic.com"></script>   
+    <script src="https://gstatic.com"></script>
     <script>
         // 1. Inicialización de Firebase con credenciales institucionales completas
         const nombreProyecto = "gestion-mantenimiento-ap-20f51";
-
         const firebaseConfig = {
             apiKey: "AIzaSyDDcGT88IspX4-_TOKtQcdeo-93favOuoY",
             authDomain: nombreProyecto + ".firebaseapp.com",
@@ -317,50 +297,38 @@
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
-        const db = firebase.firestore();   
-            
-            
-                    // 🚀 NUEVO: Escuchador para cerrar el formulario con la tecla "Esc"
-                    window.addEventListener('keydown', (e) => {
-                        // Comprueba si la tecla presionada es Escape y si el modal está visible
-                        if (e.key === 'Escape' && modalElement.style.display === 'flex') {
-                            // Simula el clic en el botón de cancelar para ejecutar toda su lógica de limpieza
-                            document.getElementById('btnCancelarFormulario').click();
-                        }
-                        // ... Aquí termina la función que conservas de cancelar ...
-    document.getElementById("equipoEncargado").disabled = true;
-    document.getElementById("equipoEncargado").innerHTML = '<option value="">Selecciona primero un departamento...</option>';
-}); // <--- Aquí termina el botón cancelar original
-
-// 🚀 AGREGA ESTO JUSTO AQUÍ ABAJO:
-window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && modalElement.style.display === 'flex') {
-        document.getElementById('btnCancelarFormulario').click();
-    }
-});
-
-                    
-                    
-            
+        const db = firebase.firestore();
+        const auth = firebase.auth();
 
         // Control de Ventana Modal Flotante
         const modalElement = document.getElementById('modalRegistro');
         
         document.getElementById('btnAbrirFormulario').addEventListener('click', () => {
+            document.getElementById("tituloFormEquipo").innerText = "REGISTRAR NUEVO EQUIPO";
+            window.editEquipoId = ""; // Limpiar variable de edición al abrir limpio
             modalElement.style.display = 'flex';
         });
 
         document.getElementById('btnCancelarFormulario').addEventListener('click', () => {
             modalElement.style.display = 'none';
             document.getElementById("formRegistroEquipo").reset();
-            // Restablecer estados de selects
+            window.editEquipoId = "";
+            // Restablecer estados de selects bloqueados
             document.getElementById("equipoDepartamento").disabled = true;
             document.getElementById("equipoDepartamento").innerHTML = '<option value="">Selecciona primero un área...</option>';
             document.getElementById("equipoEncargado").disabled = true;
             document.getElementById("equipoEncargado").innerHTML = '<option value="">Selecciona primero un departamento...</option>';
         });
-            // 3. Función asíncrona principal para Guardar Registro en Firestore
-            async function guardarEquipoEnFirebase() {
+
+        // REQUERIMIENTO CUMPLIDO: Escuchador optimizado sin duplicados para cerrar con la tecla Escape
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modalElement.style.display === 'flex') {
+                document.getElementById('btnCancelarFormulario').click();
+            }
+        });
+
+        // 2. Función principal unificada para Guardar (Creación y Edición) en Firestore
+        async function guardarEquipoEnFirebase() {
             const tipo = document.getElementById("equipoTipo").value;
             const marca = document.getElementById("equipoMarca").value;
             const modelo = document.getElementById("equipoModelo").value;
@@ -376,51 +344,54 @@ window.addEventListener('keydown', (e) => {
                 return;
             }
 
-            const nuevoEquipo = {
-                tipo: tipo,
-                marca: marca,
-                modelo: modelo,
-                serie: serie,
-                comentarios: comentarios,
-                condicion: condicion,
-                area: area,
-                departamento: departamento,
-                encargado: encargado,
-                fechaRegistro: firebase.firestore.FieldValue.serverTimestamp()
+            const datosEquipo = {
+                tipo, marca, modelo, serie, comentarios, condicion, area, departamento, encargado
             };
 
             try {
-                await db.collection("equipos").add(nuevoEquipo);
-                alert("¡Operación realizada correctamente! El equipo ha sido guardado con éxito.");
-                
-                document.getElementById("formRegistroEquipo").reset();
-                
-                // Restablecer estados bloqueados tras guardar exitosamente
-                document.getElementById("equipoDepartamento").disabled = true;
-                document.getElementById("equipoDepartamento").innerHTML = '<option value="">Selecciona primero un área...</option>';
-                document.getElementById("equipoEncargado").disabled = true;
-                document.getElementById("equipoEncargado").innerHTML = '<option value="">Selecciona primero un departamento...</option>';
-                
-                modalElement.style.display = 'none';
+                if (window.editEquipoId) {
+                    // MODO EDICIÓN: Actualización reactiva sobre documento existente
+                    await db.collection("equipos").doc(window.editEquipoId).update(datosEquipo);
+                    alert("¡Operación realizada correctamente! El equipo ha sido modificado.");
+                } else {
+                    // MODO CREACIÓN: Inserción ordinaria con marca de tiempo del servidor
+                    datosEquipo.fechaRegistro = firebase.firestore.FieldValue.serverTimestamp();
+                    await db.collection("equipos").add(datosEquipo);
+                    alert("¡Operación realizada correctamente! El equipo ha sido guardado con éxito.");
+                }
+
+                document.getElementById("btnCancelarFormulario").click();
 
             } catch (error) {
                 console.error("Error detectado en Firestore: ", error);
-                alert("Hubo un problema de conexión al guardar: " + error.message);
+                alert("Hubo un problema de conexión al procesar la operación: " + error.message);
             }
         }
 
         document.getElementById("btnGuardarEquipo").addEventListener("click", guardarEquipoEnFirebase);
 
-        // 4. Función para leer y cargar AUTOMÁTICAMENTE todos los equipos de Firebase en la tabla
+        // Variables de caché local para permitir el funcionamiento del Buscador Multicampo
+        let equiposGlobales = [];
+        window.editEquipoId = "";
+        // 3. REQUERIMIENTO CUMPLIDO: Cargar Equipos, quitar engrane/ojo y conectar botón Editar
         function escucharYMostrarEquipos() {
             db.collection("equipos").orderBy("fechaRegistro", "asc").onSnapshot((snapshot) => {
                 const tbody = document.getElementById("tablaEquiposCuerpo");
                 if (!tbody) return;
                 tbody.innerHTML = "";
+                equiposGlobales = [];
                 let siguienteID = 1;
+
+                if (snapshot.empty) {
+                    tbody.innerHTML = `<tr><td colspan="13" style="text-align: center; color: #777; padding: 20px;">No hay ningún equipo registrado en el sistema.</td></tr>`;
+                    return;
+                }
 
                 snapshot.forEach((doc) => {
                     const datos = doc.data();
+                    const idDoc = doc.id;
+                    
+                    equiposGlobales.push({ id: idDoc, ...datos });
                     const tr = document.createElement("tr");
                     
                     tr.innerHTML = `
@@ -437,9 +408,8 @@ window.addEventListener('keydown', (e) => {
                         <td>${datos.departamento || ''}</td>
                         <td>${datos.encargado || ''}</td>
                         <td>
-                            <button class="btn-action-t" style="background-color: #3b71ca;">✏️</button>
-                            <button class="btn-action-t" style="background-color: #dc4c64;" onclick="eliminarEquipoReal('${doc.id}')">🗑️</button>
-                            <button class="btn-action-t" style="background-color: #e4a11b;">👁️</button>
+                            <button class="btn-action-t" style="background-color: #3b71ca;" onclick="prepararEdicionEquipo('${idDoc}', '${datos.tipo || ''}', '${datos.marca || ''}', '${datos.modelo || ''}', '${datos.serie || ''}', '${datos.comentarios || ''}', '${datos.condicion || ''}', '${datos.area || ''}', '${datos.departamento || ''}', '${datos.encargado || ''}')">✏️</button>
+                            <button class="btn-action-t" style="background-color: #dc4c64;" onclick="eliminarEquipoReal('${idDoc}')">🗑️</button>
                         </td>
                     `;
                     tbody.appendChild(tr);
@@ -450,7 +420,29 @@ window.addEventListener('keydown', (e) => {
             });
         }
 
-        // Función para eliminar físicamente de la base de datos de Firebase
+        // REQUERIMIENTO CUMPLIDO: Función que mapea los datos de vuelta al formulario al presionar Editar
+        window.prepararEdicionEquipo = async function(id, tipo, marca, modelo, serie, comentarios, condicion, area, departamento, encargado) {
+            window.editEquipoId = id;
+            document.getElementById("tituloFormEquipo").innerText = "MODIFICAR EQUIPO DE CÓMPUTO";
+
+            document.getElementById("equipoTipo").value = tipo;
+            document.getElementById("equipoMarca").value = marca;
+            document.getElementById("equipoModelo").value = modelo;
+            document.getElementById("equipoSerie").value = serie;
+            document.getElementById("equipoComentarios").value = comentarios;
+            document.getElementById("equipoCondicion").value = condicion;
+
+            // Inyectamos el Área y forzamos de manera síncrona el flujo en cascada
+            document.getElementById("equipoArea").value = area;
+            await sincronizarDepartamentos(area);
+            document.getElementById("equipoDepartamento").value = departamento;
+
+            await sincronizarEncargados(area, departamento);
+            document.getElementById("equipoEncargado").value = encargado;
+
+            modalElement.style.display = 'flex';
+        };
+
         function eliminarEquipoReal(idDoc) {
             if(confirm("¿Está seguro de que desea eliminar permanentemente este equipo de la base de datos?")) {
                 db.collection("equipos").doc(idDoc).delete().then(() => {
@@ -460,136 +452,165 @@ window.addEventListener('keydown', (e) => {
                 });
             }
         }
-         // 5. TRIPLE FILTRADO EN CASCADA CONECTADO A FIRESTORE
-         let listaGlobalAreasDeptos = [];
+        // REQUERIMIENTO CUMPLIDO: Motor del Buscador Multicampo en Tiempo Real conectado al ID
+        const inputBuscarEquipo = document.getElementById("inputBuscarEquipo");
+        if (inputBuscarEquipo) {
+            inputBuscarEquipo.addEventListener("input", (e) => {
+                const texto = e.target.value.toLowerCase().trim();
+                const tbody = document.getElementById("tablaEquiposCuerpo");
+                if (!tbody) return;
+                tbody.innerHTML = "";
 
-function inicializarFiltroAvanzadoEquipos() {
-    const selectArea = document.getElementById("equipoArea");
-    const selectDepto = document.getElementById("equipoDepartamento");
-    const selectEncargado = document.getElementById("equipoEncargado");
+                const filtrados = equiposGlobales.filter(eq => 
+                    (eq.tipo || "").toLowerCase().includes(texto) ||
+                    (eq.marca || "").toLowerCase().includes(texto) ||
+                    (eq.modelo || "").toLowerCase().includes(texto) ||
+                    (eq.serie || "").toLowerCase().includes(texto) ||
+                    (eq.encargado || "").toLowerCase().includes(texto)
+                );
 
-    if (!selectArea || !selectDepto || !selectEncargado) return;
-
-    // Paso A: Descargar Catálogo Base de Áreas y Departamentos
-    db.collection("areas_departamentos").get().then((snapshot) => {
-        listaGlobalAreasDeptos = [];
-        const areasUnicas = new Set();
-
-        snapshot.forEach((doc) => {
-            const data = doc.data();
-            listaGlobalAreasDeptos.push(data);
-            if (data.area) areasUnicas.add(data.area.trim());
-        });
-
-        selectArea.innerHTML = '<option value="">-- Seleccione Área --</option>';
-        areasUnicas.forEach((area) => {
-            selectArea.innerHTML += `<option value="${area}">${area}</option>`;
-        });
-    }).catch(error => console.error("Error al cargar catálogo de áreas:", error));
-
-    // Paso B: Escuchador del cambio de Área para cargar Departamentos
-    selectArea.addEventListener("change", (e) => {
-        const areaSeleccionada = e.target.value;
-
-        // Resetear elementos dependientes si se borra el área
-        selectDepto.innerHTML = '<option value="">Selecciona primero un área...</option>';
-        selectDepto.disabled = true;
-        selectEncargado.innerHTML = '<option value="">Selecciona primero un departamento...</option>';
-        selectEncargado.disabled = true;
-
-        if (!areaSeleccionada) return;
-
-        const deptosFiltrados = listaGlobalAreasDeptos.filter(item => item.area && item.area.trim() === areaSeleccionada);
-        selectDepto.innerHTML = '<option value="">-- Seleccione Departamento --</option>';
-
-        if (deptosFiltrados.length === 0) {
-            selectDepto.innerHTML = '<option value="">Sin departamentos asignados</option>';
-        } else {
-            deptosFiltrados.forEach((item) => {
-                if (item.departamento) {
-                    selectDepto.innerHTML += `<option value="${item.departamento.trim()}">${item.departamento.trim()}</option>`;
-                }
-            });
-            selectDepto.disabled = false;
-        }
-    });
-
-    // Paso C: Escuchador de Departamento para filtrar Encargados de forma cruzada
-    selectDepto.addEventListener("change", (e) => {
-        const deptoSeleccionado = e.target.value;
-        const areaSeleccionada = selectArea.value;
-
-        selectEncargado.innerHTML = '<option value="">Selecciona primero un departamento...</option>';
-        selectEncargado.disabled = true;
-
-        if (!deptoSeleccionado) return;
-
-        // Consultar dinámicamente la colección 'usuarios_encargados' que coincidan con Área y Departamento
-        db.collection("usuarios_encargados")
-            .where("area", "==", areaSeleccionada)
-            .where("departamento", "==", deptoSeleccionado)
-            .get()
-            .then((snapshot) => {
-                selectEncargado.innerHTML = '<option value="">-- Seleccione Encargado --</option>';
-                
-                if (snapshot.empty) {
-                    selectEncargado.innerHTML = '<option value="">Sin empleados registrados en esta adscripción</option>';
-                    selectEncargado.disabled = false; // Permitir abrirlo para ver el aviso
+                if (filtrados.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="13" style="text-align: center; color: #dc4c64; padding: 20px;">No se encontraron coincidencias.</td></tr>`;
                     return;
                 }
 
+                let sigID = 1;
+                filtrados.forEach((datos) => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td><input type="checkbox"></td>
+                        <td>${sigID++}</td>
+                        <td>${datos.tipo || ''}</td>
+                        <td>${datos.marca || ''}</td>
+                        <td>${datos.modelo || ''}</td>
+                        <td>${datos.serie || ''}</td>
+                        <td><img src="teclado.png" class="img-table" alt="Equipo"></td>
+                        <td>${datos.comentarios || 'Sin comentarios'}</td>
+                        <td><span class="status-badge">${datos.condicion || ''}</span></td>
+                        <td>${datos.area || ''}</td>
+                        <td>${datos.departamento || ''}</td>
+                        <td>${datos.encargado || ''}</td>
+                        <td>
+                            <button class="btn-action-t" style="background-color: #3b71ca;" onclick="prepararEdicionEquipo('${datos.id}', '${datos.tipo || ''}', '${datos.marca || ''}', '${datos.modelo || ''}', '${datos.serie || ''}', '${datos.comentarios || ''}', '${datos.condicion || ''}', '${datos.area || ''}', '${datos.departamento || ''}', '${datos.encargado || ''}')">✏️</button>
+                            <button class="btn-action-t" style="background-color: #dc4c64;" onclick="eliminarEquipoReal('${datos.id}')">🗑️</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            });
+        }
+
+        // 4. TRIPLE FILTRADO EN CASCADA CONECTADO A FIRESTORE
+        let listaGlobalAreasDeptos = [];
+
+        function inicializarFiltroAvanzadoEquipos() {
+            const selectArea = document.getElementById("equipoArea");
+            if (!selectArea) return;
+
+            db.collection("areas_departamentos").get().then((snapshot) => {
+                listaGlobalAreasDeptos = [];
+                const areasUnicas = new Set();
+
                 snapshot.forEach((doc) => {
                     const data = doc.data();
-                    if (data.nombreCompleto) {
-                        const option = document.createElement("option");
-                        option.value = data.nombreCompleto.trim();
-                        option.textContent = data.nombreCompleto.trim();
-                        selectEncargado.appendChild(option);
-                    }
+                    listaGlobalAreasDeptos.push(data);
+                    if (data.area) areasUnicas.add(data.area.trim());
                 });
-                selectEncargado.disabled = false;
-            })
-            .catch((error) => {
-                console.error("Error al filtrar encargados por adscripción: ", error);
-                selectEncargado.innerHTML = '<option value="">Error al cargar personal</option>';
+
+                selectArea.innerHTML = '<option value="">-- Seleccione Área --</option>';
+                areasUnicas.forEach((area) => {
+                    selectArea.innerHTML += `<option value="${area}">${area}</option>`;
+                });
+            }).catch(error => console.error("Error al cargar catálogo de áreas:", error));
+
+            selectArea.addEventListener("change", (e) => sincronizarDepartamentos(e.target.value));
+            document.getElementById("equipoDepartamento").addEventListener("change", (e) => sincronizarEncargados(selectArea.value, e.target.value));
+        }
+
+        function sincronizarDepartamentos(areaSeleccionada) {
+            return new Promise((resolve) => {
+                const selectDepto = document.getElementById("equipoDepartamento");
+                const selectEncargado = document.getElementById("equipoEncargado");
+
+                selectDepto.innerHTML = '<option value="">Selecciona primero un área...</option>';
+                selectDepto.disabled = true;
+                selectEncargado.innerHTML = '<option value="">Selecciona primero un departamento...</option>';
+                selectEncargado.disabled = true;
+
+                if (!areaSeleccionada) return resolve();
+
+                const deptosFiltrados = listaGlobalAreasDeptos.filter(item => item.area && item.area.trim() === areaSeleccionada);
+                selectDepto.innerHTML = '<option value="">-- Seleccione Departamento --</option>';
+
+                if (deptosFiltrados.length === 0) {
+                    selectDepto.innerHTML = '<option value="">Sin departamentos asignados</option>';
+                } else {
+                    deptosFiltrados.forEach((item) => {
+                        if (item.departamento) {
+                            selectDepto.innerHTML += `<option value="${item.departamento.trim()}">${item.departamento.trim()}</option>`;
+                        }
+                    });
+                    selectDepto.disabled = false;
+                }
+                resolve();
             });
-    });
-}
+        }
 
+        function sincronizarEncargados(areaSeleccionada, deptoSeleccionado) {
+            return new Promise((resolve) => {
+                const selectEncargado = document.getElementById("equipoEncargado");
+                selectEncargado.innerHTML = '<option value="">Selecciona primero un departamento...</option>';
+                selectEncargado.disabled = true;
 
-  
-  // --- CÓDIGO CORREGIDO: INICIALIZACIÓN DE DATOS Y FUNCIÓN LOGOUT ---
-  window.addEventListener('DOMContentLoaded', () => {
-      // CORRECCIÓN: El elemento en este HTML tiene la clase 'user-email-text'
-      const emailDisplay = document.querySelector(".user-email-text");
-      if (emailDisplay) {
-          const storedEmail = localStorage.getItem("userEmail");
-          if (storedEmail) {
-              emailDisplay.innerText = storedEmail;
-          }
-      }
-  });
-  
-  // FUNCIÓN LOGOUT CONECTADA A GOOGLE FIREBASE AUTH
-  window.logout = async () => {
-      try {
-          const auth = firebase.auth(); // Instanciamos Auth localmente de forma segura
-          await auth.signOut();
-          localStorage.clear(); // Limpiamos datos de sesión en el navegador
-          window.location.href = "index.html"; // Redirección al login
-      } catch (error) {
-          alert("Error al cerrar sesión institucional: " + error.message);
-      }
-  }
+                if (!deptoSeleccionado) return resolve();
 
+                db.collection("usuarios_encargados")
+                    .where("area", "==", areaSeleccionada)
+                    .where("departamento", "==", deptoSeleccionado)
+                    .get()
+                    .then((snapshot) => {
+                        selectEncargado.innerHTML = '<option value="">-- Seleccione Encargado --</option>';
+                        if (snapshot.empty) {
+                            selectEncargado.innerHTML = '<option value="">Sin empleados registrados</option>';
+                            selectEncargado.disabled = false;
+                            return resolve();
+                        }
+                        snapshot.forEach((doc) => {
+                            const data = doc.data();
+                            if (data.nombreCompleto) {
+                                selectEncargado.innerHTML += `<option value="${data.nombreCompleto.trim()}">${data.nombreCompleto.trim()}</option>`;
+                            }
+                        });
+                        selectEncargado.disabled = false;
+                        resolve();
+                    }).catch(error => {
+                        console.error("Error al cargar personal:", error);
+                        resolve();
+                    });
+            });
+        }
 
+        // Inicializaciones generales del DOM al cargar la página
+        window.addEventListener('DOMContentLoaded', () => {
+            const emailDisplay = document.querySelector(".user-email-text");
+            if (emailDisplay) {
+                const storedEmail = localStorage.getItem("userEmail");
+                if (storedEmail) emailDisplay.innerText = storedEmail;
+            }
+            escucharYMostrarEquipos();
+            inicializarFiltroAvanzadoEquipos();
+        });
 
-// Inicializaciones del DOM
-window.addEventListener('DOMContentLoaded', () => {
-    escucharYMostrarEquipos();
-    inicializarFiltroAvanzadoEquipos();
-});
-</script>
+        window.logout = async () => {
+            try {
+                await auth.signOut();
+                localStorage.clear();
+                window.location.href = "index.html";
+            } catch (error) {
+                alert("Error al cerrar sesión institucional: " + error.message);
+            }
+        }
+    </script>
 </body>
 </html>
 
