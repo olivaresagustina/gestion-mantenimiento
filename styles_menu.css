@@ -389,3 +389,78 @@ body {
     color: #777;
     margin-top: 50px;
 }
+
+
+
+/* ==========================================================================
+   OPTIMIZACIÓN RESPONSIVA PARA DISPOSITIVOS MÓVILES (CELULARES)
+   ========================================================================== */
+
+   @media (max-width: 768px) {
+    /* 1. Reorganizar el contenedor principal de filas a columnas */
+    .dashboard-container {
+        flex-direction: column;
+    }
+
+    /* 2. Adaptar la Barra Lateral (Sidebar) arriba en móviles */
+    .sidebar {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 15px !important;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .sidebar-logo {
+        margin-bottom: 15px !important;
+        justify-content: center;
+    }
+
+    /* Convertir el menú en una lista compacta horizontal/vertical */
+    .sidebar-nav {
+        gap: 8px !important;
+    }
+
+    .sub-menu {
+        padding-left: 10px !important;
+    }
+
+    /* Botón cerrar sesión adaptado */
+    .btn-logout-sidebar {
+        margin-top: 15px;
+        width: 100%;
+    }
+
+    /* 3. Ajustar el área de contenido principal */
+    .main-content {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 15px !important;
+    }
+
+    /* Barra superior en móviles */
+    .top-bar {
+        flex-direction: column-reverse;
+        align-items: stretch !important;
+        gap: 15px;
+    }
+
+    .search-box {
+        width: 100% !important;
+    }
+
+    .user-profile {
+        justify-content: flex-end;
+    }
+
+    /* 4. Hacer que la tabla tenga desplazamiento horizontal interno sin romper la pantalla */
+    .table-container {
+        width: 100%;
+        overflow-x: auto !important; /* Permite arrastrar la tabla con el dedo hacia los lados */
+        -webkit-overflow-scrolling: touch;
+        padding: 10px !important;
+    }
+
+    .main-table {
+        min-width: 800px; /* Fuerza un ancho mínimo interno para que los datos no se amontonen */
+    }
+}
