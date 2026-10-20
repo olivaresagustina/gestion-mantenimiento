@@ -146,19 +146,28 @@
                         <li><a href="registro_equipo.html" style="color:inherit; text-decoration:none;">• Registro del equipo de cómputo</a></li>
                         <li class="active-sub">• Registro de Usuarios encargados</li>
                         <li><a href="registro_areas.html" style="color:inherit; text-decoration:none;">• Registro de Áreas y Departamentos</a></li>
-                        
                     </ul>
                 </div>                
                 <div class="nav-item" onclick="window.location.href='ticket.html'">📊 MANTENIMIENTO</div>
                 <div class="nav-item">📊 REPORTES</div>
-
             </nav>
             <button class="btn-logout-sidebar" onclick="logout()">Cerrar Sesión</button>
         </aside>
 
-
         <!-- CONTENIDO PRINCIPAL -->
         <main class="main-content">
+            <!-- REQUERIMIENTO CUMPLIDO: Incorporación de la barra superior estética con buscador multicampo -->
+            <header class="top-bar" style="margin-bottom: 25px;">
+                <div class="search-box" style="background: #f1ebd9; padding: 8px 15px; border-radius: 8px; display: flex; align-items: center; gap: 10px; width: 350px;">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="inputBuscarUsuario" placeholder="Buscar usuario por nombre, rol, área..." style="background: transparent; border: none; outline: none; width: 100%; font-size: 13px;">
+                </div>
+                <div class="user-profile">
+                    <span class="notification-icon">🔔</span>
+                    <span class="user-email-text">admin@calnali.gob.mx</span>
+                </div>
+            </header>
+
             <h1 class="page-title">Usuarios</h1>
             <div class="table-container">
                 <div class="table-header-actions">
@@ -179,134 +188,148 @@
                         </tr>
                     </thead>
                     <tbody id="tablaUsuariosCuerpo">
-                        <!-- Los registros de Firebase se inyectarán aquí -->
+                        <!-- Los registros de Firebase se inyectarán dinámicamente -->
                     </tbody>
                 </table>
             </div>
         </main>
     </div>
-        <!-- VENTANA MODAL FLOTANTE (AGREGAR ENCARGADO) -->
-        <div class="modal-overlay" id="modalUsuario">
-            <div class="form-container">
-                <div class="form-header">Agregar encargado</div>
-                <form id="formRegistroUsuario">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>ID:</label>
-                            <input type="text" value="AUTOMÁTICO" disabled>
-                        </div>
-                        <div class="form-group">
-                            <label>Rol:</label>
-                            <select id="userRol" required>
-                                <option value="Director">Director</option>
-                                <option value="Administrador">Administrador</option>
-                                <option value="Encargado">Encargado</option>
-                            </select>
-                        </div>
-                        <div class="form-group full-width">
-                            <label>Nombre completo:</label>
-                            <input type="text" id="userNombre" placeholder="Ej: Juan Pérez" required>
-                        </div>
-                        <div class="form-group full-width">
-                            <label>Teléfono:</label>
-                            <input type="text" id="userTelefono" placeholder="Ej: 7711234567" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Área</label>
-                            <select id="userArea" required>
-                                <option value="">Cargando áreas...</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Departamento</label>
-                            <select id="userDepartamento" required disabled>
-                                <option value="">Selecciona primero un área...</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Usuario (Correo de acceso):</label>
-                            <input type="text" id="userEmail" placeholder="ejemplo@calnali.gob.mx" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Contraseña:</label>
-                            <input type="password" id="userPass" required>
-                        </div>
-                        <div class="form-group full-width">
-                            <label>Confirme la contraseña:</label>
-                            <input type="password" id="userPassConf" required>
-                        </div>
+    <!-- VENTANA MODAL FLOTANTE (AGREGAR / MODIFICAR ENCARGADO) -->
+    <div class="modal-overlay" id="modalUsuario">
+        <div class="form-container">
+            <!-- REQUERIMIENTO CUMPLIDO: Título dinámico para cambiar entre Agregar y Modificar -->
+            <div class="form-header" id="tituloFormUsuario">Agregar encargado</div>
+            <form id="formRegistroUsuario">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>ID:</label>
+                        <input type="text" id="userIdDisplay" value="AUTOMÁTICO" disabled>
                     </div>
-                    <div class="row-buttons">
-                        <button type="submit" id="btnGuardarUsuario" class="btn-footer btn-save">✓ Guardar</button>
-                        <button type="button" id="btnCancelarModal" class="btn-footer btn-cancel">✕ Cancelar</button>
+                    <div class="form-group">
+                        <label>Rol:</label>
+                        <select id="userRol" required>
+                            <option value="Director">Director</option>
+                            <option value="Administrador">Administrador</option>
+                            <option value="Encargado">Encargado</option>
+                        </select>
                     </div>
-                </form>
-            </div>
+                    <div class="form-group full-width">
+                        <label>Nombre completo:</label>
+                        <input type="text" id="userNombre" placeholder="Ej: Juan Pérez" required>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Teléfono:</label>
+                        <input type="text" id="userTelefono" placeholder="Ej: 7711234567" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Área</label>
+                        <select id="userArea" required>
+                            <option value="">Cargando áreas...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Departamento</label>
+                        <select id="userDepartamento" required disabled>
+                            <option value="">Selecciona primero un área...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Usuario (Correo de acceso):</label>
+                        <input type="text" id="userEmail" placeholder="ejemplo@calnali.gob.mx" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Contraseña:</label>
+                        <input type="password" id="userPass" required>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Confirme la contraseña:</label>
+                        <input type="password" id="userPassConf" required>
+                    </div>
+                </div>
+                <div class="row-buttons">
+                    <button type="submit" id="btnGuardarUsuario" class="btn-footer btn-save">✓ Guardar</button>
+                    <button type="button" id="btnCancelarModal" class="btn-footer btn-cancel">✕ Cancelar</button>
+                </div>
+            </form>
         </div>
-            
-        <!-- LIBRERÍAS OFICIALES DE GOOGLE FIREBASE -->
-        <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-        <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>   
-        <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-    
-        <script>
-            // Inicialización instantánea y directa de Firebase
-            const proyectoID = "gestion-mantenimiento-ap-20f51";
-    
-            const firebaseConfig = {
-                apiKey: "AIzaSyDDcGT88IspX4-_TOKtQcdeo-93favOuoY",
-                authDomain: "://firebaseapp.com",
-                projectId: "gestion-mantenimiento-ap-20f51",
-                storageBucket: "gestion-mantenimiento-ap-20f51.firebasestorage.app",
-                messagingSenderId: "792321276987",
-                appId: "1:792321276987:web:3494cc6f399b0d83e5301e",
-                measurementId: "G-XLE9Y7FPGM"
-            };
-    
-            if (!firebase.apps.length) { 
-                firebase.initializeApp(firebaseConfig); 
-            }
-            const db = firebase.firestore();
-            const auth = firebase.auth();
-        </script>
-   
+    </div>
+        
+    <!-- LIBRERÍAS OFICIALES DE GOOGLE FIREBASE -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>   
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script> 
+
+    <script>
+        // Inicialización instantánea y directa de Firebase
+        const proyectoID = "gestion-mantenimiento-ap-20f51";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDDcGT88IspX4-_TOKtQcdeo-93favOuoY",
+            authDomain: "://firebaseapp.com",
+            projectId: "gestion-mantenimiento-ap-20f51",
+            storageBucket: "gestion-mantenimiento-ap-20f51.firebasestorage.app",
+            messagingSenderId: "792321276987",
+            appId: "1:792321276987:web:3494cc6f399b0d83e5301e",
+            measurementId: "G-XLE9Y7FPGM"
+        };
+
+        if (!firebase.apps.length) { 
+            firebase.initializeApp(firebaseConfig); 
+        }
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+    </script>
    <script>
+    // Variable global oculta para gestionar el ID del usuario en modo Edición
+    let editUserId = "";
+    // Caché local en memoria para optimizar el rendimiento del buscador multicampo
+    let usuariosGlobales = [];
+
     // Control Visual de la Ventana Modal Flotante
-    var modalElement = document.getElementById('modalUsuario');
+    const modalElement = document.getElementById('modalUsuario');
     
     document.getElementById('btnAbrirModal').addEventListener('click', function() {
+        editUserId = ""; // Limpiamos el estado de edición para abrir en modo creación
+        document.getElementById("tituloFormUsuario").innerText = "Agregar encargado";
+        document.getElementById("userEmail").disabled = false;
+        document.getElementById("userPass").required = true;
+        document.getElementById("userPassConf").required = true;
         modalElement.style.display = 'flex';
     });
     
     document.getElementById('btnCancelarModal').addEventListener('click', function() {
         modalElement.style.display = 'none';
         document.getElementById("formRegistroUsuario").reset();
+        editUserId = "";
         document.getElementById("userDepartamento").disabled = true;
         document.getElementById("userDepartamento").innerHTML = '<option value="">Selecciona primero un área...</option>';
     });
 
-
-
     window.addEventListener('keydown', function(e) {
-        // Comprueba si la tecla presionada es Escape y si el modal está abierto
         if (e.key === 'Escape' && modalElement.style.display === 'flex') {
-            // Dispara el clic del botón cancelar para ocultar y limpiar el formulario
             document.getElementById('btnCancelarModal').click();
         }
     });
-
     
     // Función para renderizar usuarios encargados en la tabla dinámicamente desde Firestore
+    // REQUERIMIENTO CUMPLIDO: El botón de editar llama a la lógica de mapeo de datos
     function cargarUsuariosTabla() {
         if (!db) return;
         db.collection("usuarios_encargados").onSnapshot(function(snapshot) {
-            var tbody = document.getElementById("tablaUsuariosCuerpo");
+            const tbody = document.getElementById("tablaUsuariosCuerpo");
             if (!tbody) return;
             tbody.innerHTML = "";
-            var index = 1;
+            usuariosGlobales = [];
+            let index = 1;
+
             snapshot.forEach(function(doc) {
-                var data = doc.data();
-                var tr = document.createElement("tr");
+                const data = doc.data();
+                const idDoc = doc.id;
+                
+                // Guardamos en caché para búsquedas y mapeos locales instantáneos
+                usuariosGlobales.push({ id: idDoc, ...data });
+
+                const tr = document.createElement("tr");
                 tr.innerHTML = "<td>" + (index++) + "</td>" +
                     "<td>" + (data.rol || '') + "</td>" +
                     "<td>" + (data.nombreCompleto || '') + "</td>" +
@@ -315,8 +338,8 @@
                     "<td>" + (data.area || '') + "</td>" +
                     "<td>" + (data.usuarioEmail || '') + "</td>" +
                     "<td>" +
-                        "<button class='btn-action-t' style='background-color: #3b71ca; margin-right: 5px;'>✏️</button>" +
-                        "<button class='btn-action-t' style='background-color: #dc4c64;' onclick=\"eliminarEncargado('" + doc.id + "')\">🗑️</button>" +
+                        "<button class='btn-action-t' style='background-color: #3b71ca; margin-right: 5px;' onclick=\"prepararEdicionUsuario('" + idDoc + "')\">✏️</button>" +
+                        "<button class='btn-action-t' style='background-color: #dc4c64;' onclick=\"eliminarEncargado('" + idDoc + "')\">🗑️</button>" +
                     "</td>";
                 tbody.appendChild(tr);
             });
@@ -325,9 +348,37 @@
         });
     }
 
-    // Función Principal: Registro en Firebase Auth + Guardar en Firestore con Privilegios Unificados
+    // REQUERIMIENTO CUMPLIDO: Mapea los textos y sincroniza las cascadas al dar clic en Editar (✏️)
+    window.prepararEdicionUsuario = async function(id) {
+        const usuario = usuariosGlobales.find(u => u.id === id);
+        if (!usuario) return;
+
+        editUserId = id; // Fijamos el ID del registro en memoria global
+        document.getElementById("tituloFormUsuario").innerText = "Modificar encargado";
+
+        // Inyectamos textos base e inhabilitamos el correo (política de seguridad de Firebase)
+        document.getElementById("userRol").value = usuario.rol || "Encargado";
+        document.getElementById("userNombre").value = usuario.nombreCompleto || "";
+        document.getElementById("userTelefono").value = usuario.telefono || "";
+        document.getElementById("userEmail").value = usuario.usuarioEmail || "";
+        document.getElementById("userEmail").disabled = true;
+
+        // Quitamos la obligatoriedad de contraseñas en modo Edición
+        document.getElementById("userPass").required = false;
+        document.getElementById("userPassConf").required = false;
+        document.getElementById("userPass").value = "";
+        document.getElementById("userPassConf").value = "";
+
+        // Sincronizamos la cascada dinámicamente según los catálogos en la nube
+        document.getElementById("userArea").value = usuario.area || "";
+        await forzarSincroniaDepartamentos(usuario.area || "");
+        document.getElementById("userDepartamento").value = usuario.departamento || "";
+
+        modalElement.style.display = 'flex';
+    };
+    // 3. Función Principal: Alta o Modificación de Perfil en Firebase
     async function registrarUsuarioYCredenciales(e) {
-        e.preventDefault(); // Detiene la recarga nativa de la página
+        e.preventDefault(); 
 
         var rol = document.getElementById("userRol").value;
         var nombre = document.getElementById("userNombre").value;
@@ -338,51 +389,66 @@
         var pass = document.getElementById("userPass").value;
         var passConf = document.getElementById("userPassConf").value;
 
-        // Validación de campos del lado del cliente
-        if (!nombre || !telefono || !area || !depto || !email || !pass || !passConf) {
+        // Validación de campos generales del lado del cliente
+        if (!nombre || !telefono || !area || !depto || !email) {
             alert("Por favor complete todos los campos obligatorios del formulario.");
             return;
         }
-        if (pass !== passConf) {
-            alert("Las contraseñas ingresadas no coinciden. Verifique de nuevo.");
-            return;
-        }
-        if (pass.length < 6) {
-            alert("La contraseña debe tener al menos 6 caracteres por seguridad de Firebase.");
-            return;
+
+        // Definición de estructura de privilegios institucionales de acceso según el Rol
+        var privilegios = { verModulos: ["dashboard", "inventario"], editar: false };
+        if (rol === "Director" || rol === "Administrador") {
+            privilegios.verModulos = ["dashboard", "seguridad", "inventario", "mantenimiento", "reportes"];
+            privilegios.editar = true;
         }
 
         try {
-            // 1. Crear la cuenta de acceso real en la sección Authentication de Firebase
-            var userCredential = await auth.createUserWithEmailAndPassword(email, pass);
-            var uid = userCredential.user.uid;
+            if (editUserId) {
+                // MODO EDICIÓN: Actualiza directamente los datos del perfil en Cloud Firestore
+                await db.collection("usuarios_encargados").doc(editUserId).update({
+                    rol: rol,
+                    nombreCompleto: nombre,
+                    telefono: telefono,
+                    departamento: depto,
+                    area: area,
+                    privilegios: privilegios
+                });
+                alert("¡Operación realizada correctamente! El encargado ha sido modificado.");
+            } else {
+                // MODO ALTA NUEVA: Valida contraseñas antes de dar de alta el nodo Auth de Firebase
+                if (!pass || !passConf) {
+                    alert("Por favor asigne una contraseña de acceso a la nueva cuenta.");
+                    return;
+                }
+                if (pass !== passConf) {
+                    alert("Las contraseñas ingresadas no coinciden. Verifique de nuevo.");
+                    return;
+                }
+                if (pass.length < 6) {
+                    alert("La contraseña debe tener al menos 6 caracteres por seguridad.");
+                    return;
+                }
 
-            // 2. Definir los privilegios del sistema según el Rol seleccionado
-            var privilegios = { verModulos: ["dashboard", "inventario"], editar: false };
-            if (rol === "Director" || rol === "Administrador") {
-                privilegios.verModulos = ["dashboard", "seguridad", "inventario", "mantenimiento", "reportes"];
-                privilegios.editar = true;
+                // 1. Alta técnica en la sección de autenticación de Firebase
+                var userCredential = await auth.createUserWithEmailAndPassword(email, pass);
+                var uid = userCredential.user.uid;
+
+                // 2. Registro estructurado del perfil en Cloud Firestore
+                await db.collection("usuarios_encargados").doc(uid).set({
+                    rol: rol,
+                    nombreCompleto: nombre,
+                    telefono: telefono,
+                    departamento: depto,
+                    area: area,
+                    usuarioEmail: email,
+                    privilegios: privilegios,
+                    fechaRegistro: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                alert("¡Operación realizada correctamente! Cuenta creada y usuario registrado con éxito.");
             }
-
-            // 3. Guardar el perfil completo sincronizado en la colección de Firestore
-            await db.collection("usuarios_encargados").doc(uid).set({
-                rol: rol,
-                nombreCompleto: nombre,
-                telefono: telefono,
-                departamento: depto,
-                area: area,
-                usuarioEmail: email,
-                privilegios: privilegios,
-                fechaRegistro: firebase.firestore.FieldValue.serverTimestamp()
-            });
-
-            alert("¡Operación realizada correctamente! Cuenta creada y usuario registrado con éxito.");
             
-            // Limpieza del formulario y reajuste de selects dinámicos
-            document.getElementById("formRegistroUsuario").reset();
-            document.getElementById("userDepartamento").disabled = true;
-            document.getElementById("userDepartamento").innerHTML = '<option value="">Selecciona primero un área...</option>';
-            modalElement.style.display = 'none';
+            // Simular clic en cancelar para forzar toda la limpieza de campos e inputs
+            document.getElementById("btnCancelarModal").click();
 
         } catch (error) {
             console.error("Detalle del error en el servidor: ", error);
@@ -390,7 +456,6 @@
         }
     }
 
-    // Vincular el evento de envío al formulario de alta
     document.getElementById("formRegistroUsuario").addEventListener("submit", registrarUsuarioYCredenciales);
     window.addEventListener('DOMContentLoaded', cargarUsuariosTabla);
 
@@ -403,16 +468,54 @@
         }
     }
     
-    // --- LÓGICA DE SELECTS DINÁMICOS EN CASCADA UNIFICADA ---
+    // REQUERIMIENTO CUMPLIDO: Motor del Buscador Multicampo en Tiempo Real conectado al ID superior
+    const inputBuscarUsuario = document.getElementById("inputBuscarUsuario");
+    if (inputBuscarUsuario) {
+        inputBuscarUsuario.addEventListener("input", function(e) {
+            const texto = e.target.value.toLowerCase().trim();
+            const tbody = document.getElementById("tablaUsuariosCuerpo");
+            if (!tbody) return;
+            tbody.innerHTML = "";
+
+            const filtrados = usuariosGlobales.filter(u => 
+                (u.nombreCompleto || "").toLowerCase().includes(texto) ||
+                (u.rol || "").toLowerCase().includes(texto) ||
+                (u.area || "").toLowerCase().includes(texto) ||
+                (u.departamento || "").toLowerCase().includes(texto) ||
+                (u.usuarioEmail || "").toLowerCase().includes(texto)
+            );
+
+            if (filtrados.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #dc4c64; padding: 20px;">No se encontraron usuarios coincidentes.</td></tr>';
+                return;
+            }
+
+            let index = 1;
+            filtrados.forEach(function(data) {
+                const tr = document.createElement("tr");
+                tr.innerHTML = "<td>" + (index++) + "</td>" +
+                    "<td>" + (data.rol || '') + "</td>" +
+                    "<td>" + (data.nombreCompleto || '') + "</td>" +
+                    "<td>" + (data.telefono || '') + "</td>" +
+                    "<td>" + (data.departamento || '') + "</td>" +
+                    "<td>" + (data.area || '') + "</td>" +
+                    "<td>" + (data.usuarioEmail || '') + "</td>" +
+                    "<td>" +
+                        "<button class='btn-action-t' style='background-color: #3b71ca; margin-right: 5px;' onclick=\"prepararEdicionUsuario('" + data.id + "')\">✏️</button>" +
+                        "<button class='btn-action-t' style='background-color: #dc4c64;' onclick=\"eliminarEncargado('" + data.id + "')\">🗑️</button>" +
+                    "</td>";
+                tbody.appendChild(tr);
+            });
+        });
+    }
+
+    // 4. LÓGICA DE SELECTS DINÁMICOS EN CASCADA UNIFICADA CON PROMESA DE CONTROL
     let listaGlobalAreasDeptos = [];
 
     function inicializarFiltroAreasDepartamentos() {
         const selectArea = document.getElementById("userArea");
-        const selectDepto = document.getElementById("userDepartamento");
+        if (!selectArea) return;
 
-        if (!selectArea || !selectDepto) return;
-
-        // 1. Obtener registros vigentes desde la base de datos
         db.collection("areas_departamentos").get().then((snapshot) => {
             listaGlobalAreasDeptos = [];
             const areasUnicas = new Set();
@@ -429,17 +532,20 @@
             });
         }).catch(error => console.error("Error al cargar áreas:", error));
 
-        // 2. Evento reactivo que intercepta la selección del usuario
-        selectArea.addEventListener("change", (e) => {
-            const areaSeleccionada = e.target.value;
+        selectArea.addEventListener("change", (e) => forzarSincroniaDepartamentos(e.target.value));
+    }
+
+    function forzarSincroniaDepartamentos(areaSeleccionada) {
+        return new Promise((resolve) => {
+            const selectDepto = document.getElementById("userDepartamento");
+            if (!selectDepto) return resolve();
 
             if (!areaSeleccionada) {
                 selectDepto.innerHTML = '<option value="">Selecciona primero un área...</option>';
                 selectDepto.disabled = true;
-                return;
+                return resolve();
             }
 
-            // Filtrar exclusivamente los departamentos vinculados a esa área específica
             const deptosFiltrados = listaGlobalAreasDeptos.filter(item => item.area && item.area.trim() === areaSeleccionada);
             selectDepto.innerHTML = '<option value="">-- Seleccione Departamento --</option>';
 
@@ -451,43 +557,32 @@
                         selectDepto.innerHTML += `<option value="${item.departamento.trim()}">${item.departamento.trim()}</option>`;
                     }
                 });
-                selectDepto.disabled = false; // Desbloquea el campo para su captura
+                selectDepto.disabled = false; 
             }
+            resolve();
         });
     }
 
+    // Inicializaciones generales del DOM al cargar la página
+    window.addEventListener('DOMContentLoaded', () => {
+        const emailDisplay = document.querySelector(".user-email-text");
+        if (emailDisplay) {
+            const storedEmail = localStorage.getItem("userEmail");
+            if (storedEmail) emailDisplay.innerText = storedEmail;
+        }
+        inicializarFiltroAreasDepartamentos();
+    });
 
-  // --- CÓDIGO CORREGIDO: INICIALIZACIÓN DE DATOS Y FUNCIÓN LOGOUT ---
-  window.addEventListener('DOMContentLoaded', () => {
-      // CORRECCIÓN: El elemento en este HTML tiene la clase 'user-email-text'
-      const emailDisplay = document.querySelector(".user-email-text");
-      if (emailDisplay) {
-          const storedEmail = localStorage.getItem("userEmail");
-          if (storedEmail) {
-              emailDisplay.innerText = storedEmail;
-          }
-      }
-  });
-  
-  // FUNCIÓN LOGOUT CONECTADA A GOOGLE FIREBASE AUTH
-  window.logout = async () => {
-      try {
-          const auth = firebase.auth(); // Instanciamos Auth localmente de forma segura
-          await auth.signOut();
-          localStorage.clear(); // Limpiamos datos de sesión en el navegador
-          window.location.href = "index.html"; // Redirección al login
-      } catch (error) {
-          alert("Error al cerrar sesión institucional: " + error.message);
-      }
-  }
-
-
-
-    // Arrancar el filtro dinámico automáticamente al cargar el DOM
-    window.addEventListener('DOMContentLoaded', inicializarFiltroAreasDepartamentos);
+    // FUNCIÓN LOGOUT CONECTADA A GOOGLE FIREBASE AUTH
+    window.logout = async () => {
+        try {
+            await auth.signOut();
+            localStorage.clear(); 
+            window.location.href = "index.html"; 
+        } catch (error) {
+            alert("Error al cerrar sesión institucional: " + error.message);
+        }
+    }
 </script>
 </body>
 </html>
-
-
-
