@@ -202,6 +202,8 @@ function mostrarPanelModificaciones(registro) {
 }
 
 // --- 6. GUARDAR Y ACTUALIZAR EN LA COLECCIÓN 'TICKETS' EXISTENTE ---
+
+// --- 6. GUARDAR Y ACTUALIZAR EN LA COLECCIÓN 'TICKETS' EXISTENTE ---
 formPanel.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -210,7 +212,7 @@ formPanel.addEventListener('submit', async (e) => {
     const tipoMantenimiento = document.getElementById('panelTipoMantenimiento').value;
     const tiempoEstimado = document.getElementById('panelTiempo').value.trim();
     const fechaSalida = document.getElementById('panelFechaSalida').value;
-    const nuevoStatus = document.getElementById('panelStatusTicket').value; // Captura del nuevo selector
+    const nuevoStatus = document.getElementById('panelStatusTicket').value; 
 
     if (!ticketId) {
         alert("Error de proceso: Por favor, seleccione un ticket válido de la tabla.");
@@ -218,17 +220,24 @@ formPanel.addEventListener('submit', async (e) => {
     }
 
     try {
-        // SOLUCIÓN OPTIMIZADA: Se guardan y anexan los campos en la colección existente 'tickets'
-        // Esto unifica el registro para que tu nueva página lo consuma de forma limpia y directa
-        await db.collection("tickets").doc(ticketId).update({
+        // Estructura base de los datos que se van a actualizar
+        const datosActualizados = {
             tecnicoAsignado: tecnico,
             tipoMantenimiento: tipoMantenimiento,
             tiempoEstimadoDias: Number(tiempoEstimado),
             fechaSalidaEstimada: fechaSalida,
-            status: nuevoStatus, // Actualiza el string ("Abierto", "Asignado", "Cerrado")
+            status: nuevoStatus, 
             fechaUltimaGestion: firebase.firestore.FieldValue.serverTimestamp(),
             gestionadoPorEmail: localStorage.getItem("userEmail")
-        });
+        };
+
+        // REQUERIMIENTO CUMPLIDO: Si el administrador selecciona "Cerrado", se captura la estampa de tiempo real con la hora del servidor
+        if (nuevoStatus === "Cerrado" || nuevoStatus === "CERRADO") {
+            datosActualizados.fechaCierreReal = firebase.firestore.FieldValue.serverTimestamp();
+        }
+
+        // Se envía el objeto unificado a Firebase Firestore
+        await db.collection("tickets").doc(ticketId).update(datosActualizados);
 
         alert("¡Operación realizada correctamente! El ticket ha sido gestionado y actualizado en la base de datos.");
         ocultarYLimpiarPanel();
@@ -238,6 +247,10 @@ formPanel.addEventListener('submit', async (e) => {
         alert("Error al procesar la operación en el servidor: " + error.message);
     }
 });
+
+
+
+
 
 // --- 7. BUSCADOR MULTICAMPO EN TIEMPO REAL ---
 const inputBuscar = document.getElementById("inputBuscarPeticion");
