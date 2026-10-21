@@ -1,4 +1,4 @@
-
+// ==========================================================================
 
 const firebaseConfig = {
     apiKey: "AIzaSyDDcGT88IspX4-_TOKtQcdeo-93favOuoY",
@@ -19,7 +19,7 @@ const auth = firebase.auth();
 let actividadesGlobales = [];
 let limiteRegistrosActual = 10;
 
-// REQUERIMIENTO CUMPLIDO: Función avanzada para incluir Fecha, Hora y Minutos exactos del Cierre Real
+// REQUERIMIENTO CUMPLIDO: Función avanzada para incluir Fecha, Hora y Minutos exactos
 function formatearFechaYHora(timestamp) {
     if (!timestamp) return "0000-00-00 00:00";
     
@@ -30,7 +30,6 @@ function formatearFechaYHora(timestamp) {
         const mes = String(date.getMonth() + 1).padStart(2, '0');
         const anio = date.getFullYear();
         
-        // Extracción de horas y minutos con formato de dos dígitos
         const horas = String(date.getHours()).padStart(2, '0');
         const minutos = String(date.getMinutes()).padStart(2, '0');
         
@@ -86,7 +85,6 @@ function escucharActividadesMantenimiento() {
                     tipoMantenimiento: ticketData.tipoMantenimiento || "Preventivo",
                     tiempoEstimado: ticketData.tiempoEstimadoDias || "2",
                     fechaEntrada: ticketData.fechaPeticion || "0000-00-00",
-                    // Se prioriza la estampa de tiempo del botón del administrador
                     fechaSalida: ticketData.fechaCierreReal || ticketData.fechaUltimaGestion || null,
                     ticketTipo: ticketData.tipo || "",
                     ticketSerie: ticketData.serie || "",
@@ -137,11 +135,7 @@ function renderizarTablaConLimite() {
 // ARCHIVO: actividades.js (Control de Tiempos y Chat - PARTE 2 DE 2)
 // ==========================================================================
 
-// ==========================================================================
-// ARCHIVO: actividades.js (Control de Tiempos y Chat - PARTE 2 DE 2)
-// ==========================================================================
-
-// 3. REQUERIMIENTO CUMPLIDO: Renderizado de datos cruzados e inyección de fecha con hora en los detalles
+// 3. REQUERIMIENTO CUMPLIDO: Renderizado de datos cruzados e inyección de chat unificado libre de excepciones
 window.mostrarDesgloseActividad = async function(ticketId) {
     const contenedor = document.getElementById("contenedorDetallesActividad");
     const reg = actividadesGlobales.find(t => t.id === ticketId);
@@ -154,13 +148,10 @@ window.mostrarDesgloseActividad = async function(ticketId) {
         ? `<span class="badge-urgente-si">Sí</span>` 
         : `<span style="background:#e2e3e5; color:#383d41; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:bold;">No</span>`;
     
-    // Inyección del encargado resuelto del cruce asíncrono
     document.getElementById("detEncargado").innerText = reg.encargado;
     document.getElementById("detTecnico").innerText = reg.tecnico;
     document.getElementById("detTipoManto").innerText = reg.tipoMantenimiento;
     document.getElementById("detFechaCreado").innerText = reg.fechaEntrada;
-    
-    // REQUERIMIENTO CUMPLIDO CORREGIDO: Muestra la Fecha y Hora exacta del campo fechaCierreReal sin alteración
     document.getElementById("detFechaCerrado").innerText = formatearFechaYHora(reg.fechaSalida);
 
     // B. Mapeo de datos de identificación técnica del equipo de cómputo
@@ -174,19 +165,16 @@ window.mostrarDesgloseActividad = async function(ticketId) {
     // C. REQUERIMIENTO CUMPLIDO: Inyección de la celda de la falla en el cuadro de "Descripción del problema"
     document.getElementById("detProblemaFallaTexto").innerText = reg.problema;
 
-
-    
-    // D. REQUERIMIENTO CUMPLIDO CORREGIDO: Consulta directa a la subcolección real de "comentarios"
-    // D. REQUERIMIENTO CUMPLIDO: Extracción unificada e inteligente de conversaciones del ticket
+    // D. REQUERIMIENTO CUMPLIDO CORREGIDO: Extracción e interpolación de chats con protección contra nulos
     const chatContainer = document.getElementById("contenedorHistorialChatActividad");
     if (chatContainer) {
         chatContainer.innerHTML = `<p style="font-size: 12px; color: #777; font-style: italic;">Consultando mensajes del servidor...</p>`;
         
         try {
-            // 1. Intentamos leer primero de la subcolección 'comentarios'
+            // 1. Intentamos leer primero de la subcolección 'comentarios' (Usada en peticiones)
             let mensajesSnapshot = await db.collection("tickets").doc(ticketId).collection("comentarios").orderBy("fecha", "asc").get();
             
-            // 2. Si está vacía, buscamos de forma automática en la subcolección 'chat' usada por asignados
+            // 2. Si está vacía, buscamos de forma automática en la subcolección 'chat' (Usada por asignados)
             if (mensajesSnapshot.empty) {
                 mensajesSnapshot = await db.collection("tickets").doc(ticketId).collection("chat").orderBy("fechaEnvio", "asc").get();
             }
@@ -198,14 +186,14 @@ window.mostrarDesgloseActividad = async function(ticketId) {
             } else {
                 mensajesSnapshot.forEach((msgDoc) => {
                     const msgData = msgDoc.data();
-                    const divMsg = document.createElement("div");
-                    divMsg.className = "comentario-timeline-item";
                     
-                    // Normalización de variables (soporta campos de ambas pantallas)
+                    // Normalización segura de variables para tolerar ambos layouts de chat
                     const autor = msgData.remitenteNombre || msgData.remitente || 'Soporte';
                     const textoMensaje = msgData.texto || msgData.mensaje || '';
                     const fechaMensaje = msgData.fecha || msgData.fechaEnvio || null;
 
+                    const divMsg = document.createElement("div");
+                    divMsg.className = "comentario-timeline-item";
                     divMsg.innerHTML = `
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                             <strong style="color: #5c1424; font-size: 12px;">👤 ${autor}</strong>
@@ -221,9 +209,6 @@ window.mostrarDesgloseActividad = async function(ticketId) {
             chatContainer.innerHTML = `<p style="font-size: 12px; color: #dc4c64;">Error al cargar la línea de mensajes técnicos.</p>`;
         }
     }
-
-
-
 
     // Despliegue visual suave hacia la tarjeta de desglose inferior
     contenedor.style.display = "grid";
