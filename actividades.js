@@ -1,5 +1,3 @@
-// ==========================================================================
-// ==========================================================================
 
 // 1. Configuración de Conexión Institucional a Firebase
 const firebaseConfig = {
@@ -18,18 +16,14 @@ if (!firebase.apps.length) {
 const db = firebase.firestore();
 const auth = firebase.auth();
 
-// Variables globales para la paginación dinámica y filtros en tiempo real
+// Variables globales para la persistencia del estado en caché local
 let actividadesGlobales = [];
-let limiteRegistrosActual = 10; // Controla dinámicamente el combo de "Mostrar X registros"
+let limiteRegistrosActual = 10;
 
-// Helper técnico para formatear de forma legible las fechas de Firestore
+// Helper técnico para decodificar y formatear las estampas de tiempo (Timestamp)
 function formatearFechaBase(timestamp) {
     if (!timestamp) return "0000-00-00";
-    
-    // Si viene en formato string plano de fecha normal
     if (typeof timestamp === 'string') return timestamp;
-    
-    // Si viene como estampa de tiempo de Firebase (Timestamp object)
     if (timestamp.toDate) {
         const date = timestamp.toDate();
         const dia = String(date.getDate()).padStart(2, '0');
@@ -40,27 +34,82 @@ function formatearFechaBase(timestamp) {
     return "0000-00-00";
 }
 
-// 2. Escucha Reactiva Filtrada de Actividades en Tiempo Real
+// 2. REQUERIMIENTO CUMPLIDO: Escucha remota con cruce de información idéntico a peticiones
 function escucharActividadesMantenimiento() {
-    // REQUERIMIENTO CUMPLIDO: Filtro estricto para mostrar ÚNICAMENTE tickets con estatus Cerrado
+    // Escucha en tiempo real filtrando estrictamente los tickets con estatus Cerrado
     db.collection("tickets")
       .where("status", "==", "Cerrado")
-      .onSnapshot((snapshot) => {
-        actividadesGlobales = [];
+      .onSnapshot(async (ticketsSnapshot) => {
         
-        snapshot.forEach((doc) => {
-            const data = doc.data();
-            actividadesGlobales.push({ id: doc.id, ...data });
-        });
+        const tbody = document.getElementById("tablaActividadesCuerpo");
+        if (!tbody) return;
 
-        // Forzar renderizado inmediato aplicando el límite de paginación seleccionado
-        renderizarTablaConLimite();
+        if (ticketsSnapshot.empty) {
+            tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #777; padding: 20px;">No se registran actividades con estatus "Cerrado" en el sistema.</td></tr>`;
+            return;
+        }
+
+        try {
+            // REQUERIMIENTO CUMPLIDO: Descarga en lote el catálogo completo de personal encargado
+            const encargadosSnap = await db.collection("usuarios_encargados").get();
+
+            // Construimos el mapa relacional idéntico usando el correo de acceso como llave de enlace
+            const mapaEncargados = {};
+            encargadosSnap.forEach(doc => {
+                const d = doc.data();
+                if (d.usuarioEmail) {
+                    mapaEncargados[d.usuarioEmail.trim().toLowerCase()] = {
+                        nombre: d.nombreCompleto || "Sin Nombre",
+                        departamento: d.departamento || "General"
+                    };
+                }
+            });
+
+            actividadesGlobales = [];
+
+            // Barremos los tickets y les inyectamos los datos del encargado correspondiente
+            ticketsSnapshot.forEach((docTicket) => {
+                const ticketData = docTicket.data();
+                const ticketId = docTicket.id;
+                const correoKey = (ticketData.usuarioEmail || "").trim().toLowerCase();
+
+                // Si el correo coincide, extrae el nombre real y área; si no, coloca los fallbacks
+                const infoEncargado = mapaEncargados[correoKey] || { nombre: "Desconocido", departamento: "General" };
+
+                actividadesGlobales.push({
+                    id: ticketId,
+                    encargado: infoEncargado.nombre,
+                    departamento: infoEncargado.departamento,
+                    // CORRECCIÓN: 'ticketData.detalle' mapea de forma exacta el problema guardado
+                    problema: ticketData.detalle || "Sin descripción de falla",
+                    tecnico: ticketData.tecnicoAsignado || "Sin Técnico",
+                    tipoMantenimiento: ticketData.tipoMantenimiento || "Preventivo",
+                    tiempoEstimado: ticketData.tiempoEstimadoDias || "2",
+                    fechaEntrada: ticketData.fechaPeticion || "0000-00-00",
+                    fechaSalida: formatearFechaBase(ticketData.fechaUltimaGestion || ticketData.fechaCierre),
+                    // Mantenemos los campos de identificación del equipo para el panel de detalles inferior
+                    ticketTipo: ticketData.tipo || "",
+                    ticketSerie: ticketData.serie || "",
+                    ticketMarca: ticketData.marca || "",
+                    ticketModelo: ticketData.modelo || "",
+                    status: ticketData.status || "Cerrado",
+                    urgente: ticketData.urgente || "No"
+                });
+            });
+
+            // Pintamos la información limpia en la interfaz aplicando el corte del paginador
+            renderizarTablaConLimite();
+
+        } catch (err) {
+            console.error("Error crítico durante el mapeo relacional de datos:", err);
+            tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #dc4c64; padding: 20px;">Error al enlazar los datos del personal.</td></tr>`;
+        }
     }, (error) => {
-        console.error("Error al conectar con la colección de tickets: ", error);
+        console.error("Falla en el canal síncrono del servidor:", error);
     });
 }
 
-// REQUERIMIENTO CUMPLIDO: Función encargada de recortar y pintar la tabla según el selector numérico
+// 3. Renderizado de filas en base al límite configurado por el combobox
 function renderizarTablaConLimite() {
     const tbody = document.getElementById("tablaActividadesCuerpo");
     if (!tbody) return;
@@ -68,86 +117,64 @@ function renderizarTablaConLimite() {
     tbody.innerHTML = "";
     let index = 1;
 
-    if (actividadesGlobales.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #dc4c64; padding: 20px; font-weight: bold;">No se registran actividades con estatus "Cerrado" en el servidor.</td></tr>`;
-        return;
-    }
-
-    // Cortamos la lista en memoria respetando el límite del selector (10, 25, 50, etc.)
+    // Recortamos la lista dinámica en memoria local
     const datosPaginados = actividadesGlobales.slice(0, limiteRegistrosActual);
 
-    datosPaginados.forEach((data) => {
+    datosPaginados.forEach((reg) => {
         const tr = document.createElement("tr");
 
-        // CORRECCIÓN DE CAMPOS: Mapeo exacto de las variables nativas de tu formulario original
-        const encargadoVal = data.encargado || data.usuario || "No especificado";
-        const departamentoVal = data.departamento || "General";
-        const tecnicoVal = data.tecnicoAsignado || data.tecnico || "Sin Técnico";
-        const tipoMantoVal = data.tipoMantenimiento || data.condicionInicial || "Preventivo";
-        const tiempoVal = data.tiempoEstimado || "2";
-        const problemaVal = data.ticketDetalle || data.detalleFalla || data.problema || "Ninguno";
-        const fechaEntradaVal = data.ticketFechaPeticion || data.fechaPeticion || "0000-00-00";
-        
-        // REQUERIMIENTO CUMPLIDO: Fecha de salida mapeada de la estampa exacta de cierre del administrador
-        const fechaSalidaVal = formatearFechaBase(data.fechaCierre || data.fechaSalida);
-
+        // REQUERIMIENTO CUMPLIDO: Columnas mapeadas con la información real de Maria Tellez, Recursos Humanos, etc.
         tr.innerHTML = `
             <td><strong>${index++}</strong></td>
-            <td>${encargadoVal}</td>
-            <td>${departamentoVal}</td>
-            <td>${tecnicoVal}</td>
-            <td>${tipoMantoVal}</td>
-            <td><span style="font-weight: bold; color: #5c1424;">${tiempoVal}</span></td>
-            <td>${problemaVal}</td>
-            <td>${fechaEntradaVal}</td>
-            <td>${fechaSalidaVal}</td>
+            <td>${reg.encargado}</td>
+            <td>${reg.departamento}</td>
+            <td>${reg.tecnico}</td>
+            <td>${reg.tipoMantenimiento}</td>
+            <td><span style="font-weight: bold; color: #5c1424;">${reg.tiempoEstimado}</span></td>
+            <td>${reg.problema}</td>
+            <td>${reg.fechaEntrada}</td>
+            <td>${reg.fechaSalida}</td>
             <td>
-                <button class="btn-detalles-act" onclick="mostrarDesgloseActividad('${data.id}')">Detalles</button>
+                <button class="btn-detalles-act" onclick="mostrarDesgloseActividad('${reg.id}')">Detalles</button>
             </td>
         `;
         tbody.appendChild(tr);
     });
 }
 // ==========================================================================
-// ARCHIVO: actividades.js (Lógica de Datos Corregida - PARTE 2 DE 2)
+// ARCHIVO: actividades.js (Cruce de Datos Firestore - PARTE 2 DE 2)
 // ==========================================================================
 
-// 3. REQUERIMIENTO CUMPLIDO: Renderizado e Inyección Exacta de Datos en las Tarjetas de Detalles Inferiores
+// 4. REQUERIMIENTO CUMPLIDO: Inyección Exacta de Datos Cruzados en el Panel de Detalles Inferior
 window.mostrarDesgloseActividad = async function(ticketId) {
     const contenedor = document.getElementById("contenedorDetallesActividad");
-    const ticket = actividadesGlobales.find(t => t.id === ticketId);
+    const reg = actividadesGlobales.find(t => t.id === ticketId);
     
-    if (!ticket || !contenedor) return;
-
-    // CORRECCIÓN DE CAMPOS: Mapeo exacto alineado a la estructura original de tus colecciones de datos
-    const encargadoEquipo = ticket.encargado || ticket.usuario || "No especificado";
-    const problemaExacto = ticket.ticketDetalle || ticket.detalleFalla || ticket.problema || "Sin descripción.";
+    if (!reg || !contenedor) return;
 
     // A. Mapeo reactivo de datos en la tarjeta "Detalles del Ticket"
-    document.getElementById("detBadgeStatus").innerText = ticket.status || "Cerrado";
-    document.getElementById("detUrgente").innerHTML = (ticket.ticketUrgente === "Sí" || ticket.urgente === "Sí") 
+    document.getElementById("detBadgeStatus").innerText = reg.status || "Cerrado";
+    document.getElementById("detUrgente").innerHTML = (reg.urgente === "Sí" || reg.urgente === "si") 
         ? `<span class="badge-urgente-si">Sí</span>` 
         : `<span style="background:#e2e3e5; color:#383d41; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:bold;">No</span>`;
     
-    // REQUERIMIENTO CUMPLIDO: Ahora jala correctamente el Encargado del Equipo
-    document.getElementById("detEncargado").innerText = encargadoEquipo;
-    document.getElementById("detTecnico").innerText = ticket.tecnicoAsignado || ticket.tecnico || "JUAN PEREZ";
-    document.getElementById("detTipoManto").innerText = ticket.tipoMantenimiento || ticket.condicionInicial || "Preventivo";
-    document.getElementById("detFechaCreado").innerText = ticket.ticketFechaPeticion || ticket.fechaPeticion || "0000-00-00";
-    
-    // REQUERIMIENTO CUMPLIDO: Muestra la fecha exacta en la que el Administrador guardó el cierre del ticket
-    document.getElementById("detFechaCerrado").innerText = formatearFechaBase(ticket.fechaCierre || ticket.fechaSalida);
+    // REQUERIMIENTO CUMPLIDO: Muestra de forma exacta el Encargado del Equipo resuelto del cruce de colecciones
+    document.getElementById("detEncargado").innerText = reg.encargado;
+    document.getElementById("detTecnico").innerText = reg.tecnico;
+    document.getElementById("detTipoManto").innerText = reg.tipoMantenimiento;
+    document.getElementById("detFechaCreado").innerText = reg.fechaEntrada;
+    document.getElementById("detFechaCerrado").innerText = reg.fechaSalida;
 
     // B. Mapeo reactivo de datos de identificación técnica del equipo de cómputo
-    document.getElementById("detEquipoNombre").innerText = ticket.ticketTipo || ticket.tipoEquipo || "Teclado";
-    document.getElementById("detEquipoSerial").innerText = ticket.ticketSerie || ticket.numeroSerie || "670-103-823";
-    document.getElementById("detEquipoMarca").innerText = ticket.ticketMarca || ticket.marca || "Dell";
-    document.getElementById("detEquipoModelo").innerText = ticket.ticketModelo || ticket.modelo || "slfkrg";
-    document.getElementById("detEquipoArea").innerText = ticket.area || "Tecnológica";
-    document.getElementById("detEquipoDepto").innerText = ticket.departamento || "Sistemas";
+    document.getElementById("detEquipoNombre").innerText = reg.ticketTipo || "Equipo de Cómputo";
+    document.getElementById("detEquipoSerial").innerText = reg.ticketSerie || "S/N";
+    document.getElementById("detEquipoMarca").innerText = reg.ticketMarca || "S/M";
+    document.getElementById("detEquipoModelo").innerText = reg.ticketModelo || "S/M";
+    document.getElementById("detEquipoArea").innerText = "General"; // Fallback estético
+    document.getElementById("detEquipoDepto").innerText = reg.departamento;
 
-    // C. REQUERIMIENTO CUMPLIDO: Inyección del problema del equipo en el cuadro de "Descripción del problema"
-    document.getElementById("detProblemaFallaTexto").innerText = problemaExacto;
+    // C. REQUERIMIENTO CUMPLIDO: Inyección de la descripción del problema del equipo en el cuadro correspondiente
+    document.getElementById("detProblemaFallaTexto").innerText = reg.problema;
 
     // D. REQUERIMIENTO CUMPLIDO: Consulta y vaciado dinámico de la conversación real del chat del ticket
     const chatContainer = document.getElementById("contenedorHistorialChatActividad");
@@ -155,7 +182,7 @@ window.mostrarDesgloseActividad = async function(ticketId) {
         chatContainer.innerHTML = `<p style="font-size: 12px; color: #777; font-style: italic;">Consultando mensajes del servidor...</p>`;
         
         try {
-            // Consulta la subcolección interna de mensajes que creaste en las páginas anteriores
+            // Consulta la subcolección interna de mensajes que se crearon en las pantallas anteriores
             const mensajesSnapshot = await db.collection("tickets").doc(ticketId).collection("mensajes").orderBy("fecha", "asc").get();
             chatContainer.innerHTML = "";
 
@@ -167,7 +194,7 @@ window.mostrarDesgloseActividad = async function(ticketId) {
                     const divMsg = document.createElement("div");
                     divMsg.className = "comentario-timeline-item";
                     
-                    // Se lee tanto 'remitenteNombre' como el texto del chat para rellenar la burbuja
+                    // Se extrae el autor (remitenteNombre) y el cuerpo del mensaje del chat para rellenar la burbuja
                     const autor = msgData.remitenteNombre || msgData.remitente || 'Usuario';
                     const textoMensaje = msgData.texto || msgData.mensaje || '';
 
@@ -187,15 +214,14 @@ window.mostrarDesgloseActividad = async function(ticketId) {
         }
     }
 
-    // Desplegar la sección de detalles con un efecto de transición visual suave
+    // Desplegar la sección de detalles con un efecto de transición visual suave hacia abajo
     contenedor.style.display = "grid";
     contenedor.scrollIntoView({ behavior: "smooth" });
 };
 
-// 4. REQUERIMIENTO CUMPLIDO: Ajustar dinámicamente el número de registros visibles a mirar (Paginación combo)
+// 5. REQUERIMIENTO CUMPLIDO: Ajustar dinámicamente el número de registros visibles a mirar (Paginación combo)
 const selectMostrarRegistros = document.querySelector(".table-controls select");
 if (selectMostrarRegistros) {
-    // Añadimos las opciones tradicionales de visualización al combobox
     selectMostrarRegistros.innerHTML = `
         <option value="10">10</option>
         <option value="25">25</option>
@@ -209,7 +235,7 @@ if (selectMostrarRegistros) {
     });
 }
 
-// 5. Motor del Buscador General Multicampo sobre el Historial de Actividades
+// 6. Motor del Buscador General Multicampo sobre el Historial de Actividades Cerradas
 const inputBuscarActividad = document.getElementById("inputBuscarActividad");
 if (inputBuscarActividad) {
     inputBuscarActividad.addEventListener("input", (e) => {
@@ -220,17 +246,12 @@ if (inputBuscarActividad) {
         tbody.innerHTML = "";
         let index = 1;
 
-        // Filtrado reactivo multicriterio sobre la caché local filtrada
+        // Filtrado reactivo multicriterio sobre la caché local resuelta
         const filtradas = actividadesGlobales.filter((act) => {
-            const encargadoVal = act.encargado || act.usuario || "";
-            const tecnicoVal = act.tecnicoAsignado || act.tecnico || "";
-            const deptoVal = act.departamento || "";
-            const problemaVal = act.ticketDetalle || act.detalleFalla || act.problema || "";
-
-            return encargadoVal.toLowerCase().includes(texto) ||
-                   tecnicoVal.toLowerCase().includes(texto) ||
-                   deptoVal.toLowerCase().includes(texto) ||
-                   problemaVal.toLowerCase().includes(texto);
+            return act.encargado.toLowerCase().includes(texto) ||
+                   act.tecnico.toLowerCase().includes(texto) ||
+                   act.departamento.toLowerCase().includes(texto) ||
+                   act.problema.toLowerCase().includes(texto);
         });
 
         if (filtradas.length === 0) {
@@ -240,20 +261,20 @@ if (inputBuscarActividad) {
 
         const datosPaginados = filtradas.slice(0, limiteRegistrosActual);
 
-        datosPaginados.forEach((data) => {
+        datosPaginados.forEach((reg) => {
             const tr = document.createElement("tr");
             tr.innerHTML = `
                 <td><strong>${index++}</strong></td>
-                <td>${data.encargado || data.usuario || 'No asignado'}</td>
-                <td>${data.departamento || 'General'}</td>
-                <td>${data.tecnicoAsignado || data.tecnico || 'Sin Técnico'}</td>
-                <td>${data.tipoMantenimiento || data.condicionInicial || 'Preventivo'}</td>
-                <td><span style="font-weight: bold; color: #5c1424;">${data.tiempoEstimado || '2'}</span></td>
-                <td>${data.ticketDetalle || data.detalleFalla || data.problema || 'Ninguno'}</td>
-                <td>${data.ticketFechaPeticion || data.fechaPeticion || '0000-00-00'}</td>
-                <td>${formatearFechaBase(data.fechaCierre || data.fechaSalida)}</td>
+                <td>${reg.encargado}</td>
+                <td>${reg.departamento}</td>
+                <td>${reg.tecnico}</td>
+                <td>${reg.tipoMantenimiento}</td>
+                <td><span style="font-weight: bold; color: #5c1424;">${reg.tiempoEstimado}</span></td>
+                <td>${reg.problema}</td>
+                <td>${reg.fechaEntrada}</td>
+                <td>${reg.fechaSalida}</td>
                 <td>
-                    <button class="btn-detalles-act" onclick="mostrarDesgloseActividad('${data.id}')">Detalles</button>
+                    <button class="btn-detalles-act" onclick="mostrarDesgloseActividad('${reg.id}')">Detalles</button>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -261,14 +282,14 @@ if (inputBuscarActividad) {
     });
 }
 
-// 6. Inicialización General del DOM e Inicio de Escucha Remota
+// 7. Inicialización General del DOM e Inicio de Escucha Remota
 window.addEventListener('DOMContentLoaded', () => {
     const emailDisplay = document.querySelector(".user-email-text");
     if (emailDisplay) {
         const storedEmail = localStorage.getItem("userEmail");
         if (storedEmail) emailDisplay.innerText = storedEmail;
     }
-    // Disparador del Listener en Tiempo Real con Filtro de Estatus "Cerrado"
+    // Disparador del Listener en Tiempo Real con Filtro Relacional y de Estatus "Cerrado"
     escucharActividadesMantenimiento();
 });
 
