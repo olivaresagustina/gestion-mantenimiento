@@ -174,14 +174,23 @@ window.mostrarDesgloseActividad = async function(ticketId) {
     // C. REQUERIMIENTO CUMPLIDO: Inyección de la celda de la falla en el cuadro de "Descripción del problema"
     document.getElementById("detProblemaFallaTexto").innerText = reg.problema;
 
+
+    
     // D. REQUERIMIENTO CUMPLIDO CORREGIDO: Consulta directa a la subcolección real de "comentarios"
+    // D. REQUERIMIENTO CUMPLIDO: Extracción unificada e inteligente de conversaciones del ticket
     const chatContainer = document.getElementById("contenedorHistorialChatActividad");
     if (chatContainer) {
         chatContainer.innerHTML = `<p style="font-size: 12px; color: #777; font-style: italic;">Consultando mensajes del servidor...</p>`;
         
         try {
-            // CORRECCIÓN DE LA RUTA: Cambiado de .collection("mensajes") al nombre nativo de tu base de datos ".collection('comentarios')"
-            const mensajesSnapshot = await db.collection("tickets").doc(ticketId).collection("comentarios").orderBy("fecha", "asc").get();
+            // 1. Intentamos leer primero de la subcolección 'comentarios'
+            let mensajesSnapshot = await db.collection("tickets").doc(ticketId).collection("comentarios").orderBy("fecha", "asc").get();
+            
+            // 2. Si está vacía, buscamos de forma automática en la subcolección 'chat' usada por asignados
+            if (mensajesSnapshot.empty) {
+                mensajesSnapshot = await db.collection("tickets").doc(ticketId).collection("chat").orderBy("fechaEnvio", "asc").get();
+            }
+
             chatContainer.innerHTML = "";
 
             if (mensajesSnapshot.empty) {
@@ -192,14 +201,15 @@ window.mostrarDesgloseActividad = async function(ticketId) {
                     const divMsg = document.createElement("div");
                     divMsg.className = "comentario-timeline-item";
                     
-                    // Sincronización de los campos nativos de la conversación de las vistas anteriores
-                    const autor = msgData.remitenteNombre || msgData.remitente || 'Usuario';
+                    // Normalización de variables (soporta campos de ambas pantallas)
+                    const autor = msgData.remitenteNombre || msgData.remitente || 'Soporte';
                     const textoMensaje = msgData.texto || msgData.mensaje || '';
+                    const fechaMensaje = msgData.fecha || msgData.fechaEnvio || null;
 
                     divMsg.innerHTML = `
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                             <strong style="color: #5c1424; font-size: 12px;">👤 ${autor}</strong>
-                            <span style="font-size: 10px; color: #999;">${formatearFechaYHora(msgData.fecha)}</span>
+                            <span style="font-size: 10px; color: #999;">${formatearFechaYHora(fechaMensaje)}</span>
                         </div>
                         <p style="font-size: 12px; color: #333; margin: 0; line-height: 1.4;">${textoMensaje}</p>
                     `;
@@ -207,10 +217,13 @@ window.mostrarDesgloseActividad = async function(ticketId) {
                 });
             }
         } catch (err) {
-            console.error("Error al extraer subcolección de comentarios de chat:", err);
-            chatContainer.innerHTML = `<p style="font-size: 12px; color: #dc4c64;">Error al cargar la línea de mensajes técnicos de la base de datos.</p>`;
+            console.error("Error al extraer subcolección de logs de conversación:", err);
+            chatContainer.innerHTML = `<p style="font-size: 12px; color: #dc4c64;">Error al cargar la línea de mensajes técnicos.</p>`;
         }
     }
+
+
+
 
     // Despliegue visual suave hacia la tarjeta de desglose inferior
     contenedor.style.display = "grid";

@@ -178,22 +178,36 @@ function inyectarTicketsEnTabla(listaRegistros) {
         const selector = tr.querySelector('.select-status-celda');
         selector.addEventListener('click', (e) => e.stopPropagation());
 
-        // Evento de actualización (Solo se activará si el Administrador interactúa)
-        selector.addEventListener('change', async (e) => {
-            const ticketIdId = e.target.getAttribute('data-id');
-            const nuevoEstado = e.target.value;
+        // Evento de actualización (Solo se activará si el Administrador interactúa)CORREGIDO.......................
 
-            try {
-                await db.collection("tickets").doc(ticketIdId).update({
-                    status: nuevoEstado,
-                    fechaUltimoCambioStatus: firebase.firestore.FieldValue.serverTimestamp()
+      
+                selector.addEventListener('change', async (e) => {
+                    const ticketIdId = e.target.getAttribute('data-id');
+                    const nuevoEstado = e.target.value;
+        
+                    try {
+                        // Objeto base con la actualización de estatus y estampa de última gestión
+                        const camposActualizados = {
+                            status: nuevoEstado,
+                            fechaUltimoCambioStatus: firebase.firestore.FieldValue.serverTimestamp()
+                        };
+        
+                        // REQUERIMIENTO CUMPLIDO: Si el técnico cierra desde aquí, también capturamos fecha y hora exacta del servidor
+                        if (nuevoEstado === "Cerrado" || nuevoEstado === "CERRADO") {
+                            camposActualizados.fechaCierreReal = firebase.firestore.FieldValue.serverTimestamp();
+                        }
+        
+                        // Actualizamos el documento unificado en Cloud Firestore
+                        await db.collection("tickets").doc(ticketIdId).update(camposActualizados);
+                        
+                        alert(`¡Status del ticket actualizado correctamente a: ${nuevoEstado}!`);
+                    } catch (error) {
+                        console.error("Error al actualizar el status desde la celda:", error);
+                        alert("No se pudo actualizar el estado: " + error.message);
+                    }
                 });
-                alert(`¡Status del ticket actualizado correctamente a: ${nuevoEstado}!`);
-            } catch (error) {
-                console.error("Error al actualizar el status desde la celda:", error);
-                alert("No se pudo actualizar el estado: " + error.message);
-            }
-        });
+        
+
 
         tr.addEventListener('click', () => {
             document.querySelectorAll('#tablaAsignadosCuerpo tr').forEach(row => row.classList.remove('fila-seleccionada'));
