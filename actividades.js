@@ -1,4 +1,4 @@
-// ==========================================================================
+
 
 const firebaseConfig = {
     apiKey: "AIzaSyDDcGT88IspX4-_TOKtQcdeo-93favOuoY",
@@ -19,7 +19,7 @@ const auth = firebase.auth();
 let actividadesGlobales = [];
 let limiteRegistrosActual = 10;
 
-// REQUERIMIENTO CUMPLIDO: Función avanzada para incluir Fecha, Hora y Minutos exactos
+// Función para formatear e incluir de forma exacta Fecha, Hora y Minutos del Servidor
 function formatearFechaYHora(timestamp) {
     if (!timestamp) return "0000-00-00 00:00";
     
@@ -80,6 +80,7 @@ function escucharActividadesMantenimiento() {
                     id: ticketId,
                     encargado: infoEncargado.nombre,
                     departamento: infoEncargado.departamento,
+                    // Mapea de forma exacta 'detalle' de tus formularios levantados
                     problema: ticketData.detalle || "Sin descripción de falla",
                     tecnico: ticketData.tecnicoAsignado || "Sin Técnico",
                     tipoMantenimiento: ticketData.tipoMantenimiento || "Preventivo",
@@ -132,10 +133,10 @@ function renderizarTablaConLimite() {
     });
 }
 // ==========================================================================
-// ARCHIVO: actividades.js (Control de Tiempos y Chat - PARTE 2 DE 2)
+// ARCHIVO: actividades.js (Lógica de Tiempos y Chat Sincronizada - PARTE 2 DE 2)
 // ==========================================================================
 
-// 3. REQUERIMIENTO CUMPLIDO: Renderizado de datos cruzados e inyección de chat unificado libre de excepciones
+// 3. REQUERIMIENTO CUMPLIDO: Renderizado de datos e inyección de la subcolección real "chat"
 window.mostrarDesgloseActividad = async function(ticketId) {
     const contenedor = document.getElementById("contenedorDetallesActividad");
     const reg = actividadesGlobales.find(t => t.id === ticketId);
@@ -165,20 +166,14 @@ window.mostrarDesgloseActividad = async function(ticketId) {
     // C. REQUERIMIENTO CUMPLIDO: Inyección de la celda de la falla en el cuadro de "Descripción del problema"
     document.getElementById("detProblemaFallaTexto").innerText = reg.problema;
 
-    // D. REQUERIMIENTO CUMPLIDO CORREGIDO: Extracción e interpolación de chats con protección contra nulos
+    // D. REQUERIMIENTO CUMPLIDO CORREGIDO: Extracción de la subcolección exacta "chat" (Campos: texto y fechaEnvio)
     const chatContainer = document.getElementById("contenedorHistorialChatActividad");
     if (chatContainer) {
         chatContainer.innerHTML = `<p style="font-size: 12px; color: #777; font-style: italic;">Consultando mensajes del servidor...</p>`;
         
         try {
-            // 1. Intentamos leer primero de la subcolección 'comentarios' (Usada en peticiones)
-            let mensajesSnapshot = await db.collection("tickets").doc(ticketId).collection("comentarios").orderBy("fecha", "asc").get();
-            
-            // 2. Si está vacía, buscamos de forma automática en la subcolección 'chat' (Usada por asignados)
-            if (mensajesSnapshot.empty) {
-                mensajesSnapshot = await db.collection("tickets").doc(ticketId).collection("chat").orderBy("fechaEnvio", "asc").get();
-            }
-
+            // CORRECCIÓN CLAVE: Consulta síncrona a la subcolección ".collection('chat')" ordenada por 'fechaEnvio'
+            const mensajesSnapshot = await db.collection("tickets").doc(ticketId).collection("chat").orderBy("fechaEnvio", "asc").get();
             chatContainer.innerHTML = "";
 
             if (mensajesSnapshot.empty) {
@@ -187,10 +182,10 @@ window.mostrarDesgloseActividad = async function(ticketId) {
                 mensajesSnapshot.forEach((msgDoc) => {
                     const msgData = msgDoc.data();
                     
-                    // Normalización segura de variables para tolerar ambos layouts de chat
-                    const autor = msgData.remitenteNombre || msgData.remitente || 'Soporte';
-                    const textoMensaje = msgData.texto || msgData.mensaje || '';
-                    const fechaMensaje = msgData.fecha || msgData.fechaEnvio || null;
+                    // Sincronización exacta con los nombres de campos de tus otros archivos js
+                    const autor = msgData.remitenteNombre || "Soporte";
+                    const textoMensaje = msgData.texto || "";
+                    const fechaMensaje = msgData.fechaEnvio || null;
 
                     const divMsg = document.createElement("div");
                     divMsg.className = "comentario-timeline-item";
@@ -205,7 +200,7 @@ window.mostrarDesgloseActividad = async function(ticketId) {
                 });
             }
         } catch (err) {
-            console.error("Error al extraer subcolección de logs de conversación:", err);
+            console.error("Error al extraer subcolección 'chat' de la BD:", err);
             chatContainer.innerHTML = `<p style="font-size: 12px; color: #dc4c64;">Error al cargar la línea de mensajes técnicos.</p>`;
         }
     }
