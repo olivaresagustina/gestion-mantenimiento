@@ -137,6 +137,10 @@ function renderizarTablaConLimite() {
 // ARCHIVO: actividades.js (Control de Tiempos y Chat - PARTE 2 DE 2)
 // ==========================================================================
 
+// ==========================================================================
+// ARCHIVO: actividades.js (Control de Tiempos y Chat - PARTE 2 DE 2)
+// ==========================================================================
+
 // 3. REQUERIMIENTO CUMPLIDO: Renderizado de datos cruzados e inyección de fecha con hora en los detalles
 window.mostrarDesgloseActividad = async function(ticketId) {
     const contenedor = document.getElementById("contenedorDetallesActividad");
@@ -156,7 +160,7 @@ window.mostrarDesgloseActividad = async function(ticketId) {
     document.getElementById("detTipoManto").innerText = reg.tipoMantenimiento;
     document.getElementById("detFechaCreado").innerText = reg.fechaEntrada;
     
-    // REQUERIMIENTO CUMPLIDO: Muestra la Fecha y Hora exacta del cambio de estatus en la interfaz
+    // REQUERIMIENTO CUMPLIDO CORREGIDO: Muestra la Fecha y Hora exacta del campo fechaCierreReal sin alteración
     document.getElementById("detFechaCerrado").innerText = formatearFechaYHora(reg.fechaSalida);
 
     // B. Mapeo de datos de identificación técnica del equipo de cómputo
@@ -170,24 +174,25 @@ window.mostrarDesgloseActividad = async function(ticketId) {
     // C. REQUERIMIENTO CUMPLIDO: Inyección de la celda de la falla en el cuadro de "Descripción del problema"
     document.getElementById("detProblemaFallaTexto").innerText = reg.problema;
 
-    // D. REQUERIMIENTO CUMPLIDO: Extracción y renderizado de la conversación de chat real vinculada al ticket
+    // D. REQUERIMIENTO CUMPLIDO CORREGIDO: Consulta directa a la subcolección real de "comentarios"
     const chatContainer = document.getElementById("contenedorHistorialChatActividad");
     if (chatContainer) {
         chatContainer.innerHTML = `<p style="font-size: 12px; color: #777; font-style: italic;">Consultando mensajes del servidor...</p>`;
         
         try {
-            // Consulta directa a la subcolección interna de mensajes de ese ticket específico
-            const mensajesSnapshot = await db.collection("tickets").doc(ticketId).collection("mensajes").orderBy("fecha", "asc").get();
+            // CORRECCIÓN DE LA RUTA: Cambiado de .collection("mensajes") al nombre nativo de tu base de datos ".collection('comentarios')"
+            const mensajesSnapshot = await db.collection("tickets").doc(ticketId).collection("comentarios").orderBy("fecha", "asc").get();
             chatContainer.innerHTML = "";
 
             if (mensajesSnapshot.empty) {
-                chatContainer.innerHTML = `<p style="font-size: 12px; color: #777; font-style: italic; padding: 10px; background: #fafafa; border-radius: 4px; border: 1px dashed #ddd;">No se registraron mensajes o comentarios interactivos en el chat de este ticket.</p>`;
+                chatContainer.innerHTML = `<p style="font-size: 12px; color: #777; font-style: italic; padding: 10px; background: #fafafa; border-radius: 4px; border: 1px dashed #ddd;">No se encontraron comentarios registrados en la línea técnica de este ticket.</p>`;
             } else {
                 mensajesSnapshot.forEach((msgDoc) => {
                     const msgData = msgDoc.data();
                     const divMsg = document.createElement("div");
                     divMsg.className = "comentario-timeline-item";
                     
+                    // Sincronización de los campos nativos de la conversación de las vistas anteriores
                     const autor = msgData.remitenteNombre || msgData.remitente || 'Usuario';
                     const textoMensaje = msgData.texto || msgData.mensaje || '';
 
@@ -202,8 +207,8 @@ window.mostrarDesgloseActividad = async function(ticketId) {
                 });
             }
         } catch (err) {
-            console.error("Error al extraer subcolección de chats:", err);
-            chatContainer.innerHTML = `<p style="font-size: 12px; color: #dc4c64;">Error al cargar la línea de mensajes técnicos.</p>`;
+            console.error("Error al extraer subcolección de comentarios de chat:", err);
+            chatContainer.innerHTML = `<p style="font-size: 12px; color: #dc4c64;">Error al cargar la línea de mensajes técnicos de la base de datos.</p>`;
         }
     }
 
