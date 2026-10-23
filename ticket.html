@@ -82,9 +82,9 @@
             </div>
             
             <nav class="sidebar-nav">
-                <div class="nav-item" onclick="window.location.href='menu.html'">📊 Dashboard</div>
-                <div class="nav-item">🛡 SEGURIDAD</div>
-                <div class="nav-item" onclick="window.location.href='registro_equipo.html'">📊 INVENTARIO</div>
+                <div class="nav-item" id="dashboardMenuLink" onclick="window.location.href='menu.html'">📊 Dashboard</div>
+                <div class="nav-item" id="seguridadMenuLink">🛡 SEGURIDAD</div>
+                <div class="nav-item" id="inventarioMenuLink" onclick="window.location.href='registro_equipo.html'">📊 INVENTARIO</div>
                 
                 <div class="nav-section active">
                     <div class="section-title">🛠 MANTENIMIENTO</div>
@@ -95,7 +95,7 @@
                         <li><a href="registro_actividades.html" style="color:inherit; text-decoration:none;">• Registro de Actividades</a></li>
                     </ul>
                 </div>
-                <div class="nav-item">📊 REPORTES</div>
+                <div class="nav-item" id="reportesMenuLink">📊 REPORTES</div>
             </nav>
             <button class="btn-logout-sidebar" onclick="window.logout()">Cerrar Sesión</button>
         </aside>
@@ -245,8 +245,25 @@
     <script src="ticket.js"></script>
     
     <!-- Script de interfaz para el menú hamburguesa móvil si aplica -->
+    <!-- Script unificado: Interfaz móvil y control estricto de roles -->
     <script>
         window.addEventListener('DOMContentLoaded', () => {
+            // A. VALIDACIÓN DE PRIVILEGIOS Y OCULTAMIENTO DE MENÚS
+            const storedRole = localStorage.getItem("userRole");
+
+            if (storedRole === "Encargado") {
+                // Si es Encargado, ocultamos todas las opciones excepto levantar ticket
+                const menusAocultar = document.querySelectorAll('.sidebar-nav > .nav-item, #seguridadMenuLink, #inventarioMenuLink, #dashboardMenuLink, #reportesMenuLink');
+                menusAocultar.forEach(el => el.style.display = 'none');
+            } else if (storedRole === "Director") {
+                // Si es Director, ocultamos exclusivamente Seguridad e Inventario
+                const segMenu = document.getElementById("seguridadMenuLink"); 
+                const invMenu = document.getElementById("inventarioMenuLink");
+                if (segMenu) segMenu.style.display = "none";
+                if (invMenu) invMenu.style.display = "none";
+            }
+
+            // B. COMPORTAMIENTO DEL BOTÓN HAMBURGUESA MÓVIL
             const sidebar = document.querySelector('.sidebar');
             const navMenu = document.querySelector('.sidebar-nav');
 
@@ -263,5 +280,4 @@
             }
         });
     </script>
-</body>
-</html>
+

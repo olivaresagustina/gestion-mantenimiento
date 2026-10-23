@@ -24,7 +24,7 @@ const editDocId = document.getElementById('editDocId');
 // 3. Manejo y Control de la Ventana Modal
 document.getElementById('btnAbrirModal').addEventListener('click', () => {
     modalTitulo.innerText = "Agregar Área o Departamento";
-    editDocId.value = ""; // Limpiamos el ID de edición por si acaso
+    editDocId.value = ""; 
     modal.style.display = 'flex';
 });
 
@@ -43,9 +43,7 @@ window.addEventListener('click', (e) => {
     }
 });
 
-
-
-//cerrar la ventana con ESC
+// Cerrar la ventana con ESC
 window.addEventListener('keydown', function(e) {
     var modalAreas = document.getElementById('modalAreas');
     if (e.key === 'Escape' && modalAreas && modalAreas.style.display === 'flex') {
@@ -53,12 +51,9 @@ window.addEventListener('keydown', function(e) {
     }
 });
 
-
-
-
 // 4. Función de Registro y Edición unificada (Escritura / Actualización en Firestore)
 form.addEventListener('submit', async (e) => {
-    e.preventDefault(); // Evitamos que la página se recargue
+    e.preventDefault(); 
 
     const areaValue = document.getElementById('inputArea').value.trim();
     const deptoValue = document.getElementById('inputDepartamento').value.trim();
@@ -71,15 +66,14 @@ form.addEventListener('submit', async (e) => {
 
     try {
         if (idParaEditar) {
-            // SI HAY UN ID: Modo Edición (Actualizar registro existente)
+            // Modo Edición
             await db.collection("areas_departamentos").doc(idParaEditar).update({
                 area: areaValue,
                 departamento: deptoValue
-                // Mantenemos la fechaCreacion original intacta
             });
             alert("¡Operación realizada correctamente! El registro ha sido modificado.");
         } else {
-            // NO HAY ID: Modo Creación (Añadir nuevo registro)
+            // Modo Creación
             await db.collection("areas_departamentos").add({
                 area: areaValue,
                 departamento: deptoValue,
@@ -97,7 +91,6 @@ form.addEventListener('submit', async (e) => {
         alert("Error al procesar la operación en el servidor: " + error.message);
     }
 });
-
 // 5. Función de Lectura en Tiempo Real (onSnapshot)
 function cargarAreasYDepartamentos() {
     db.collection("areas_departamentos").orderBy("fechaCreacion", "asc").onSnapshot((snapshot) => {
@@ -111,7 +104,6 @@ function cargarAreasYDepartamentos() {
             const data = doc.data();
             const tr = document.createElement("tr");
 
-            // Pasamos los valores entre comillas simples escapadas a la función prepararEdicion
             tr.innerHTML = `
                 <td>${index++}</td>
                 <td>${data.area || ''}</td>
@@ -131,13 +123,12 @@ function cargarAreasYDepartamentos() {
 // 6. Nueva función para cargar los datos en el modal antes de editar
 window.prepararEdicion = function(id, area, departamento) {
     modalTitulo.innerText = "Modificar Área o Departamento";
-    editDocId.value = id; // Guardamos el ID del documento en el input invisible
+    editDocId.value = id; 
     
-    // Inyectamos los textos actuales en los inputs
     document.getElementById('inputArea').value = area;
     document.getElementById('inputDepartamento').value = departamento;
     
-    modal.style.display = 'flex'; // Desplegamos el modal flotante
+    modal.style.display = 'flex'; 
 };
 
 // 7. Función para dar de Baja (Eliminación en Firestore)
@@ -153,31 +144,47 @@ window.eliminarRegistro = function(id) {
     }
 };
 
-// Carga automática inicial de la tabla
-window.addEventListener('DOMContentLoaded', cargarAreasYDepartamentos);
-
-
-
-  // --- CÓDIGO CORREGIDO: INICIALIZACIÓN DE DATOS Y FUNCIÓN LOGOUT ---
-  window.addEventListener('DOMContentLoaded', () => {
-    // CORRECCIÓN: El elemento en este HTML tiene la clase 'user-email-text'
-    const emailDisplay = document.querySelector(".user-email-text");
-    if (emailDisplay) {
-        const storedEmail = localStorage.getItem("userEmail");
-        if (storedEmail) {
-            emailDisplay.innerText = storedEmail;
-        }
-    }
-});
-
-// FUNCIÓN LOGOUT CONECTADA A GOOGLE FIREBASE AUTH
+// 8. FUNCIÓN LOGOUT CONECTADA A GOOGLE FIREBASE AUTH
 window.logout = async () => {
     try {
-        const auth = firebase.auth(); // Instanciamos Auth localmente de forma segura
+        const auth = firebase.auth(); 
         await auth.signOut();
-        localStorage.clear(); // Limpiamos datos de sesión en el navegador
-        window.location.href = "index.html"; // Redirección al login
+        localStorage.clear(); 
+        window.location.href = "index.html"; 
     } catch (error) {
         alert("Error al cerrar sesión institucional: " + error.message);
     }
 }
+
+// 9. VERIFICADOR DE SESIÓN CON FILTRADO DE SEGURIDAD ABSOLUTO
+window.addEventListener('DOMContentLoaded', () => {
+    const emailDisplay = document.querySelector(".user-email-text");
+    const storedEmail = localStorage.getItem("userEmail");
+    const storedRole = localStorage.getItem("userRole");
+
+    // A. CONTROL DE ENTRADA EXTREMO
+    if (!storedEmail || !storedRole) {
+        alert("Acceso denegado. Por favor inicia sesión.");
+        window.location.href = "index.html";
+        return;
+    }
+
+    // B. EXPULSIÓN DE ROLES NO AUTORIZADOS (Dirección y Encargados)
+    if (storedRole === "Encargado") {
+        alert("Acceso denegado. No tienes permisos para administrar este catálogo.");
+        window.location.href = "ticket.html";
+        return;
+    } else if (storedRole === "Director") {
+        alert("Acceso denegado. Esta sección es exclusiva para el Administrador del sistema.");
+        window.location.href = "menu.html";
+        return;
+    }
+
+    // C. CONTINUAR CON LA CARGA SI ES ADMINISTRADOR
+    if (emailDisplay) {
+        emailDisplay.innerText = storedEmail;
+    }
+    
+    cargarAreasYDepartamentos();
+});
+

@@ -274,6 +274,7 @@ if (inputBuscarActividad) {
 
 
 
+
 // 6. Inicialización General del DOM al cargar la vista
 window.addEventListener('DOMContentLoaded', () => {
     const storedRole = localStorage.getItem("userRole");
@@ -316,3 +317,14 @@ window.addEventListener('DOMContentLoaded', () => {
         if (seccionInventario) seccionInventario.style.display = "none";
     }
 });
+
+// Cierre de Sesión Institucional Seguro
+window.logout = async () => {
+    try {
+        await auth.signOut();
+        localStorage.clear();
+        window.location.href = "index.html";
+    } catch (error) {
+        alert("Error al cerrar sesión: " + error.message);
+    }
+};

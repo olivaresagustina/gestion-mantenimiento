@@ -448,45 +448,64 @@ window.logout = async () => {
     }
 };
 
-// --- 12. INICIALIZADOR DE CARGA Y EVENTO DE BÚSQUEDA ---
+
+
+// --- 12. INICIALIZADOR DE CARGA Y EVENTO DE BÚSQUEDA CON SEGURIDAD POR ROLES ---
 window.addEventListener('DOMContentLoaded', () => {
     const emailDisplay = document.getElementById("userEmailDisplay");
     const storedEmail = localStorage.getItem("userEmail");
+    const storedRole = localStorage.getItem("userRole"); // Extraemos el rol guardado en el login
     const inputBuscar = document.getElementById("inputBuscar");
 
-    if (storedEmail) {
-        if (emailDisplay) emailDisplay.innerText = storedEmail;
-        
-        cargarTicketsDelUsuario(storedEmail);
-        cargarEquiposDelUsuarioLogueado(storedEmail);
-        
-        if (inputBuscar) {
-            inputBuscar.addEventListener("input", (e) => {
-                const textoBusqueda = e.target.value.toLowerCase().trim();
-                
-                if (textoBusqueda === "") {
-                    inyectarTicketsEnTabla(ticketsLocales);
-                    return;
-                }
-                
-                const ticketsFiltrados = ticketsLocales.filter((ticket) => {
-                    const tipo = (ticket.tipo || "").toLowerCase();
-                    const marca = (ticket.marca || "").toLowerCase();
-                    const modelo = (ticket.modelo || "").toLowerCase();
-                    const detalle = (ticket.detalle || "").toLowerCase();
-                    
-                    return tipo.includes(textoBusqueda) || 
-                           marca.includes(textoBusqueda) || 
-                           modelo.includes(textoBusqueda) || 
-                           detalle.includes(textoBusqueda);
-                });
-                
-                inyectarTicketsEnTabla(ticketsFiltrados);
-            });
-        }
-        
-    } else {
+    // A. CONTROL DE ACCESO ESTRICTO: Si no hay sesión iniciada, expulsa al login
+    if (!storedEmail || !storedRole) {
         alert("Acceso denegado. Por favor inicia sesión.");
         window.location.href = "index.html";
+        return;
+    }
+
+    // B. RESTRICCIONES DE INTERFAZ GRÁFICA (SIDEBAR) SEGÚN EL ROL DEL USUARIO
+    if (storedRole === "Encargado") {
+        // Si es Encargado, ocultamos de la barra lateral todas las secciones prohibidas
+        const menusAocultar = document.querySelectorAll('.sidebar-nav, #seguridadMenuLink, #inventarioMenuLink, #dashboardMenuLink, #reportesMenuLink');
+        menusAocultar.forEach(el => el.style.display = 'none');
+    } else if (storedRole === "Director") {
+        // Si es Director, puede ver Dashboard y Reportes, pero le ocultamos Seguridad e Inventario
+        const segMenu = document.getElementById("seguridadMenuLink"); 
+        const invMenu = document.getElementById("inventarioMenuLink");
+        if (segMenu) segMenu.style.display = "none";
+        if (invMenu) invMenu.style.display = "none";
+    }
+
+    // C. CONTINUAR CON LA CARGA INTEGRAL DE LA PÁGINA
+    if (emailDisplay) emailDisplay.innerText = storedEmail;
+    
+    cargarTicketsDelUsuario(storedEmail);
+    cargarEquiposDelUsuarioLogueado(storedEmail);
+    
+    // D. MOTOR DE BÚSQUEDA EXISTENTE (SE QUEDA IGUAL)
+    if (inputBuscar) {
+        inputBuscar.addEventListener("input", (e) => {
+            const textoBusqueda = e.target.value.toLowerCase().trim();
+            
+            if (textoBusqueda === "") {
+                inyectarTicketsEnTabla(ticketsLocales);
+                return;
+            }
+            
+            const ticketsFiltrados = ticketsLocales.filter((ticket) => {
+                const tipo = (ticket.tipo || "").toLowerCase();
+                const marca = (ticket.marca || "").toLowerCase();
+                const modelo = (ticket.modelo || "").toLowerCase();
+                const detalle = (ticket.detalle || "").toLowerCase();
+                
+                return tipo.includes(textoBusqueda) || 
+                       marca.includes(textoBusqueda) || 
+                       modelo.includes(textoBusqueda) || 
+                       detalle.includes(textoBusqueda);
+            });
+            
+            inyectarTicketsEnTabla(ticketsFiltrados);
+        });
     }
 });

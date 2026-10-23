@@ -1,7 +1,7 @@
 // Asegúrate de que las credenciales oficiales estén inicializadas
 const firebaseConfig = {
     apiKey: "AIzaSyDDcGT88IspX4-_TOKtQcdeo-93favOuoY",
-    authDomain: "://firebaseapp.com",
+    authDomain: "gestion-mantenimiento-ap-20f51.firebaseapp.com", //  CORREGIDO
     projectId: "gestion-mantenimiento-ap-20f51",
     storageBucket: "gestion-mantenimiento-ap-20f51.firebasestorage.app",
     messagingSenderId: "792321276987",
@@ -55,10 +55,10 @@ window.login = async () => {
         // 4. REDIRECCIÓN EN BASE A PRIVILEGIOS EXACTOS
         if (rolUsuario === "Encargado") {
             alert("Acceso correcto. Redirigiendo a tu Almacén de Tickets...");
-            window.location.href = "ticket.html"; // Va directo a levantar ticket
+            window.location.href = "ticket.html"; 
         } else if (rolUsuario === "Director" || rolUsuario === "Administrador") {
             alert(`Acceso correcto como: ${rolUsuario}. Redirigiendo al Menú Principal...`);
-            window.location.href = "menu.html"; // Van al Dashboard general
+            window.location.href = "menu.html"; 
         }
 
     } catch (error) {

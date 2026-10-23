@@ -18,6 +18,7 @@ const auth = firebase.auth();
 const panelDetalles = document.getElementById('panelGestionInSitu');
 const formPanel = document.getElementById('formPanelPeticion');
 let registrosGlobales = [];
+let esUsuarioAdministrador = false; // Control de privilegios
 
 const ocultarYLimpiarPanel = () => {
     panelDetalles.style.display = 'none';
@@ -42,7 +43,6 @@ function cargarTecnicosAdministradores() {
     const selectTecnico = document.getElementById("panelTecnico");
     if (!selectTecnico) return;
 
-    // Buscamos en tu colección de usuarios aquellos cuyo rol sea "Administrador"
     db.collection("usuarios_encargados")
       .where("rol", "==", "Administrador")
       .get()
@@ -109,7 +109,7 @@ function cargarPeticionesGlobales() {
             const ticketId = docTicket.id;
             const correoKey = (ticketData.usuarioEmail || "").trim().toLowerCase();
 
-            const infoEncargado = mapaEncargados[correoKey] || { nombre: "Desconocido", department: "No Asignado" };
+            const infoEncargado = mapaEncargados[correoKey] || { nombre: "Desconocido", departamento: "General" };
             const gestionPrevia = mapaPeticiones[ticketId] || {};
 
             registrosGlobales.push({
@@ -140,6 +140,7 @@ function cargarPeticionesGlobales() {
         }
     });
 }
+
 // --- 4. CONSTRUCCIÓN DE FILAS CON ENLACE DE DATOS ---
 function inyectarPeticionesEnTabla(listaRegistros) {
     const tbody = document.getElementById("tablaPeticionesCuerpo");
@@ -175,7 +176,6 @@ function inyectarPeticionesEnTabla(listaRegistros) {
         tbody.appendChild(tr);
     });
 }
-
 // --- 5. TRANSFERENCIA DE DATOS Y RENDERIZADO DEL STATUS EN EL PANEL ---
 function mostrarPanelModificaciones(registro) {
     document.getElementById('panelTicketDocId').value = registro.ticketId;
@@ -187,25 +187,42 @@ function mostrarPanelModificaciones(registro) {
     document.getElementById('panelTipoMantenimiento').value = registro.tipoMantenimiento || "";
     document.getElementById('panelTiempo').value = registro.tiempoEstimado || "";
     
-    // Asignación de la fecha original sin alteración (Se queda bloqueada por el HTML)
     document.getElementById('panelFechaEntrada').value = registro.fechaEntrada !== "S/F" ? registro.fechaEntrada : "";
     document.getElementById('panelFechaSalida').value = registro.fechaSalida || "";
 
-    // REQUERIMIENTO CUMPLIDO: Sincroniza el selector deslizable con el status real del documento
     const selectorStatus = document.getElementById('panelStatusTicket');
     if (selectorStatus) {
         selectorStatus.value = registro.status || "Abierto";
     }
+
+    // APLICACIÓN DE SEGURIDAD EN EL PANEL FLOTANTE
+    // Si NO es Administrador (es decir, es Director), se bloquean todos los inputs y el botón de enviar
+    const inputsFormulario = formPanel.querySelectorAll('select, input:not([type="hidden"]), button[type="submit"]');
+    inputsFormulario.forEach(input => {
+        if (!esUsuarioAdministrador) {
+            input.setAttribute('disabled', 'true');
+            input.style.cursor = 'not-allowed';
+            if(input.tagName === 'BUTTON') input.style.opacity = '0.5';
+        } else {
+            input.removeAttribute('disabled');
+            input.style.cursor = 'pointer';
+            if(input.tagName === 'BUTTON') input.style.opacity = '1';
+        }
+    });
 
     panelDetalles.style.display = 'block';
     panelDetalles.scrollIntoView({ behavior: 'smooth' });
 }
 
 // --- 6. GUARDAR Y ACTUALIZAR EN LA COLECCIÓN 'TICKETS' EXISTENTE ---
-
-// --- 6. GUARDAR Y ACTUALIZAR EN LA COLECCIÓN 'TICKETS' EXISTENTE ---
 formPanel.addEventListener('submit', async (e) => {
     e.preventDefault();
+
+    // Doble validación por código para evitar inyecciones por consola
+    if (!esUsuarioAdministrador) {
+        alert("Error de privilegios: Tu rol de Director no permite modificar peticiones.");
+        return;
+    }
 
     const ticketId = document.getElementById('panelTicketDocId').value;
     const tecnico = document.getElementById('panelTecnico').value;
@@ -220,7 +237,6 @@ formPanel.addEventListener('submit', async (e) => {
     }
 
     try {
-        // Estructura base de los datos que se van a actualizar
         const datosActualizados = {
             tecnicoAsignado: tecnico,
             tipoMantenimiento: tipoMantenimiento,
@@ -231,12 +247,10 @@ formPanel.addEventListener('submit', async (e) => {
             gestionadoPorEmail: localStorage.getItem("userEmail")
         };
 
-        // REQUERIMIENTO CUMPLIDO: Si el administrador selecciona "Cerrado", se captura la estampa de tiempo real con la hora del servidor
         if (nuevoStatus === "Cerrado" || nuevoStatus === "CERRADO") {
             datosActualizados.fechaCierreReal = firebase.firestore.FieldValue.serverTimestamp();
         }
 
-        // Se envía el objeto unificado a Firebase Firestore
         await db.collection("tickets").doc(ticketId).update(datosActualizados);
 
         alert("¡Operación realizada correctamente! El ticket ha sido gestionado y actualizado en la base de datos.");
@@ -247,10 +261,6 @@ formPanel.addEventListener('submit', async (e) => {
         alert("Error al procesar la operación en el servidor: " + error.message);
     }
 });
-
-
-
-
 
 // --- 7. BUSCADOR MULTICAMPO EN TIEMPO REAL ---
 const inputBuscar = document.getElementById("inputBuscarPeticion");
@@ -289,17 +299,37 @@ window.logout = async () => {
 window.addEventListener('DOMContentLoaded', () => {
     const emailDisplay = document.getElementById("userEmailDisplay");
     const storedEmail = localStorage.getItem("userEmail");
+    const storedRole = localStorage.getItem("userRole");
 
-    if (storedEmail) {
-        if (emailDisplay) emailDisplay.innerText = storedEmail;
-        
-        // Ejecuta el motor reactivo de cruce de datos global
-        cargarPeticionesGlobales();
-        
-        // REQUERIMIENTO CUMPLIDO: Carga los administradores de la BD en el selector de técnicos
-        cargarTecnicosAdministradores();
-    } else {
+    // A. CONTROL ESTRICTO DE ACCESO
+    if (!storedEmail || !storedRole) {
         alert("Acceso denegado. Por favor inicia sesión.");
         window.location.href = "index.html";
+        return;
     }
+
+    if (storedRole === "Encargado") {
+        alert("No tienes permisos para acceder a la Bandeja de Gestión.");
+        window.location.href = "ticket.html";
+        return;
+    }
+
+    // B. CONFIGURAR COMPORTAMIENTO SI ES ADMIN O DIRECTOR
+    if (storedRole === "Administrador") {
+        esUsuarioAdministrador = true;
+    } else if (storedRole === "Director") {
+        esUsuarioAdministrador = false; 
+        console.log("Modo de vista de solo lectura configurado para Dirección.");
+        
+        // Ocultamos las pestañas que el director no debe ver en su barra lateral
+        const segMenu = document.getElementById("seguridadMenuLink"); 
+        const invMenu = document.getElementById("inventarioMenuLink");
+        if (segMenu) segMenu.style.display = "none";
+        if (invMenu) invMenu.style.display = "none";
+    }
+
+    // C. INICIALIZAR RENDERIZADO
+    if (emailDisplay) emailDisplay.innerText = storedEmail;
+    cargarPeticionesGlobales();
+    cargarTecnicosAdministradores();
 });

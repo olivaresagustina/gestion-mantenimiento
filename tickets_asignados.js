@@ -24,7 +24,7 @@ let registrosAsignados = []; // Caché local para optimizar el buscador
 let desuscribirChatListener = null; // Guardado del listener activo para evitar fugas de memoria
 let esUsuarioAdministrador = false; // Variable de control de privilegios del frontend
 
-// --- 2. GESTIÓN Y LIMPIEZA DEL PANEL DE CHAT ---
+// --- 2. GESTIÓN AND LIMPIEZA DEL PANEL DE CHAT ---
 const cerrarPanelChat = () => {
     panelChat.style.display = 'none';
     formChat.reset();
@@ -150,7 +150,7 @@ function inyectarTicketsEnTabla(listaRegistros) {
             `;
         }
 
-        // REQUERIMIENTO COMPLETADO: El atributo 'disabled' se inyecta dinámicamente si NO es Administrador
+        // Como solo el Administrador puede estar aquí, el atributo disabled no se activa
         const atributoDisabled = esUsuarioAdministrador ? "" : "disabled";
 
         tr.innerHTML = `
@@ -165,7 +165,7 @@ function inyectarTicketsEnTabla(listaRegistros) {
             <td>${reg.fechaSalida}</td>
             <td>
                 <div style="display: flex; align-items: center; gap: 4px;">
-                    <select class="select-status-celda" data-id="${reg.ticketId}" ${atributoDisabled} style="padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 11px; background-color: #b8904c; color: white; border: none; cursor: ${esUsuarioAdministrador ? 'pointer' : 'not-allowed'}; outline: none;">
+                    <select class="select-status-celda" data-id="${reg.ticketId}" ${atributoDisabled} style="padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 11px; background-color: #b8904c; color: white; border: none; cursor: pointer; outline: none;">
                         <option value="Abierto" ${reg.status === 'Abierto' ? 'selected' : ''}>ABIERTO</option>
                         <option value="Asignado" ${reg.status === 'Asignado' ? 'selected' : ''}>ASIGNADO</option>
                         <option value="Cerrado" ${reg.status === 'Cerrado' ? 'selected' : ''}>CERRADO</option>
@@ -178,41 +178,31 @@ function inyectarTicketsEnTabla(listaRegistros) {
         const selector = tr.querySelector('.select-status-celda');
         selector.addEventListener('click', (e) => e.stopPropagation());
 
-        // Evento de actualización (Solo se activará si el Administrador interactúa)CORREGIDO.......................
+        selector.addEventListener('change', async (e) => {
+            const ticketIdId = e.target.getAttribute('data-id');
+            const nuevoEstado = e.target.value;
 
-      
-                selector.addEventListener('change', async (e) => {
-                    const ticketIdId = e.target.getAttribute('data-id');
-                    const nuevoEstado = e.target.value;
-        
-                    try {
-                        // Objeto base con la actualización de estatus y estampa de última gestión
-                        const camposActualizados = {
-                            status: nuevoEstado,
-                            fechaUltimoCambioStatus: firebase.firestore.FieldValue.serverTimestamp()
-                        };
-        
-                        // REQUERIMIENTO CUMPLIDO: Si el técnico cierra desde aquí, también capturamos fecha y hora exacta del servidor
-                        if (nuevoEstado === "Cerrado" || nuevoEstado === "CERRADO") {
-                            camposActualizados.fechaCierreReal = firebase.firestore.FieldValue.serverTimestamp();
-                        }
-        
-                        // Actualizamos el documento unificado en Cloud Firestore
-                        await db.collection("tickets").doc(ticketIdId).update(camposActualizados);
-                        
-                        alert(`¡Status del ticket actualizado correctamente a: ${nuevoEstado}!`);
-                    } catch (error) {
-                        console.error("Error al actualizar el status desde la celda:", error);
-                        alert("No se pudo actualizar el estado: " + error.message);
-                    }
-                });
-        
+            try {
+                const camposActualizados = {
+                    status: nuevoEstado,
+                    fechaUltimoCambioStatus: firebase.firestore.FieldValue.serverTimestamp()
+                };
 
+                if (nuevoEstado === "Cerrado" || nuevoEstado === "CERRADO") {
+                    camposActualizados.fechaCierreReal = firebase.firestore.FieldValue.serverTimestamp();
+                }
+
+                await db.collection("tickets").doc(ticketIdId).update(camposActualizados);
+                alert(`¡Status del ticket actualizado correctamente a: ${nuevoEstado}!`);
+            } catch (error) {
+                console.error("Error al actualizar el status desde la celda:", error);
+                alert("No se pudo actualizar el estado: " + error.message);
+            }
+        });
 
         tr.addEventListener('click', () => {
             document.querySelectorAll('#tablaAsignadosCuerpo tr').forEach(row => row.classList.remove('fila-seleccionada'));
             tr.classList.add('fila-seleccionada');
-            
             activarSalaChatInterna(reg);
         });
 
@@ -340,32 +330,28 @@ window.logout = async () => {
 window.addEventListener('DOMContentLoaded', () => {
     const emailDisplay = document.getElementById("userEmailDisplay");
     const storedEmail = localStorage.getItem("userEmail");
+    const storedRole = localStorage.getItem("userRole");
 
-    if (storedEmail) {
-        if (emailDisplay) emailDisplay.innerText = storedEmail;
-
-        // Comprobamos el rol de la cuenta en la colección de encargados antes de pintar la tabla
-        db.collection("usuarios_encargados")
-          .where("usuarioEmail", "==", storedEmail.trim())
-          .get()
-          .then((snapshot) => {
-              if (!snapshot.empty) {
-                  snapshot.forEach((doc) => {
-                      if (doc.data().rol === "Administrador") {
-                          esUsuarioAdministrador = true;
-                      }
-                  });
-              }
-              // Lanzamos la descarga global con los privilegios ya configurados en memoria
-              cargarTicketsAsignadosGlobales();
-          })
-          .catch((error) => {
-              console.error("Error al validar rol del usuario:", error);
-              cargarTicketsAsignadosGlobales();
-          });
-
-    } else {
+    // FILTRO DE ENTRADA EXTREMO: Si no ha iniciado sesión, expulsar
+    if (!storedEmail || !storedRole) {
         alert("Acceso denegado. Por favor inicia sesión.");
         window.location.href = "index.html";
+        return;
     }
+
+    // EXPULSIÓN DE ROLES NO PERMITIDOS (Encargado y Director)
+    if (storedRole === "Encargado") {
+        alert("Acceso denegado. No tienes permisos para ingresar a este módulo.");
+        window.location.href = "ticket.html";
+        return;
+    } else if (storedRole === "Director") {
+        alert("Acceso denegado. Esta sección es de uso exclusivo para el Administrador de soporte.");
+        window.location.href = "menu.html"; // El Director se regresa a su menú permitido (Dashboard)
+        return;
+    }
+
+    // SI LLEGA AQUÍ, ES ADMINISTRADOR
+    esUsuarioAdministrador = true;
+    if (emailDisplay) emailDisplay.innerText = storedEmail;
+    cargarTicketsAsignadosGlobales();
 });

@@ -135,9 +135,9 @@
                 </a>
             </div>
             <nav class="sidebar-nav">
-                <div class="nav-item" onclick="window.location.href='menu.html'">📊 Dashboard</div>
-                <div class="nav-item">🛡 SEGURIDAD</div>
-                <div class="nav-item" onclick="window.location.href='registro_equipo.html'">📊 INVENTARIO</div>
+                <div class="nav-item" id="dashboardMenuLink" onclick="window.location.href='menu.html'">📊 Dashboard</div>
+                <div class="nav-item" id="seguridadMenuLink">🛡 SEGURIDAD</div>
+                <div class="nav-item" id="inventarioMenuLink" onclick="window.location.href='registro_equipo.html'">📊 INVENTARIO</div>
                 <div class="nav-section active">
                     <div class="section-title">🛠 MANTENIMIENTO</div>
                     <ul class="sub-menu">
@@ -149,7 +149,7 @@
                         <li onclick="window.location.href='registro_actividades.html'">• Registro de Actividades</li>
                     </ul>
                 </div>
-                <div class="nav-item">📊 REPORTES</div>
+                <div class="nav-item" id="reportesMenuLink">📊 REPORTES</div>
             </nav>
             <button class="btn-logout-sidebar" onclick="window.logout()">Cerrar Sesión</button>
         </aside>
@@ -231,6 +231,46 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>   
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+   
     <script src="tickets_asignados.js"></script>
+
+    <!-- Script unificado: Interfaz móvil y control estricto de roles -->
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            // A. VALIDACIÓN DE PRIVILEGIOS Y OCULTAMIENTO DE MENÚS
+            const storedRole = localStorage.getItem("userRole");
+
+            if (storedRole === "Encargado") {
+                // Un encargado tiene prohibido estar aquí; lo regresamos a su pantalla permitida
+                alert("Acceso denegado. No tienes permisos para visualizar esta bandeja de asignación.");
+                window.location.href = "ticket.html";
+                return;
+            } else if (storedRole === "Director") {
+                // Si es Director, ocultamos exclusivamente Seguridad e Inventario en su barra lateral
+                const segMenu = document.getElementById("seguridadMenuLink"); 
+                const invMenu = document.getElementById("inventarioMenuLink");
+                if (segMenu) segMenu.style.display = "none";
+                if (invMenu) invMenu.style.display = "none";
+                console.log("Modo de vista supervisada activa para Dirección.");
+            }
+
+            // B. COMPORTAMIENTO DEL BOTÓN HAMBURGUESA MÓVIL
+            const sidebar = document.querySelector('.sidebar');
+            const navMenu = document.querySelector('.sidebar-nav');
+
+            if (sidebar && navMenu && window.innerWidth <= 768) {
+                const botonHamburguesa = document.createElement('button');
+                botonHamburguesa.className = 'toggle-menu-movil';
+                botonHamburguesa.innerHTML = '☰';
+                sidebar.appendChild(botonHamburguesa);
+
+                botonHamburguesa.addEventListener('click', () => {
+                    navMenu.classList.toggle('menu-activo');
+                    botonHamburguesa.innerHTML = navMenu.classList.contains('menu-activo') ? '✕' : '☰';
+                });
+            }
+        });
+    </script>
 </body>
+
 </html>

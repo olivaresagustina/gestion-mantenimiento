@@ -275,6 +275,54 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
 
+
+// Validación de Seguridad y Roles para menu.html 
+// "ESTO ES LO QUE AÑEXAMOS PARA VALIDAR OS USUARIOS DE ACUERDO A SU ROL Y ACCESSO A LA INFORMACON"
+window.addEventListener('DOMContentLoaded', () => {
+    const storedRole = localStorage.getItem("userRole");
+    const storedEmail = localStorage.getItem("userEmail");
+
+    // 1. Protección estricta: Si no ha iniciado sesión, se va al login
+    if (!storedEmail || !storedRole) {
+        alert("Acceso denegado. Por favor inicia sesión.");
+        window.location.href = "index.html";
+        return;
+    }
+
+    // 2. REGLA ESTRICTA PARA EL ROL: ENCARGADO
+    if (storedRole === "Encargado") {
+        // Un encargado jamás debe ver el menú Dashboard; lo redirigimos a su vista de tickets
+        alert("No tienes permisos para acceder al Dashboard General.");
+        window.location.href = "ticket.html";
+        return;
+    }
+
+    // 3. REGLA ESTRICTA PARA EL ROL: DIRECTOR
+    if (storedRole === "Director") {
+        console.log("Acceso concedido como Director. Aplicando restricciones visuales...");
+        
+        // El Director PUEDE ver el Dashboard y Reportes, pero NO Seguridad ni Inventario.
+        // Buscamos los bloques de navegación utilizando los textos exactos de tu menú
+        const seccionesMenu = document.querySelectorAll(".nav-section, .sidebar-nav li, div");
+
+        seccionesMenu.forEach(elemento => {
+            const texto = elemento.textContent.trim().toUpperCase();
+            
+            // Si el elemento contiene los títulos prohibidos, lo ocultamos por completo
+            if (texto.includes("SEGURIDAD") || texto.includes("INVENTARIO")) {
+                elemento.style.display = "none";
+            }
+        });
+    }
+    
+    // Si el rol es Administrador, el código no hace nada y le permite ver el 100% de la página.
+});
+
+
+
+
+
+
     </script>      
 </body>
 </html>

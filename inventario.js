@@ -379,21 +379,50 @@ if (elDepto) {
 }
 
 // 9. Inicialización de Sesión e Inyección Automática al Cargar la Página
+// Script de protección de UI - Ejecutar en el DOMContentLoaded de cada vista  "CORREGIDO"
 window.addEventListener('DOMContentLoaded', () => {
-    const emailDisplay = document.getElementById("userEmailDisplay");
-    const storedEmail = localStorage.getItem("userEmail");
+    const storedRole = localStorage.getItem("userRole");
+    const paginaActual = window.location.pathname.split("/").pop();
 
-    if (storedEmail) {
-        if (emailDisplay) emailDisplay.innerText = storedEmail;
-        
-        // Ejecución de lectores base
-        cargarInventarioEquipos();
-        cargarTodasLasAreas();
-    } else {
-        alert("Acceso denegado. Por favor inicia sesión.");
+    if (!storedRole) {
+        alert("Acceso denegado. Por favor inicia sesión de forma correcta.");
         window.location.href = "index.html";
+        return;
+    }
+
+    // REGLAS ESTRICTAS PARA EL ROL: ENCARGADO
+    if (storedRole === "Encargado") {
+        // Si intenta meterse a cualquier página que no sea la suya, lo rebota
+        if (paginaActual !== "ticket.html") {
+            alert("No tienes permisos de Administrador para acceder a esta sección.");
+            window.location.href = "ticket.html";
+            return;
+        }
+        
+        // Ocultar de la interfaz visual los menús del Sidebar lateral (Filtro estético)
+        const menusAocultar = document.querySelectorAll('.sidebar-nav, #btnSeguridad, #btnInventario, #btnDashboard, #btnReportes');
+        menusAocultar.forEach(el => el.style.display = 'none');
+    }
+
+    // REGLAS ESTRICTAS PARA EL ROL: DIRECTOR
+    if (storedRole === "Director") {
+        // El director no puede ver Seguridad (Áreas) ni Inventarios de Equipos
+        if (paginaActual === "areas.html" || paginaActual === "inventario.html") {
+            alert("Acceso restringido. Esta sección es exclusiva para el Administrador.");
+            window.location.href = "menu.html";
+            return;
+        }
+        
+        // Ocultar estéticamente los botones prohibidos en su barra lateral
+        // Suponiendo que tus elementos HTML usen identificadores legibles o clases
+        const seccionSeguridad = document.getElementById("seguridadMenuLink"); 
+        const seccionInventario = document.getElementById("inventarioMenuLink");
+        if (seccionSeguridad) seccionSeguridad.style.display = "none";
+        if (seccionInventario) seccionInventario.style.display = "none";
     }
 });
+
+
 
 // 10. Control del botón del Formulario e Invocación de Cierre Segura
 const btnGuardar = document.getElementById("btnGuardarEquipo");
