@@ -272,23 +272,47 @@ if (inputBuscarActividad) {
     });
 }
 
+
+
 // 6. Inicialización General del DOM al cargar la vista
 window.addEventListener('DOMContentLoaded', () => {
-    const emailDisplay = document.querySelector(".user-email-text");
-    if (emailDisplay) {
-        const storedEmail = localStorage.getItem("userEmail");
-        if (storedEmail) emailDisplay.innerText = storedEmail;
-    }
-    escucharActividadesMantenimiento();
-});
+    const storedRole = localStorage.getItem("userRole");
+    const paginaActual = window.location.pathname.split("/").pop();
 
-// Cierre de Sesión Institucional Seguro
-window.logout = async () => {
-    try {
-        await auth.signOut();
-        localStorage.clear();
+    if (!storedRole) {
+        alert("Acceso denegado. Por favor inicia sesión de forma correcta.");
         window.location.href = "index.html";
-    } catch (error) {
-        alert("Error al cerrar sesión: " + error.message);
+        return;
     }
-};
+
+    // REGLAS ESTRICTAS PARA EL ROL: ENCARGADO
+    if (storedRole === "Encargado") {
+        // Si intenta meterse a cualquier página que no sea la suya, lo rebota
+        if (paginaActual !== "ticket.html") {
+            alert("No tienes permisos de Administrador para acceder a esta sección.");
+            window.location.href = "ticket.html";
+            return;
+        }
+        
+        // Ocultar de la interfaz visual los menús del Sidebar lateral (Filtro estético)
+        const menusAocultar = document.querySelectorAll('.sidebar-nav, #btnSeguridad, #btnInventario, #btnDashboard, #btnReportes');
+        menusAocultar.forEach(el => el.style.display = 'none');
+    }
+
+    // REGLAS ESTRICTAS PARA EL ROL: DIRECTOR
+    if (storedRole === "Director") {
+        // El director no puede ver Seguridad (Áreas) ni Inventarios de Equipos
+        if (paginaActual === "areas.html" || paginaActual === "inventario.html") {
+            alert("Acceso restringido. Esta sección es exclusiva para el Administrador.");
+            window.location.href = "menu.html";
+            return;
+        }
+        
+        // Ocultar estéticamente los botones prohibidos en su barra lateral
+        // Suponiendo que tus elementos HTML usen identificadores legibles o clases
+        const seccionSeguridad = document.getElementById("seguridadMenuLink"); 
+        const seccionInventario = document.getElementById("inventarioMenuLink");
+        if (seccionSeguridad) seccionSeguridad.style.display = "none";
+        if (seccionInventario) seccionInventario.style.display = "none";
+    }
+});
