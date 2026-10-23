@@ -6,11 +6,14 @@
     <title>Iniciar Sesión - H. Ayuntamiento de Calnali</title>
     <link rel="stylesheet" href="styles.css">
 
-    <!-- LIBRERÍAS OFICIALES DE GOOGLE FIREBASE -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <!-- LIBRERÍAS OFICIALES DE GOOGLE FIREBASE (ORDEN ESTRICTO OBLIGATORIO) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
-    <!-- Tu tercera línea armada manualmente de firestore va aquí abajo si la vas a usar -->
+ 
+
+
 </head>
 <body>
     <div class="main-container">
@@ -19,7 +22,6 @@
             <!-- PANEL IZQUIERDO: Formulario -->
             <div class="left-panel">
                 <div class="header-logo">
-                    <!-- Puedes cambiar 'logo.png' por la ruta real de tu imagen del escudo de Calnali -->
                     <img src="logo.png" alt="Juntos Rescatando Calnali" class="logo-img">
                     <div class="logo-text">
                         <span class="logo-top">JUNTOS RESCATANDO</span>
@@ -30,15 +32,15 @@
                 <h2>Iniciar Sesión</h2>
                 <p class="subtitle">Use su correo y contraseña</p>
 
-                <form id="loginForm">
+                <form id="loginForm" onsubmit="event.preventDefault();"> <!--  OPTIMIZACIÓN: Evita recargas erróneas -->
                     <div class="input-group">
                         <span class="input-icon">✉</span>
-                        <input type="email" id="email" required placeholder="Email">
+                        <input type="email" id="email" required placeholder="Email" autocomplete="username">
                     </div>
 
                     <div class="input-group">
                         <span class="input-icon">🔒</span>
-                        <input type="password" id="password" required placeholder="Password">
+                        <input type="password" id="password" required placeholder="Password" autocomplete="current-password">
                     </div>
 
                     <a href="#" class="forgot-password">¿Olvidaste tu contraseña?</a>
@@ -51,19 +53,18 @@
                 </footer>
             </div>
 
-            <!-- PANEL DERECHO: Bienvenida Institucional -->
+            <!-- PANEL DERECHO: Bienvenida Institucional Limpia -->
             <div class="right-panel">
                 <div class="welcome-content">
                     <h1>¡Bienvenido!</h1>
-                    <p>Ingrese sus datos personales para usar todas las funciones del sitio</p>
-                    <a href="registro.html" class="btn-outline">Registrarse</a>
+                    <p>Sistema Interno de Gestión de Mantenimiento y Control Tecnológico Municipal.</p> <!--  CORREGIDO: Botón de registro eliminado -->
                 </div>
             </div>
 
         </div>
     </div>
 
-    <!-- Lógica de control -->
+    <!-- Lógica de control institucional -->
     <script src="auth.js"></script>
 </body>
 </html>
