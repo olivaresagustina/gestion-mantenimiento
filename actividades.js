@@ -2,7 +2,7 @@
 
 const firebaseConfig = {
     apiKey: "AIzaSyDDcGT88IspX4-_TOKtQcdeo-93favOuoY",
-    authDomain: "://firebaseapp.com",
+    authDomain: "gestion-mantenimiento-ap-20f51.firebaseapp.com",
     projectId: "gestion-mantenimiento-ap-20f51",
     storageBucket: "gestion-mantenimiento-ap-20f51.firebasestorage.app",
     messagingSenderId: "792321276987",
@@ -275,48 +275,38 @@ if (inputBuscarActividad) {
 
 
 
-// 6. Inicialización General del DOM al cargar la vista
+// --- 6. INICIALIZACIÓN GENERAL DEL DOM CON EXPULSIÓN DE ROLES INSTITUCIONALES ---
 window.addEventListener('DOMContentLoaded', () => {
-    const storedRole = localStorage.getItem("userRole");
-    const paginaActual = window.location.pathname.split("/").pop();
+    const emailDisplay = document.querySelector(".user-email-text");
+    const storedEmail = localStorage.getItem("userEmail");
+    const storedRole = localStorage.getItem("userRole"); // Capturamos el privilegio de la sesión
 
-    if (!storedRole) {
+    // A. CONTROL DE ACCESO CRÍTICO: Si no hay credenciales locales, rebota al login
+    if (!storedEmail || !storedRole) {
         alert("Acceso denegado. Por favor inicia sesión de forma correcta.");
         window.location.href = "index.html";
         return;
     }
 
-    // REGLAS ESTRICTAS PARA EL ROL: ENCARGADO
+    // B. FILTRO DE EXPULSIÓN ABSOLUTA (Encargados y Directores)
     if (storedRole === "Encargado") {
-        // Si intenta meterse a cualquier página que no sea la suya, lo rebota
-        if (paginaActual !== "ticket.html") {
-            alert("No tienes permisos de Administrador para acceder a esta sección.");
-            window.location.href = "ticket.html";
-            return;
-        }
-        
-        // Ocultar de la interfaz visual los menús del Sidebar lateral (Filtro estético)
-        const menusAocultar = document.querySelectorAll('.sidebar-nav, #btnSeguridad, #btnInventario, #btnDashboard, #btnReportes');
-        menusAocultar.forEach(el => el.style.display = 'none');
+        alert("Acceso denegado. No tienes los permisos requeridos para auditar la bitácora.");
+        window.location.href = "ticket.html"; // Su única página permitida
+        return;
+    } else if (storedRole === "Director") {
+        alert("Acceso denegado. Esta sección es exclusiva para el Administrador del sistema.");
+        window.location.href = "menu.html"; // Regresa a su Dashboard permitido
+        return;
     }
 
-    // REGLAS ESTRICTAS PARA EL ROL: DIRECTOR
-    if (storedRole === "Director") {
-        // El director no puede ver Seguridad (Áreas) ni Inventarios de Equipos
-        if (paginaActual === "areas.html" || paginaActual === "inventario.html") {
-            alert("Acceso restringido. Esta sección es exclusiva para el Administrador.");
-            window.location.href = "menu.html";
-            return;
-        }
-        
-        // Ocultar estéticamente los botones prohibidos en su barra lateral
-        // Suponiendo que tus elementos HTML usen identificadores legibles o clases
-        const seccionSeguridad = document.getElementById("seguridadMenuLink"); 
-        const seccionInventario = document.getElementById("inventarioMenuLink");
-        if (seccionSeguridad) seccionSeguridad.style.display = "none";
-        if (seccionInventario) seccionInventario.style.display = "none";
+    // C. CONTINUAR CON LA CARGA EXCLUSIVA PARA EL ADMINISTRADOR
+    if (emailDisplay) {
+        emailDisplay.innerText = storedEmail;
     }
+    
+    escucharActividadesMantenimiento();
 });
+
 
 // Cierre de Sesión Institucional Seguro
 window.logout = async () => {
