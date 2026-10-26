@@ -203,25 +203,16 @@ body {
     opacity: 0.9;
 }
 
-/* Botón Registrarse (Dorado/Transparente) */
-.btn-outline {
-    display: inline-block;
-    border: 2px solid #b8904c;
-    background: #b8904c;
-    color: #ffffff;
-    padding: 10px 35px;
-    border-radius: 8px;
+/* Botón Registrarse (Dorado/Transparente) "BOTON ELIMINADO"*/
+/*  AJUSTE MUNICIPAL: Estilo optimizado para el texto institucional de bienvenida */
+.welcome-content p {
     font-size: 14px;
-    font-weight: 600;
-    text-decoration: none;
-    transition: 0.3s;
+    line-height: 1.8;
+    margin-bottom: 0; /* Eliminamos el espacio inferior que dejaba el botón */
+    opacity: 0.85;
+    letter-spacing: 0.5px;
 }
 
-.btn-outline:hover {
-    background: transparent;
-    color: #b8904c;
-    transform: translateY(-2px);
-}
 
 /* Responsivo para celulares (Corregido a @media) */
 @media (max-width: 768px) {
