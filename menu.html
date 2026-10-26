@@ -23,9 +23,12 @@
                 </div>
             </div>
 
+
+
+
             <nav class="sidebar-nav">
                 <!-- Sección Dashboard por defecto activa -->
-                <div class="nav-section">
+                <div class="nav-section" id="menuDashboard">
                     <div class="section-title">📊 Dashboard</div>
                     <ul class="sub-menu">
                         <li class="active-sub">• Reporte del equipo</li>
@@ -33,41 +36,43 @@
                     </ul>
                 </div>
 
-                <!-- Módulos principales solicitados en tu tabla -->
-                <div class="nav-item">🛡️ SEGURIDAD</div>
+                <!-- Módulos principales con IDs de control -->
+                <div class="nav-item" id="menuSeguridad">🛡️ SEGURIDAD</div>
                 
-                <!-- Sección de Inventario Actualizada con tus 4 Opciones -->
-          
-<div class="nav-section" id="sectionInventario">
-    <div class="section-title" id="btnInventario" style="cursor: pointer;">📦 INVENTARIO</div>
-    <ul class="sub-menu" id="subMenuInventario" style="display: none;">
-        <li><a href="registro_equipo.html" style="color: inherit; text-decoration: none;">• Registro del equipo de cómputo</a></li>
-        <li><a href="registro_usuarios.html" style="color: inherit; text-decoration: none;">• Registro de Usuarios encargados</a></li>
-        <li><a href="registro_areas.html" style="color:inherit; text-decoration:none;">• Registro de Áreas y Departamentos</a></li>
-    </ul>
-</div>
+                <!-- Sección de Inventario -->
+                <div class="nav-section" id="sectionInventario">
+                    <div class="section-title" id="btnInventario" style="cursor: pointer;">📦 INVENTARIO</div>
+                    <ul class="sub-menu" id="subMenuInventario" style="display: none;">
+                        <li><a href="registro_equipo.html" style="color: inherit; text-decoration: none;">• Registro del equipo de cómputo</a></li>
+                        <li><a href="registro_usuarios.html" style="color: inherit; text-decoration: none;">• Registro de Usuarios encargados</a></li>
+                        <li><a href="registro_areas.html" style="color:inherit; text-decoration:none;">• Registro de Áreas y Departamentos</a></li>
+                    </ul>
+                </div>
              
+                <!-- Sección de Mantenimiento -->
+                <div class="nav-section" id="sectionMantenimiento">
+                    <div class="section-title" id="btnMantenimiento" style="cursor: pointer;">🛠️ MANTENIMIENTO</div>
+                    <ul class="sub-menu" id="subMenuMantenimiento" style="display: none;">
+                        <li><a href="ticket.html" style="color: inherit; text-decoration: none;">• Levantar Ticket</a></li>
+                        <li><a href="peticiones.html" style="color: inherit; text-decoration: none;">• Bandeja de Entrada</a></li>
+                        <li><a href="tickets_asignados.html" style="color: inherit; text-decoration: none;">• Tickets Asignados</a></li>
+                        <li><a href="registro_actividades.html" style="color: inherit; text-decoration: none;">• Registro de Actividades</a></li>
+                    </ul>
+                </div>
 
-                <!-- Sección de Mantenimiento con Submenús Desplegables -->
-<div class="nav-section" id="sectionMantenimiento">
-    <div class="section-title" id="btnMantenimiento" style="cursor: pointer;">🛠️ MANTENIMIENTO</div>
-    <ul class="sub-menu" id="subMenuMantenimiento" style="display: none;">
-        <li><a href="ticket.html" style="color: inherit; text-decoration: none;">• Levantar Ticket</a></li>
-        <li><a href="peticiones.html" style="color: inherit; text-decoration: none;">• Bandeja de Entrada</a></li>
-        <li><a href="tickets_asignados.html" style="color: inherit; text-decoration: none;">• Tickets Asignados</a></li>
-        <li><a href="registro_actividades.html" style="color: inherit; text-decoration: none;">• Registro de Actividades</a></li>
-    </ul>
-</div>
-
-
-
-
-
-
-
-
-                <div class="nav-item">📊 REPORTES</div>
+                <div class="nav-item" id="menuReportes">📊 REPORTES</div>
             </nav>
+
+
+
+  
+
+
+
+
+
+
+
 
             <button class="btn-logout-sidebar" onclick="logout()">Cerrar Sesión</button>
         </aside>
@@ -183,147 +188,130 @@
         </main>
     </div>
 
+
+
+
+
     <!-- 1. Enlazamos tu lógica JavaScript externa existente -->
     <script src="auth.js"></script>
     
-    <!-- 2. Lógica de control de clics para Inventario y Mantenimiento -->
+    <!-- 2. Lógica Unificada: Menús, Hamburguesa Móvil y Filtros Estrictos de Seguridad -->
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            // Elementos de Mantenimiento
+            // ==========================================
+            // A. VALIDACIÓN DE SESIÓN Y ROLES CRÍTICOS
+            // ==========================================
+            const storedRole = localStorage.getItem("userRole");
+            const storedEmail = localStorage.getItem("userEmail");
+            const emailDisplay = document.getElementById("userEmailDisplay");
+
+            // 1. Protección estricta: Si no ha iniciado sesión, expulsión inmediata
+            if (!storedEmail || !storedRole) {
+                alert("Acceso denegado. Por favor inicia sesión.");
+                window.location.href = "index.html";
+                return;
+            }
+
+            // Inyectamos el correo en la barra superior
+            if (emailDisplay) emailDisplay.innerText = storedEmail;
+
+            // 2. REGLA ESTRICTA: ENCARGADO
+            if (storedRole === "Encargado") {
+                // menu.html es el Dashboard General. El Encargado no tiene permiso aquí, lo mandamos a su pantalla.
+                alert("No tienes permisos para acceder al Dashboard General.\nRedirigiendo a tu Almacén de Tickets...");
+                window.location.href = "ticket.html";
+                return;
+            }
+
+            // 3. REGLA ESTRICTA: DIRECTOR
+            if (storedRole === "Director") {
+                console.log("Acceso concedido como Director. Removiendo Seguridad e Inventario...");
+                
+                // Removemos por completo del DOM los elementos prohibidos para evitar bypasses visuales
+                const moduloSeguridad = document.getElementById("menuSeguridad");
+                const moduloInventario = document.getElementById("sectionInventario");
+                
+                if (moduloSeguridad) moduloSeguridad.remove();
+                if (moduloInventario) moduloInventario.remove();
+            }
+
+            // 4. REGLA ESTRICTA: ADMINISTRADOR
+            if (storedRole === "Administrador") {
+                console.log("Acceso concedido como Administrador. Todo el menú desbloqueado.");
+                // No se aplica ningún filtro ni remoción, mantiene el 100% de la vista.
+            }
+
+            // ==========================================
+            // B. CONTROL DE MENÚS DESPLEGABLES (SUBMENÚS)
+            // ==========================================
             const btnMantenimiento = document.getElementById("btnMantenimiento");
             const subMenuMantenimiento = document.getElementById("subMenuMantenimiento");
             const sectionMantenimiento = document.getElementById("sectionMantenimiento");
 
-            // Elementos de Inventario
             const btnInventario = document.getElementById("btnInventario");
             const subMenuInventario = document.getElementById("subMenuInventario");
             const sectionInventario = document.getElementById("sectionInventario");
 
-            // --- CONTROL DE MANTENIMIENTO ---
-            btnMantenimiento.addEventListener("click", (e) => {
-                e.stopPropagation(); // Evita que este clic se detecte como un "clic fuera"
-                
-                // Opcional: Cierra inventario si está abierto al abrir mantenimiento
-                subMenuInventario.style.display = "none";
+            if (btnMantenimiento && subMenuMantenimiento) {
+                btnMantenimiento.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    if (subMenuInventario) subMenuInventario.style.display = "none";
+                    subMenuMantenimiento.style.display = (subMenuMantenimiento.style.display === "none" || subMenuMantenimiento.style.display === "") ? "block" : "none";
+                });
+            }
 
-                if (subMenuMantenimiento.style.display === "none" || subMenuMantenimiento.style.display === "") {
-                    subMenuMantenimiento.style.display = "block";
-                } else {
-                    subMenuMantenimiento.style.display = "none";
-                }
-            });
+            if (btnInventario && subMenuInventario) {
+                btnInventario.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    if (subMenuMantenimiento) subMenuMantenimiento.style.display = "none";
+                    subMenuInventario.style.display = (subMenuInventario.style.display === "none" || subMenuInventario.style.display === "") ? "block" : "none";
+                });
+            }
 
-            // --- CONTROL DE INVENTARIO ---
-            btnInventario.addEventListener("click", (e) => {
-                e.stopPropagation(); // Evita que este clic se detecte como un "clic fuera"
-                
-                // Opcional: Cierra mantenimiento si está abierto al abrir inventario
-                subMenuMantenimiento.style.display = "none";
-
-                if (subMenuInventario.style.display === "none" || subMenuInventario.style.display === "") {
-                    subMenuInventario.style.display = "block";
-                } else {
-                    subMenuInventario.style.display = "none";
-                }
-            });
-
-            // --- DETECTOR GLOBAL DE CLICS FUERA ---
+            // Detector global de clics fuera para cerrar los menús abiertos
             document.addEventListener("click", (e) => {
-                // Si el clic ocurre fuera de mantenimiento, lo oculta
-                if (!sectionMantenimiento.contains(e.target)) {
+                if (sectionMantenimiento && subMenuMantenimiento && !sectionMantenimiento.contains(e.target)) {
                     subMenuMantenimiento.style.display = "none";
                 }
-                // Si el clic ocurre fuera de inventario, lo oculta
-                if (!sectionInventario.contains(e.target)) {
+                if (sectionInventario && subMenuInventario && !sectionInventario.contains(e.target)) {
                     subMenuInventario.style.display = "none";
                 }
             });
-        });
 
+            // ==========================================
+            // C. INTERFAZ: BOTÓN HAMBURGUESA MOVIL RESPONSIVO
+            // ==========================================
+            const sidebar = document.querySelector('.sidebar');
+            const navMenu = document.querySelector('.sidebar-nav');
 
-// ==========================================================================
-// INTERFAZ DE USUARIO: Control Automatizado del Menú de Hamburguesa en Móvil
-// ==========================================================================
-window.addEventListener('DOMContentLoaded', () => {
-    const sidebar = document.querySelector('.sidebar');
-    const navMenu = document.querySelector('.sidebar-nav');
-
-    if (sidebar && navMenu && window.innerWidth <= 768) {
-        // 1. Creamos el botón dinámicamente con las tres líneas institucionales (☰)
-        const botonHamburguesa = document.createElement('button');
-        botonHamburguesa.className = 'toggle-menu-movil';
-        botonHamburguesa.innerHTML = '☰';
-        
-        // 2. Lo insertamos en la barra superior guinda
-        sidebar.appendChild(botonHamburguesa);
-
-        // 3. Evento click para abrir y cerrar el menú al tocar con el dedo
-        botonHamburguesa.addEventListener('click', () => {
-            navMenu.classList.toggle('menu-activo');
-            
-            // Cambia el icono estéticamente a una (X) si está abierto
-            if (navMenu.classList.contains('menu-activo')) {
-                botonHamburguesa.innerHTML = '✕';
-            } else {
+            if (sidebar && navMenu && window.innerWidth <= 768) {
+                const botonHamburguesa = document.createElement('button');
+                botonHamburguesa.className = 'toggle-menu-movil';
                 botonHamburguesa.innerHTML = '☰';
+                sidebar.appendChild(botonHamburguesa);
+
+                botonHamburguesa.addEventListener('click', () => {
+                    navMenu.classList.toggle('menu-activo');
+                    botonHamburguesa.innerHTML = navMenu.classList.contains('menu-activo') ? '✕' : '☰';
+                });
             }
         });
-    }
-});
 
-
-
-
-
-
-// Validación de Seguridad y Roles para menu.html 
-// "ESTO ES LO QUE AÑEXAMOS PARA VALIDAR OS USUARIOS DE ACUERDO A SU ROL Y ACCESSO A LA INFORMACON"
-window.addEventListener('DOMContentLoaded', () => {
-    const storedRole = localStorage.getItem("userRole");
-    const storedEmail = localStorage.getItem("userEmail");
-
-    // 1. Protección estricta: Si no ha iniciado sesión, se va al login
-    if (!storedEmail || !storedRole) {
-        alert("Acceso denegado. Por favor inicia sesión.");
-        window.location.href = "index.html";
-        return;
-    }
-
-    // 2. REGLA ESTRICTA PARA EL ROL: ENCARGADO
-    if (storedRole === "Encargado") {
-        // Un encargado jamás debe ver el menú Dashboard; lo redirigimos a su vista de tickets
-        alert("No tienes permisos para acceder al Dashboard General.");
-        window.location.href = "ticket.html";
-        return;
-    }
-
-    // 3. REGLA ESTRICTA PARA EL ROL: DIRECTOR
-    if (storedRole === "Director") {
-        console.log("Acceso concedido como Director. Aplicando restricciones visuales...");
-        
-        // El Director PUEDE ver el Dashboard y Reportes, pero NO Seguridad ni Inventario.
-        // Buscamos los bloques de navegación utilizando los textos exactos de tu menú
-        const seccionesMenu = document.querySelectorAll(".nav-section, .sidebar-nav li, div");
-
-        seccionesMenu.forEach(elemento => {
-            const texto = elemento.textContent.trim().toUpperCase();
-            
-            // Si el elemento contiene los títulos prohibidos, lo ocultamos por completo
-            if (texto.includes("SEGURIDAD") || texto.includes("INVENTARIO")) {
-                elemento.style.display = "none";
+        // Función global de escape seguro para el botón de la barra inferior
+        window.logout = async () => {
+            try {
+                await firebase.auth().signOut();
+                localStorage.clear();
+                window.location.href = "index.html";
+            } catch (error) {
+                alert("Error al cerrar sesión: " + error.message);
             }
-        });
-    }
-    
-    // Si el rol es Administrador, el código no hace nada y le permite ver el 100% de la página.
-});
+        };
+    </script>
 
 
 
-
-
-
-    </script>      
+ 
 </body>
 </html>
 
