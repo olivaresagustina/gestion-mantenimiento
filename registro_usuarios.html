@@ -139,9 +139,10 @@
                 <div class="nav-section">
                     <div class="section-title"><a href="menu.html" style="color:inherit; text-decoration:none;">📊 Dashboard</a></div>
                 </div>
-                <div class="nav-item">🛡️ SEGURIDAD</div>
-                <div class="nav-section active">
+                <div class="nav-item" id="seguridadMenuLink">🛡️ SEGURIDAD</div>
+                <div class="nav-section active" id="inventarioMenuLink">
                     <div class="section-title">📦 INVENTARIO</div>
+                
                     <ul class="sub-menu">
                         <li><a href="registro_equipo.html" style="color:inherit; text-decoration:none;">• Registro del equipo de cómputo</a></li>
                         <li class="active-sub">• Registro de Usuarios encargados</li>
@@ -149,7 +150,8 @@
                     </ul>
                 </div>                
                 <div class="nav-item" onclick="window.location.href='ticket.html'">📊 MANTENIMIENTO</div>
-                <div class="nav-item">📊 REPORTES</div>
+                <div class="nav-item" id="reportesMenuLink">📊 REPORTES</div>
+
             </nav>
             <button class="btn-logout-sidebar" onclick="logout()">Cerrar Sesión</button>
         </aside>
@@ -563,26 +565,55 @@
         });
     }
 
+
+    
+
     // Inicializaciones generales del DOM al cargar la página
+    // --- 9. INICIALIZACIÓN DE SESIÓN CON EXPULSIÓN ABSOLUTA POR ROLES ---
     window.addEventListener('DOMContentLoaded', () => {
         const emailDisplay = document.querySelector(".user-email-text");
-        if (emailDisplay) {
-            const storedEmail = localStorage.getItem("userEmail");
-            if (storedEmail) emailDisplay.innerText = storedEmail;
+        const storedEmail = localStorage.getItem("userEmail");
+        const storedRole = localStorage.getItem("userRole"); // Evaluamos el rol guardado en el login
+
+        // A. CONTROL DE ENTRADA CRÍTICO: Si no hay credenciales locales, expulsa al login
+        if (!storedEmail || !storedRole) {
+            alert("Acceso denegado. Por favor inicia sesión de forma correcta.");
+            window.location.href = "index.html";
+            return;
         }
+
+        // B. EXPULSIÓN INMEDIATA DE ROLES NO AUTORIZADOS
+        if (storedRole === "Encargado") {
+            alert("Acceso denegado. No tienes permisos para gestionar las cuentas del Ayuntamiento.");
+            window.location.href = "ticket.html"; // Su única página permitida
+            return;
+        } else if (storedRole === "Director") {
+            alert("Acceso denegado. Esta sección es de uso exclusivo para el Administrador del sistema.");
+            window.location.href = "menu.html"; // Su menú permitido (Dashboard)
+            return;
+        }
+
+        // C. DISPARAR LA CARGA DE DATOS (Solo si pasó el filtro y es Administrador)
+        if (emailDisplay) {
+            emailDisplay.innerText = storedEmail;
+        }
+        
+        // El servidor descarga el catálogo y la tabla de usuarios solo tras validar al Administrador
+        cargarUsuariosTabla();
         inicializarFiltroAreasDepartamentos();
     });
 
-    // FUNCIÓN LOGOUT CONECTADA A GOOGLE FIREBASE AUTH
+    // --- 10. CIERRE DE SESIÓN SEGURO INSTITUCIONAL ---
     window.logout = async () => {
         try {
             await auth.signOut();
-            localStorage.clear(); 
+            localStorage.clear(); // Limpieza absoluta para evitar inicios automáticos fantasmas
             window.location.href = "index.html"; 
         } catch (error) {
             alert("Error al cerrar sesión institucional: " + error.message);
         }
-    }
+    };
+
 </script>
 </body>
 </html>
