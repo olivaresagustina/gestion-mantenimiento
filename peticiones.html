@@ -128,25 +128,26 @@
                 </a>
             </div>
             <nav class="sidebar-nav">
-                <div class="nav-item" onclick="window.location.href='menu.html'">📊 Dashboard</div>
-                <div class="nav-item">🛡 SEGURIDAD</div>
-                <div class="nav-item" onclick="window.location.href='registro_equipo.html'">📊 INVENTARIO</div>
+                <div class="nav-item" id="dashboardMenuLink" onclick="window.location.href='menu.html'">📊 Dashboard</div>
+                <div class="nav-item" id="seguridadMenuLink">🛡 SEGURIDAD</div>
+                <div class="nav-item" id="inventarioMenuLink" onclick="window.location.href='registro_equipo.html'">📊 INVENTARIO</div>
+                
+
                 <div class="nav-section active">
                     <div class="section-title">🛠 MANTENIMIENTO</div>
                     <ul class="sub-menu">
                         <li onclick="window.location.href='ticket.html'">• Levantar Ticket</li>
-                        <li class="active-sub" onclick="window.location.href='peticiones.html'">• Bandeja de Entrada</li>
+                        <li class="active-sub" onclick="window.location.href='peticiones.html'">• Bandeja de Entrada</li>                 
                         
-                        
-                        
-                        
+                                          
                         
                         
                         <li onclick="window.location.href='tickets_asignados.html'">• Tickets Asignados</li>
                         <li onclick="window.location.href='registro_actividades.html'">• Registro de Actividades</li>
                     </ul>
                 </div>
-                <div class="nav-item">📊 REPORTES</div>
+                <div class="nav-item" id="reportesMenuLink">📊 REPORTES</div>
+
             </nav>
             <button class="btn-logout-sidebar" onclick="window.logout()">Cerrar Sesión</button>
         </aside>
@@ -273,5 +274,46 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>   
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script src="peticiones.js"></script>
+
+    <!-- Script unificado: Interfaz móvil y control estricto de roles -->
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            // A. VALIDACIÓN DE PRIVILEGIOS Y FILTRO DE EXPULSIÓN ABSOLUTA
+            const storedRole = localStorage.getItem("userRole");
+            const storedEmail = localStorage.getItem("userEmail");
+
+            if (!storedEmail || !storedRole) {
+                alert("Acceso denegado. Por favor inicia sesión.");
+                window.location.href = "index.html";
+                return;
+            }
+
+            if (storedRole === "Encargado") {
+                alert("Acceso denegado. No tienes permisos para ingresar a la Bandeja de Gestión.");
+                window.location.href = "ticket.html"; // Su única página permitida
+                return;
+            } else if (storedRole === "Director") {
+                alert("Acceso denegado. Esta sección es de uso exclusivo para el Administrador de soporte.");
+                window.location.href = "menu.html"; // Su página permitida (Dashboard)
+                return;
+            }
+
+            // B. COMPORTAMIENTO DEL BOTÓN HAMBURGUESA MÓVIL (SOLO PARA EL ADMINISTRADOR ACCESIBLE)
+            const sidebar = document.querySelector('.sidebar');
+            const navMenu = document.querySelector('.sidebar-nav');
+
+            if (sidebar && navMenu && window.innerWidth <= 768) {
+                const botonHamburguesa = document.createElement('button');
+                botonHamburguesa.className = 'toggle-menu-movil';
+                botonHamburguesa.innerHTML = '☰';
+                sidebar.appendChild(botonHamburguesa);
+
+                botonHamburguesa.addEventListener('click', () => {
+                    navMenu.classList.toggle('menu-activo');
+                    botonHamburguesa.innerHTML = navMenu.classList.contains('menu-activo') ? '✕' : '☰';
+                });
+            }
+        });
+    </script>
 </body>
 </html>
