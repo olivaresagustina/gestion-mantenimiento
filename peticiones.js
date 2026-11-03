@@ -71,11 +71,22 @@ function cargarTecnicosAdministradores() {
 }
 
 // --- 3. EXTRACCIÓN REACTIVA EN TIEMPO REAL DESDE CLOUD FIRESTORE ---
-function cargarPeticionesGlobales() {
-    db.collection("tickets").onSnapshot(async (ticketsSnapshot) => {
-        const tbody = document.getElementById("tablaPeticionesCuerpo");
-        if (!tbody) return;
 
+// --- 3. EXTRACCIÓN REACTIVA EN TIEMPO REAL DESDE CLOUD FIRESTORE (CORREGIDO) ---
+function cargarPeticionesGlobales() {
+    // CORRECCIÓN: Buscamos una coincidencia elástica por etiqueta si el ID "tablaPeticionesCuerpo" no coincide con tu HTML
+    let tbody = document.getElementById("tablaPeticionesCuerpo");
+    if (!tbody) {
+        const tablaFisica = document.querySelector(".tabla-tickets tbody") || document.querySelector("table tbody");
+        if (tablaFisica) tbody = tablaFisica;
+    }
+    
+    if (!tbody) {
+        console.error("Error crítico: No se encontró ningún elemento <tbody> en la página para renderizar las peticiones.");
+        return;
+    }
+
+    db.collection("tickets").onSnapshot(async (ticketsSnapshot) => {
         if (ticketsSnapshot.empty) {
             tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #777; padding: 20px;">No hay ningún ticket levantado en el sistema actualmente.</td></tr>`;
             return;
@@ -83,67 +94,75 @@ function cargarPeticionesGlobales() {
 
         registrosGlobales = [];
 
-        const [encargadosSnap, peticionesSnap] = await Promise.all([
-            db.collection("usuarios_encargados").get(),
-            db.collection("peticiones").get()
-        ]);
+        try {
+            const [encargadosSnap, peticionesSnap] = await Promise.all([
+                db.collection("usuarios_encargados").get(),
+                db.collection("peticiones").get()
+            ]);
 
-        const mapaEncargados = {};
-        encargadosSnap.forEach(doc => {
-            const d = doc.data();
-            if (d.usuarioEmail) {
-                mapaEncargados[d.usuarioEmail.trim().toLowerCase()] = {
-                    nombre: d.nombreCompleto || "Sin Nombre",
-                    departamento: d.departamento || "General"
-                };
-            }
-        });
-
-        const mapaPeticiones = {};
-        peticionesSnap.forEach(doc => {
-            mapaPeticiones[doc.data().ticketId] = doc.data();
-        });
-
-        ticketsSnapshot.forEach((docTicket) => {
-            const ticketData = docTicket.data();
-            const ticketId = docTicket.id;
-            const correoKey = (ticketData.usuarioEmail || "").trim().toLowerCase();
-
-            const infoEncargado = mapaEncargados[correoKey] || { nombre: "Desconocido", departamento: "General" };
-            const gestionPrevia = mapaPeticiones[ticketId] || {};
-
-            registrosGlobales.push({
-                ticketId: ticketId,
-                encargado: infoEncargado.nombre,
-                departamento: infoEncargado.departamento,
-                problema: ticketData.detalle || "Sin descripción de falla",
-                fechaEntrada: ticketData.fechaPeticion || "S/F",
-                status: ticketData.status || "Abierto", 
-                tecnico: ticketData.tecnicoAsignado || gestionPrevia.tecnico || "",
-                tipoMantenimiento: ticketData.tipoMantenimiento || gestionPrevia.tipoMantenimiento || "",
-                tiempoEstimado: ticketData.tiempoEstimadoDias || gestionPrevia.tiempoEstimado || "",
-                fechaSalida: ticketData.fechaSalidaEstimada || gestionPrevia.fechaSalida || "",
-                serie: ticketData.serie || "",
-                tipoEquipo: ticketData.tipo || "",
-                marca: ticketData.marca || "",
-                modelo: ticketData.modelo || ""
+            const mapaEncargados = {};
+            encargadosSnap.forEach(doc => {
+                const d = doc.data();
+                if (d.usuarioEmail) {
+                    mapaEncargados[d.usuarioEmail.trim().toLowerCase()] = {
+                        nombre: d.nombreCompleto || "Sin Nombre",
+                        departamento: d.departamento || "General"
+                    };
+                }
             });
-        });
 
-        inyectarPeticionesEnTabla(registrosGlobales);
+            const mapaPeticiones = {};
+            peticionesSnap.forEach(doc => {
+                mapaPeticiones[doc.data().ticketId] = doc.data();
+            });
+
+            ticketsSnapshot.forEach((docTicket) => {
+                const ticketData = docTicket.data();
+                const ticketId = docTicket.id;
+                const correoKey = (ticketData.usuarioEmail || "").trim().toLowerCase();
+
+                const infoEncargado = mapaEncargados[correoKey] || { nombre: "Desconocido", departamento: "General" };
+                const gestionPrevia = mapaPeticiones[ticketId] || {};
+
+                registrosGlobales.push({
+                    ticketId: ticketId,
+                    encargado: infoEncargado.nombre,
+                    departamento: infoEncargado.departamento,
+                    problema: ticketData.detalle || "Sin descripción de falla",
+                    fechaEntrada: ticketData.fechaPeticion || "S/F",
+                    status: ticketData.status || "Abierto", 
+                    tecnico: ticketData.tecnicoAsignado || gestionPrevia.tecnico || "",
+                    tipoMantenimiento: ticketData.tipoMantenimiento || gestionPrevia.tipoMantenimiento || "",
+                    tiempoEstimado: ticketData.tiempoEstimadoDias || gestionPrevia.tiempoEstimado || "",
+                    fechaSalida: ticketData.fechaSalidaEstimada || gestionPrevia.fechaSalida || "",
+                    serie: ticketData.serie || "",
+                    tipoEquipo: ticketData.tipo || "",
+                    marca: ticketData.marca || "",
+                    modelo: ticketData.modelo || ""
+                });
+            });
+
+            inyectarPeticionesEnTabla(registrosGlobales);
+
+        } catch (err) {
+            console.error("Error al procesar el mapeo de colecciones cruzadas:", err);
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #dc4c64; padding: 20px;">Error al procesar los datos estructurados.</td></tr>`;
+        }
 
     }, (error) => {
         console.error("Falla en la consulta sincrónica del servidor:", error);
-        const tbody = document.getElementById("tablaPeticionesCuerpo");
         if (tbody) {
-            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #dc4c64; padding: 20px;">Error al enlazar los datos.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #dc4c64; padding: 20px;">Error de privilegios al enlazar los datos globales.</td></tr>`;
         }
     });
 }
 
-// --- 4. CONSTRUCCIÓN DE FILAS CON ENLACE DE DATOS ---
+// --- 4. CONSTRUCCIÓN DE FILAS CON ENLACE DE DATOS (CORREGIDO) ---
 function inyectarPeticionesEnTabla(listaRegistros) {
-    const tbody = document.getElementById("tablaPeticionesCuerpo");
+    let tbody = document.getElementById("tablaPeticionesCuerpo");
+    if (!tbody) {
+        tbody = document.querySelector(".tabla-tickets tbody") || document.querySelector("table tbody");
+    }
     if (!tbody) return;
 
     tbody.innerHTML = "";
@@ -152,6 +171,7 @@ function inyectarPeticionesEnTabla(listaRegistros) {
     listaRegistros.forEach((reg) => {
         const tr = document.createElement("tr");
         tr.setAttribute("id", `fila-${reg.ticketId}`);
+        tr.style.cursor = "pointer";
 
         tr.innerHTML = `
             <td><strong>${index++}</strong></td>
@@ -167,15 +187,16 @@ function inyectarPeticionesEnTabla(listaRegistros) {
         `;
 
         tr.addEventListener('click', () => {
-            document.querySelectorAll('#tablaPeticionesCuerpo tr').forEach(row => row.classList.remove('fila-seleccionada'));
+            document.querySelectorAll('table tbody tr').forEach(row => row.classList.remove('fila-seleccionada'));
             tr.classList.add('fila-seleccionada');
-            
             mostrarPanelModificaciones(reg);
         });
 
         tbody.appendChild(tr);
     });
 }
+
+
 // --- 5. TRANSFERENCIA DE DATOS Y RENDERIZADO DEL STATUS EN EL PANEL ---
 function mostrarPanelModificaciones(registro) {
     document.getElementById('panelTicketDocId').value = registro.ticketId;
