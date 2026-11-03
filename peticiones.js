@@ -71,10 +71,8 @@ function cargarTecnicosAdministradores() {
 }
 
 // --- 3. EXTRACCIÓN REACTIVA EN TIEMPO REAL DESDE CLOUD FIRESTORE ---
-
-// --- 3. EXTRACCIÓN REACTIVA EN TIEMPO REAL DESDE CLOUD FIRESTORE (CORREGIDO) ---
+// --- 3. EXTRACCIÓN REACTIVA EN TIEMPO REAL DESDE CLOUD FIRESTORE (SOLUCIÓN DEFINITIVA) ---
 function cargarPeticionesGlobales() {
-    // CORRECCIÓN: Buscamos una coincidencia elástica por etiqueta si el ID "tablaPeticionesCuerpo" no coincide con tu HTML
     let tbody = document.getElementById("tablaPeticionesCuerpo");
     if (!tbody) {
         const tablaFisica = document.querySelector(".tabla-tickets tbody") || document.querySelector("table tbody");
@@ -86,6 +84,7 @@ function cargarPeticionesGlobales() {
         return;
     }
 
+    // Escuchamos la colección real "tickets"
     db.collection("tickets").onSnapshot(async (ticketsSnapshot) => {
         if (ticketsSnapshot.empty) {
             tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #777; padding: 20px;">No hay ningún ticket levantado en el sistema actualmente.</td></tr>`;
@@ -95,10 +94,8 @@ function cargarPeticionesGlobales() {
         registrosGlobales = [];
 
         try {
-            const [encargadosSnap, peticionesSnap] = await Promise.all([
-                db.collection("usuarios_encargados").get(),
-                db.collection("peticiones").get()
-            ]);
+            // Traemos UNICAMENTE los datos de la colección real de usuarios_encargados
+            const encargadosSnap = await db.collection("usuarios_encargados").get();
 
             const mapaEncargados = {};
             encargadosSnap.forEach(doc => {
@@ -111,18 +108,13 @@ function cargarPeticionesGlobales() {
                 }
             });
 
-            const mapaPeticiones = {};
-            peticionesSnap.forEach(doc => {
-                mapaPeticiones[doc.data().ticketId] = doc.data();
-            });
-
+            // Procesamos los tickets directamente utilizando la información mapeada
             ticketsSnapshot.forEach((docTicket) => {
                 const ticketData = docTicket.data();
                 const ticketId = docTicket.id;
                 const correoKey = (ticketData.usuarioEmail || "").trim().toLowerCase();
 
                 const infoEncargado = mapaEncargados[correoKey] || { nombre: "Desconocido", departamento: "General" };
-                const gestionPrevia = mapaPeticiones[ticketId] || {};
 
                 registrosGlobales.push({
                     ticketId: ticketId,
@@ -131,10 +123,10 @@ function cargarPeticionesGlobales() {
                     problema: ticketData.detalle || "Sin descripción de falla",
                     fechaEntrada: ticketData.fechaPeticion || "S/F",
                     status: ticketData.status || "Abierto", 
-                    tecnico: ticketData.tecnicoAsignado || gestionPrevia.tecnico || "",
-                    tipoMantenimiento: ticketData.tipoMantenimiento || gestionPrevia.tipoMantenimiento || "",
-                    tiempoEstimado: ticketData.tiempoEstimadoDias || gestionPrevia.tiempoEstimado || "",
-                    fechaSalida: ticketData.fechaSalidaEstimada || gestionPrevia.fechaSalida || "",
+                    tecnico: ticketData.tecnicoAsignado || "",
+                    tipoMantenimiento: ticketData.tipoMantenimiento || "",
+                    tiempoEstimado: ticketData.tiempoEstimadoDias || "",
+                    fechaSalida: ticketData.fechaSalidaEstimada || "",
                     serie: ticketData.serie || "",
                     tipoEquipo: ticketData.tipo || "",
                     marca: ticketData.marca || "",
@@ -145,17 +137,18 @@ function cargarPeticionesGlobales() {
             inyectarPeticionesEnTabla(registrosGlobales);
 
         } catch (err) {
-            console.error("Error al procesar el mapeo de colecciones cruzadas:", err);
+            console.error("Error crítico al procesar el mapa relacional en el cliente:", err);
             tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #dc4c64; padding: 20px;">Error al procesar los datos estructurados.</td></tr>`;
         }
 
     }, (error) => {
-        console.error("Falla en la consulta sincrónica del servidor:", error);
+        console.error("Falla en la consulta sincrónica del servidor de Firebase:", error);
         if (tbody) {
             tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #dc4c64; padding: 20px;">Error de privilegios al enlazar los datos globales.</td></tr>`;
         }
     });
 }
+
 
 // --- 4. CONSTRUCCIÓN DE FILAS CON ENLACE DE DATOS (CORREGIDO) ---
 function inyectarPeticionesEnTabla(listaRegistros) {
