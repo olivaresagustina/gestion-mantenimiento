@@ -110,56 +110,75 @@ form.addEventListener('submit', async (e) => {
 });
 
 // --- 4. MOTOR INTELIGENTE: DETECTAR MENSAJES NUEVOS EN SEGUNDO PLANO ---
-let ticketsLocales = []; 
 
+// --- 4. MOTOR INTELIGENTE: DETECTAR MENSAJES NUEVOS EN SEGUNDO PLANO (CORREGIDO) ---
 function cargarTicketsDelUsuario(emailUsuario) {
+    const tbody = document.getElementById("tablaTicketsCuerpo");
+    if (!tbody) return;
+
+    const correoLimpio = (emailUsuario || "").trim().toLowerCase();
+
     db.collection("tickets")
-      .where("usuarioEmail", "==", emailUsuario)
+      .where("usuarioEmail", "==", correoLimpio)
       .onSnapshot(async (snapshot) => {
         
-        const listaProvisional = [];
-        
-        // Mapeamos los tickets en un arreglo de promesas para evaluar sus subcolecciones de chat en paralelo
-        const promesasChat = snapshot.docs.map(async (doc) => {
-            const ticketData = doc.data();
-            const ticketId = doc.id;
-            
-            // Consultamos de forma reactiva el último mensaje enviado en el chat de este ticket
-            const chatSnapshot = await db.collection("tickets")
-                                           .doc(ticketId)
-                                           .collection("chat")
-                                           .orderBy("fechaEnvio", "desc")
-                                           .limit(1)
-                                           .get();
-            
-            let tieneMensajeNuevo = false;
-            
-            if (!chatSnapshot.empty) {
-                const ultimoMsg = chatSnapshot.docs[0].data();
-                // Si el último mensaje fue escrito por un Administrador, significa que el usuario tiene una respuesta pendiente
-                if (ultimoMsg.remitenteRol === "Administrador") {
-                    tieneMensajeNuevo = true;
+        if (snapshot.empty) {
+            tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #777; padding: 20px;">No se encontraron tickets registrados a tu cuenta.</td></tr>`;
+            return;
+        }
+
+        try {
+            // Mapeamos los documentos evaluando de forma segura las subcolecciones
+            const promesasChat = snapshot.docs.map(async (doc) => {
+                const ticketData = doc.data();
+                const ticketId = doc.id;
+                let tieneMensajeNuevo = false;
+
+                try {
+                    // Consulta segura al último mensaje del chat técnico
+                    const chatSnapshot = await db.collection("tickets")
+                                                   .doc(ticketId)
+                                                   .collection("chat")
+                                                   .orderBy("fechaEnvio", "desc")
+                                                   .limit(1)
+                                                   .get();
+                    
+                    if (!chatSnapshot.empty) {
+                        const ultimoMsgDoc = chatSnapshot.docs[0];
+                        if (ultimoMsgDoc && ultimoMsgDoc.exists) {
+                            const ultimoMsg = ultimoMsgDoc.data();
+                            if (ultimoMsg && ultimoMsg.remitenteRol === "Administrador") {
+                                tieneMensajeNuevo = true;
+                            }
+                        }
+                    }
+                } catch (chatErr) {
+                    // Si falla la subcolección o no hay permisos aún, ignoramos el badge pero permitimos ver el ticket
+                    console.warn(`No se pudo auditar el chat para el ticket ${ticketId}:`, chatErr);
                 }
-            }
 
-            return {
-                id: ticketId,
-                hasNewMessage: tieneMensajeNuevo,
-                ...ticketData
-            };
-        });
+                return {
+                    id: ticketId,
+                    hasNewMessage: tieneMensajeNuevo,
+                    ...ticketData
+                };
+            });
 
-        ticketsLocales = await Promise.all(promesasChat);
-        inyectarTicketsEnTabla(ticketsLocales);
+            ticketsLocales = await Promise.all(promesasChat);
+            inyectarTicketsEnTabla(ticketsLocales);
+
+        } catch (err) {
+            console.error("Error en el procesamiento del mapa relacional:", err);
+            tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #dc4c64; padding: 20px;">Error al procesar la lista de actividades.</td></tr>`;
+        }
 
     }, (error) => {
-        console.error("Error al cargar historial de tickets: ", error);
-        const tbody = document.getElementById("tablaTicketsCuerpo");
-        if (tbody) {
-            tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #dc4c64; padding: 20px;">Error de permisos al sincronizar los tickets.</td></tr>`;
-        }
+        console.error("Error crítico de Firestore en Snapshot de Tickets:", error);
+        tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #dc4c64; padding: 20px;">Error de seguridad o permisos al sincronizar los datos.</td></tr>`;
     });
 }
+
+
 // --- 5. FUNCIÓN AUXILIAR: PINTAR FILAS E INTEGRAR BADGES DE NOTIFICACIÓN ---
 function inyectarTicketsEnTabla(listaDeTickets) {
     const tbody = document.getElementById("tablaTicketsCuerpo");
