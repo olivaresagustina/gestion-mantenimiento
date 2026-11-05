@@ -77,3 +77,46 @@ window.logout = async () => {
         alert("Error al cerrar sesión: " + error.message);
     }
 };
+
+// ---  LOGICA ENLAZADA PARA RESTABLECER CONTRASEÑA ---
+window.addEventListener('DOMContentLoaded', () => {
+    // Buscamos el enlace mediante selectores de texto elásticos ya que tu HTML no tiene una ID explícita
+    const enlaces = document.getElementsByTagName('a');
+    let btnRecuperar = null;
+
+    for (let i = 0; i < enlaces.length; i++) {
+        if (enlaces[i].textContent.includes("¿Olvidaste tu contraseña?")) {
+            btnRecuperar = enlaces[i];
+            break;
+        }
+    }
+
+    // Si encontramos el enlace en la página, le inyectamos la lógica de Google
+    if (btnRecuperar) {
+        btnRecuperar.style.cursor = "pointer"; // Nos aseguramos de que parezca un botón clickeable
+        btnRecuperar.addEventListener('click', (e) => {
+            e.preventDefault();
+
+            const emailUsuario = prompt("Por favor, introduce tu correo electrónico institucional:");
+            if (!emailUsuario || emailUsuario.trim() === "") return;
+
+            const correoLimpio = emailUsuario.trim().toLowerCase();
+
+            // Petición de recuperación segura directa a Firebase Auth
+            auth.sendPasswordResetEmail(correoLimpio)
+                .then(() => {
+                    alert("¡Correo de recuperación enviado con éxito! Revisa tu bandeja de entrada o la carpeta de Spam para restablecer tu contraseña.");
+                })
+                .catch((error) => {
+                    console.error("Fallo al enviar correo de recuperación:", error);
+                    if (error.code === "auth/user-not-found") {
+                        alert("El correo ingresado no está registrado en el sistema del Ayuntamiento.");
+                    } else if (error.code === "auth/invalid-email") {
+                        alert("El formato del correo electrónico ingresado no es válido.");
+                    } else {
+                        alert("No se pudo procesar la solicitud en este momento: " + error.message);
+                    }
+                });
+        });
+    }
+});
