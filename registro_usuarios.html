@@ -289,16 +289,34 @@
 
     // Control Visual de la Ventana Modal Flotante
     const modalElement = document.getElementById('modalUsuario');
-    
+
+
+    //**************EDICION DEL BOTON AÑADIR NUEVO USUARIO ******************************
     document.getElementById('btnAbrirModal').addEventListener('click', function() {
         editUserId = ""; // Limpiamos el estado de edición para abrir en modo creación
         document.getElementById("tituloFormUsuario").innerText = "Agregar encargado";
         document.getElementById("userEmail").disabled = false;
-        document.getElementById("userPass").required = true;
-        document.getElementById("userPassConf").required = true;
+        
+        // Rehabilitamos los campos de contraseña para el Alta Nueva
+        const campoPass = document.getElementById("userPass");
+        const campoPassConf = document.getElementById("userPassConf");
+        
+        campoPass.disabled = false;
+        campoPass.required = true;
+        campoPass.placeholder = "";
+        campoPass.style.backgroundColor = "#ffffff";
+        campoPass.style.cursor = "text";
+
+        campoPassConf.disabled = false;
+        campoPassConf.required = true;
+        campoPassConf.placeholder = "";
+        campoPassConf.style.backgroundColor = "#ffffff";
+        campoPassConf.style.cursor = "text";
+        
         modalElement.style.display = 'flex';
     });
-    
+
+        
     document.getElementById('btnCancelarModal').addEventListener('click', function() {
         modalElement.style.display = 'none';
         document.getElementById("formRegistroUsuario").reset();
@@ -350,8 +368,11 @@
         });
     }
 
-    // REQUERIMIENTO CUMPLIDO: Mapea los textos y sincroniza las cascadas al dar clic en Editar (✏️)
-    window.prepararEdicionUsuario = async function(id) {
+    
+    //**************EDICION DEL BOTON EDITAR USUARIO ******************************
+
+        // REQUERIMIENTO CUMPLIDO: Mapea los textos y congela contraseñas al dar clic en Editar 
+        window.prepararEdicionUsuario = async function(id) {
         const usuario = usuariosGlobales.find(u => u.id === id);
         if (!usuario) return;
 
@@ -365,11 +386,23 @@
         document.getElementById("userEmail").value = usuario.usuarioEmail || "";
         document.getElementById("userEmail").disabled = true;
 
-        // Quitamos la obligatoriedad de contraseñas en modo Edición
-        document.getElementById("userPass").required = false;
-        document.getElementById("userPassConf").required = false;
-        document.getElementById("userPass").value = "";
-        document.getElementById("userPassConf").value = "";
+        // CONGELAMOS ESTRICTAMENTE LOS CAMPOS DE CONTRASEÑA EN MODO EDICIÓN
+        const campoPass = document.getElementById("userPass");
+        const campoPassConf = document.getElementById("userPassConf");
+
+        campoPass.disabled = true;
+        campoPass.required = false;
+        campoPass.value = "";
+        campoPass.placeholder = "Cambio solo por correo de recuperación";
+        campoPass.style.backgroundColor = "#e0e0e0";
+        campoPass.style.cursor = "not-allowed";
+
+        campoPassConf.disabled = true;
+        campoPassConf.required = false;
+        campoPassConf.value = "";
+        campoPassConf.placeholder = "Modificación protegida y restringida";
+        campoPassConf.style.backgroundColor = "#e0e0e0";
+        campoPassConf.style.cursor = "not-allowed";
 
         // Sincronizamos la cascada dinámicamente según los catálogos en la nube
         document.getElementById("userArea").value = usuario.area || "";
@@ -378,6 +411,7 @@
 
         modalElement.style.display = 'flex';
     };
+
     // 3. Función Principal: Alta o Modificación de Perfil en Firebase
     async function registrarUsuarioYCredenciales(e) {
         e.preventDefault(); 
