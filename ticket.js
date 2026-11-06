@@ -476,6 +476,16 @@ window.addEventListener('DOMContentLoaded', () => {
     const storedRole = localStorage.getItem("userRole"); // Extraemos el rol guardado en el login
     const inputBuscar = document.getElementById("inputBuscar");
 
+
+
+
+           // Vincula el rol del usuario con el archivo CSS de forma instantánea para reducir el menú
+           if (storedRole) {
+            document.documentElement.setAttribute('data-user-role', storedRole);
+        }
+
+
+        
     // A. CONTROL DE ACCESO ESTRICTO: Si no hay sesión iniciada, expulsa al login
     if (!storedEmail || !storedRole) {
         alert("Acceso denegado. Por favor inicia sesión.");

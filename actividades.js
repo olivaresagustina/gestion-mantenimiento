@@ -281,6 +281,13 @@ window.addEventListener('DOMContentLoaded', () => {
     const storedEmail = localStorage.getItem("userEmail");
     const storedRole = localStorage.getItem("userRole"); // Capturamos el privilegio de la sesión
 
+
+       // *****Vincula el rol del usuario con el archivo CSS de forma instantánea para reducir el menú
+       if (storedRole) {
+        document.documentElement.setAttribute('data-user-role', storedRole);
+    }
+
+
     // A. CONTROL DE ACCESO CRÍTICO: Si no hay credenciales locales, rebota al login
     if (!storedEmail || !storedRole) {
         alert("Acceso denegado. Por favor inicia sesión de forma correcta.");

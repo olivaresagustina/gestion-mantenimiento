@@ -332,6 +332,12 @@ window.addEventListener('DOMContentLoaded', () => {
     const storedEmail = localStorage.getItem("userEmail");
     const storedRole = localStorage.getItem("userRole");
 
+
+       // *****Vincula el rol del usuario con el archivo CSS de forma instantánea para reducir el menú
+       if (storedRole) {
+        document.documentElement.setAttribute('data-user-role', storedRole);
+    }
+
     // FILTRO DE ENTRADA EXTREMO: Si no ha iniciado sesión, expulsar
     if (!storedEmail || !storedRole) {
         alert("Acceso denegado. Por favor inicia sesión.");
