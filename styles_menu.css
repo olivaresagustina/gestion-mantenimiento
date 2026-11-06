@@ -551,3 +551,21 @@ body {
         padding: 10px !important;
     }
 }
+
+
+/* --- CONTROL DE PRIVILEGIOS VISUALES PARA LA BARRA LATERAL --- */
+
+/* Si el usuario es Encargado, se ocultan sus opciones no permitidas */
+html[data-user-role="Encargado"] .opcion-admin,
+html[data-user-role="Encargado"] #seguridadMenuLink,
+html[data-user-role="Encargado"] #inventarioMenuLink,
+html[data-user-role="Encargado"] #reportesMenuLink {
+    display: none !important;
+}
+
+/* Si el usuario es Director, se oculta la administración de tickets, seguridad e inventario */
+html[data-user-role="Director"] .opcion-admin,
+html[data-user-role="Director"] #seguridadMenuLink,
+html[data-user-role="Director"] #inventarioMenuLink {
+    display: none !important;
+}
