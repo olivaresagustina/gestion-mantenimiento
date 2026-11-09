@@ -569,3 +569,27 @@ html[data-user-role="Director"] #seguridadMenuLink,
 html[data-user-role="Director"] #inventarioMenuLink {
     display: none !important;
 }
+
+/*
+vamos a agregar otra opcion de PRUEBA****************
+-----------
+-----
+*/
+
+/* --- ELIMINACIÓN CRÍTICA DE PARPADEO MULTIPERFIL --- */
+
+/* 1. Si el usuario es Encargado, ocultamos de raíz los módulos prohibidos */
+html[data-user-role="Encargado"] #seguridadMenuLink,
+html[data-user-role="Encargado"] #inventarioMenuLink,
+html[data-user-role="Encargado"] #dashboardMenuLink,
+html[data-user-role="Encargado"] #reportesMenuLink,
+html[data-user-role="Encargado"] .opcion-admin {
+    display: none !important;
+}
+
+/* 2. Si el usuario es Director, ocultamos únicamente Seguridad e Inventario */
+html[data-user-role="Director"] #seguridadMenuLink,
+html[data-user-role="Director"] #inventarioMenuLink,
+html[data-user-role="Director"] .opcion-admin {
+    display: none !important;
+}
