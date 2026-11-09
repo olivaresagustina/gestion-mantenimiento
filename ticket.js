@@ -469,28 +469,39 @@ window.logout = async () => {
 
 
 
-// --- 12. INICIALIZADOR DE CARGA Y EVENTO DE BÚSQUEDA CON SEGURIDAD POR ROLES ---
+// --- 12. INICIALIZADOR DE CARGA Y EVENTO DE BÚSQUEDA CON SEGURIDAD POR ROLES (CORREGIDO) ---
 window.addEventListener('DOMContentLoaded', () => {
     const emailDisplay = document.getElementById("userEmailDisplay");
     const storedEmail = localStorage.getItem("userEmail");
     const storedRole = localStorage.getItem("userRole"); // Extraemos el rol guardado en el login
     const inputBuscar = document.getElementById("inputBuscar");
 
-
-
-
-           // Vincula el rol del usuario con el archivo CSS de forma instantánea para reducir el menú
-           if (storedRole) {
-            document.documentElement.setAttribute('data-user-role', storedRole);
-        }
-
-
+    // Vincula el rol del usuario con el archivo CSS de forma instantánea para reducir el menú
+    if (storedRole) {
+        document.documentElement.setAttribute('data-user-role', storedRole);
+    }
         
     // A. CONTROL DE ACCESO ESTRICTO: Si no hay sesión iniciada, expulsa al login
     if (!storedEmail || !storedRole) {
         alert("Acceso denegado. Por favor inicia sesión.");
         window.location.href = "index.html";
         return;
+    }
+
+    // 🌟 NUEVO: DETECTOR INTELIGENTE PARA EL LOGOTIPO INSTITUCIONAL
+    const logoBtn = document.getElementById("logoCalnaliLink");
+    if (logoBtn) {
+        logoBtn.addEventListener("click", () => {
+            if (storedRole === "Encargado") {
+                // Si es encargado, lo mantenemos seguro aquí sin parpadeos ni recargas invasivas hacia el menú general
+                window.location.href = "ticket.html";
+            } else if (storedRole === "Director" || storedRole === "Administrador") {
+                // Si es Director o Admin, ellos sí tienen autorización de abrir el Dashboard General
+                window.location.href = "menu.html";
+            } else {
+                window.location.href = "index.html";
+            }
+        });
     }
 
     // B. RESTRICCIONES DE INTERFAZ GRÁFICA (SIDEBAR) SEGÚN EL ROL DEL USUARIO
@@ -505,6 +516,8 @@ window.addEventListener('DOMContentLoaded', () => {
         if (segMenu) segMenu.style.display = "none";
         if (invMenu) invMenu.style.display = "none";
     }
+    
+
 
     // C. CONTINUAR CON LA CARGA INTEGRAL DE LA PÁGINA
     if (emailDisplay) emailDisplay.innerText = storedEmail;
