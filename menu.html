@@ -9,6 +9,8 @@
     <!-- LIBRERÍAS DE FIREBASE -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="dashboard-container">
@@ -37,7 +39,7 @@
                 </div>
 
                 <!-- Módulos principales con IDs de control -->
-                <div class="nav-item" id="menuSeguridad">🛡️ SEGURIDAD</div>
+                <div class="nav-item" id="menuSeguridad" style="display: none;">🛡️ SEGURIDAD</div>
                 
                 <!-- Sección de Inventario -->
                 <div class="nav-section" id="sectionInventario">
@@ -62,11 +64,6 @@
 
                 <div class="nav-item" id="menuReportes">📊 REPORTES</div>
             </nav>
-
-
-
-  
-
 
 
 
@@ -95,19 +92,21 @@
 
             <h1 class="page-title">RESUMEN DEL EQUIPO DE CÓMPUTO</h1>
 
+
+
             <!-- TARJETAS DE MÉTRICAS PRINCIPALES -->
             <section class="metrics-grid">
                 <div class="metric-card bg-cream">
-                    <h2>1,000</h2>
+                    <h2 id="cardTotalEquipos">0</h2>
                     <p>Total de Equipos</p>
                 </div>
                 <div class="metric-card bg-gold">
-                    <h2>900</h2>
-                    <p>Mantenimiento Preventivo Al Día</p>
+                    <h2 id="cardPreventivoAlDia">0</h2>
+                    <p>Equipos Operativos / Al Día</p>
                 </div>
                 <div class="metric-card bg-darkcream">
-                    <h2>100</h2>
-                    <p>Correctivo Pendiente</p>
+                    <h2 id="cardCorrectivoPendiente">0</h2>
+                    <p>Tickets Pendientes / En Proceso</p>
                 </div>
             </section>
 
@@ -115,51 +114,48 @@
             <h2 class="section-heading">RESUMEN DE ESTADO Y MANTENIMIENTO</h2>
             
             <section class="charts-container">
-                <!-- Bloque Izquierdo: Simulación de Distribución Circular -->
+                <!-- Bloque Izquierdo: Gráfica Circular Real -->
                 <div class="chart-box">
                     <h3>DISTRIBUCIÓN DE EQUIPOS POR ESTADO</h3>
-                    <div class="mock-donut-chart">
-                        <div class="donut-inner">85%</div>
+                    <div style="width: 180px; height: 180px; margin: 10px auto;">
+                        <canvas id="graficaDonaEstados"></canvas>
                     </div>
-                    <div class="chart-legends">
-                        <span class="legend"><span class="dot maroon"></span> Operativo (85%)</span>
-                        <span class="legend"><span class="dot gold"></span> En Reparación (10%)</span>
-                        <span class="legend"><span class="dot brown"></span> Baja (5%)</span>
+                    <div class="chart-legends" id="leyendaDona">
+                        <span class="legend"><span class="dot maroon"></span> Operativo</span>
+                        <span class="legend"><span class="dot gold"></span> En Reparación</span>
+                        <span class="legend"><span class="dot brown"></span> Baja</span>
                     </div>
                 </div>
 
-                <!-- Bloque Central: Simulación de Barras por Departamento -->
+                <!-- Bloque Central: Gráfica de Barras Real por Departamento -->
                 <div class="chart-box">
-                    <h3>MANTENIMIENTO POR DEPARTAMENTO</h3>
-                    <div class="mock-bar-chart">
-                        <div class="bar-container"><div class="bar h-80 bg-maroon"></div><span>Soporte</span></div>
-                        <div class="bar-container"><div class="bar h-60 bg-gold"></div><span>Ventas</span></div>
-                        <div class="bar-container"><div class="bar h-40 bg-maroon"></div><span>Contab.</span></div>
-                        <div class="bar-container"><div class="bar h-20 bg-gold"></div><span>Soporte</span></div>
+                    <h3>TICKETS POR DEPARTAMENTO</h3>
+                    <div style="width: 100%; height: 200px; display: flex; align-items: center;">
+                        <canvas id="graficaBarrasDepto"></canvas>
                     </div>
                 </div>
 
-                <!-- Bloque Derecho: Resumen lateral de Equipos Totales -->
+                <!-- Bloque Derecho: Resumen lateral sincronizado -->
                 <div class="summary-sidebar-box">
                     <div class="summary-row">
                         <div class="summary-icon bg-maroon">👥</div>
                         <div>
                             <h4>EQUIPOS TOTALES</h4>
-                            <h3>1,000</h3>
+                            <h3 id="sideTotalEquipos">0</h3>
                         </div>
                     </div>
                     <div class="summary-row">
                         <div class="summary-icon bg-gold">🛠️</div>
                         <div>
-                            <h4>MANTENIMIENTOS AL DÍA</h4>
-                            <h3>900</h3>
+                            <h4>TICKETS CERRADOS</h4>
+                            <h3 id="sideTicketsCerrados">0</h3>
                         </div>
                     </div>
                     <div class="summary-row">
                         <div class="summary-icon bg-brown">📋</div>
                         <div>
-                            <h4>CORRECTIVOS EN ESPERA</h4>
-                            <h3>100</h3>
+                            <h4>TICKETS EN ESPERA</h4>
+                            <h3 id="sideTicketsEspera">0</h3>
                         </div>
                     </div>
                 </div>
@@ -167,20 +163,14 @@
 
             <!-- TENDENCIA DE PROBLEMAS FRECUENTES -->
             <section class="trend-section">
-                <h3>TENDENCIA DE PROBLEMAS FRECUENTES (ÚLTIMOS 6 MESES)</h3>
-                <div class="chart-legends-top">
-                    <span><span class="line-dot color-1"></span> Fallo de Red</span>
-                    <span><span class="line-dot color-2"></span> Sistemas</span>
-                    <span><span class="line-dot color-3"></span> Impresoras</span>
-                    <span><span class="line-dot color-4"></span> Hardware</span>
-                </div>
-                <div class="mock-line-chart">
-                    <!-- Las líneas finales las renderizaremos dinámicamente con CSS y SVG o Chart.js más adelante -->
-                    <div class="months-axis">
-                        <span>Ene</span><span>Feb</span><span>Mar</span><span>Abr</span><span>Mai</span><span>Jun</span>
-                    </div>
+                <h3>DISTRIBUCIÓN POR TIPO DE MANTENIMIENTO</h3>
+                <div style="width: 100%; height: 180px;">
+                    <canvas id="graficaTendenciaMantenimiento"></canvas>
                 </div>
             </section>
+
+
+
 
             <footer class="main-footer">
                 H. AYUNTAMIENTO 2024-2027
@@ -301,6 +291,109 @@
                 });
             }
         });
+
+            // ==========================================
+            // D. CONEXIÓN EN TIEMPO REAL CON FIRESTORE (MÉTRICAS Y GRÁFICAS)
+            // ==========================================
+            async function cargarDatosRealesDashboard() {
+                try {
+                    const [equiposSnap, ticketsSnap] = await Promise.all([
+                        db.collection("equipos").get(),
+                        db.collection("tickets").get()
+                    ]);
+
+                    // 1. Conteo de Equipos
+                    let totalEquipos = equiposSnap.size;
+                    let operativos = 0, enReparacion = 0, baja = 0;
+
+                    equiposSnap.forEach(doc => {
+                        const estado = (doc.data().estado || "Operativo").toLowerCase();
+                        if (estado.includes("reparaci") || estado.includes("mantenimiento")) enReparacion++;
+                        else if (estado.includes("baja") || estado.includes("inactivo")) baja++;
+                        else operativos++;
+                    });
+
+                    // 2. Conteo de Tickets
+                    let pendientes = 0, cerrados = 0;
+                    const conteoDeptos = {};
+                    const conteoTiposMant = { "Correctivo": 0, "Preventivo": 0, "Actualización de software": 0, "Sin clasificar": 0 };
+
+                    ticketsSnap.forEach(doc => {
+                        const t = doc.data();
+                        const st = (t.status || "Abierto").toLowerCase();
+                        if (st === "cerrado") cerrados++;
+                        else pendientes++;
+
+                        const depto = t.departamento || t.area || "General";
+                        conteoDeptos[depto] = (conteoDeptos[depto] || 0) + 1;
+
+                        const tipoM = t.tipoMantenimiento || "Sin clasificar";
+                        if (conteoTiposMant[tipoM] !== undefined) conteoTiposMant[tipoM]++;
+                        else conteoTiposMant["Sin clasificar"]++;
+                    });
+
+                    // 3. Actualizar números en tarjetas
+                    document.getElementById("cardTotalEquipos").innerText = totalEquipos;
+                    document.getElementById("cardPreventivoAlDia").innerText = operativos;
+                    document.getElementById("cardCorrectivoPendiente").innerText = pendientes;
+
+                    document.getElementById("sideTotalEquipos").innerText = totalEquipos;
+                    document.getElementById("sideTicketsCerrados").innerText = cerrados;
+                    document.getElementById("sideTicketsEspera").innerText = pendientes;
+
+                    // 4. Dibujar Gráfica de Dona (Colores institucionales: Guinda, Dorado, Café)
+                    new Chart(document.getElementById('graficaDonaEstados'), {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Operativo', 'En Reparación', 'Baja'],
+                            datasets: [{
+                                data: [operativos, enReparacion, baja],
+                                backgroundColor: ['#691c32', '#bc955c', '#4a3b32'],
+                                borderWidth: 0
+                            }]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                    });
+
+                    // 5. Dibujar Gráfica de Barras por Departamento
+                    const topDeptos = Object.entries(conteoDeptos).slice(0, 5);
+                    new Chart(document.getElementById('graficaBarrasDepto'), {
+                        type: 'bar',
+                        data: {
+                            labels: topDeptos.map(d => d[0]),
+                            datasets: [{
+                                label: 'Tickets',
+                                data: topDeptos.map(d => d[1]),
+                                backgroundColor: ['#691c32', '#bc955c', '#691c32', '#bc955c', '#691c32'],
+                                borderRadius: 4
+                            }]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                    });
+
+                    // 6. Dibujar Gráfica de Tipos de Mantenimiento
+                    new Chart(document.getElementById('graficaTendenciaMantenimiento'), {
+                        type: 'bar',
+                        data: {
+                            labels: Object.keys(conteoTiposMant),
+                            datasets: [{
+                                label: 'Cantidad de Servicios',
+                                data: Object.values(conteoTiposMant),
+                                backgroundColor: '#691c32',
+                                borderRadius: 4
+                            }]
+                        },
+                        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                    });
+
+                } catch (error) {
+                    console.error("Error cargando estadísticas del Dashboard:", error);
+                }
+            }
+
+            // Ejecutar la carga real
+            cargarDatosRealesDashboard();
+
 
         // Función global de escape seguro para el botón de la barra inferior
         window.logout = async () => {
