@@ -290,7 +290,7 @@
                     botonHamburguesa.innerHTML = navMenu.classList.contains('menu-activo') ? '✕' : '☰';
                 });
             }
-        });
+        
 
             // ==========================================
             // D. CONEXIÓN EN TIEMPO REAL CON FIRESTORE (MÉTRICAS Y GRÁFICAS)
@@ -393,7 +393,7 @@
 
             // Ejecutar la carga real
             cargarDatosRealesDashboard();
-
+        });
 
         // Función global de escape seguro para el botón de la barra inferior
         window.logout = async () => {
