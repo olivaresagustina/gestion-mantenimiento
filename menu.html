@@ -293,14 +293,24 @@
         
 
             // ==========================================
-            // D. CONEXIÓN EN TIEMPO REAL CON FIRESTORE (MÉTRICAS Y GRÁFICAS)
+            // D. CONEXIÓN EN TIEMPO REAL CON FIRESTORE (CON DEPARTAMENTOS REALES)
             // ==========================================
             async function cargarDatosRealesDashboard() {
                 try {
-                    const [equiposSnap, ticketsSnap] = await Promise.all([
+                    const [equiposSnap, ticketsSnap, usuariosSnap] = await Promise.all([
                         db.collection("equipos").get(),
-                        db.collection("tickets").get()
+                        db.collection("tickets").get(),
+                        db.collection("usuarios_encargados").get()
                     ]);
+
+                    // 0. Crear mapa de Correo -> Departamento real
+                    const mapaDeptosPorEmail = {};
+                    usuariosSnap.forEach(doc => {
+                        const u = doc.data();
+                        if (u.usuarioEmail) {
+                            mapaDeptosPorEmail[u.usuarioEmail.trim().toLowerCase()] = u.departamento || u.area || "Sin Departamento";
+                        }
+                    });
 
                     // 1. Conteo de Equipos
                     let totalEquipos = equiposSnap.size;
@@ -313,7 +323,7 @@
                         else operativos++;
                     });
 
-                    // 2. Conteo de Tickets
+                    // 2. Conteo de Tickets cruzando el departamento real
                     let pendientes = 0, cerrados = 0;
                     const conteoDeptos = {};
                     const conteoTiposMant = { "Correctivo": 0, "Preventivo": 0, "Actualización de software": 0, "Sin clasificar": 0 };
@@ -324,8 +334,10 @@
                         if (st === "cerrado") cerrados++;
                         else pendientes++;
 
-                        const depto = t.departamento || t.area || "General";
-                        conteoDeptos[depto] = (conteoDeptos[depto] || 0) + 1;
+                        // Buscamos el departamento real usando el correo del ticket
+                        const correoTicket = (t.usuarioEmail || "").trim().toLowerCase();
+                        const deptoReal = mapaDeptosPorEmail[correoTicket] || t.departamento || "General";
+                        conteoDeptos[deptoReal] = (conteoDeptos[deptoReal] || 0) + 1;
 
                         const tipoM = t.tipoMantenimiento || "Sin clasificar";
                         if (conteoTiposMant[tipoM] !== undefined) conteoTiposMant[tipoM]++;
@@ -341,7 +353,7 @@
                     document.getElementById("sideTicketsCerrados").innerText = cerrados;
                     document.getElementById("sideTicketsEspera").innerText = pendientes;
 
-                    // 4. Dibujar Gráfica de Dona (Colores institucionales: Guinda, Dorado, Café)
+                    // 4. Dibujar Gráfica de Dona
                     new Chart(document.getElementById('graficaDonaEstados'), {
                         type: 'doughnut',
                         data: {
@@ -355,8 +367,8 @@
                         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
                     });
 
-                    // 5. Dibujar Gráfica de Barras por Departamento
-                    const topDeptos = Object.entries(conteoDeptos).slice(0, 5);
+                    // 5. Dibujar Gráfica de Barras con los Departamentos Reales (Top 5)
+                    const topDeptos = Object.entries(conteoDeptos).sort((a, b) => b[1] - a[1]).slice(0, 5);
                     new Chart(document.getElementById('graficaBarrasDepto'), {
                         type: 'bar',
                         data: {
@@ -390,6 +402,7 @@
                     console.error("Error cargando estadísticas del Dashboard:", error);
                 }
             }
+
 
             // Ejecutar la carga real
             cargarDatosRealesDashboard();
