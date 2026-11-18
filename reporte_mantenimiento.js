@@ -17,13 +17,17 @@ let datosFiltradosActuales = [];
 
 const MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 
+
+
 function obtenerNombreMes(fechaStr) {
     if (!fechaStr || typeof fechaStr !== "string") return "Sin Mes";
     const partes = fechaStr.split(/[-/]/);
     if (partes.length < 2) return "Sin Mes";
+    // Tomamos partes[1] que corresponde al mes en formatos YYYY-MM-DD o DD/MM/YYYY
     const mesNum = parseInt(partes[1], 10);
     return (mesNum >= 1 && mesNum <= 12) ? MESES[mesNum - 1] : "Sin Mes";
 }
+
 
 function formatearSalida(ts) {
     if (!ts) return "Pendiente";
