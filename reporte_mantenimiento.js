@@ -158,21 +158,49 @@ function aplicarFiltros() {
     }).join("");
 }
 
+// Exportación a Excel (.XLS) con tabla formateada, colores institucionales y columnas separadas
 document.getElementById("btnExportarExcel").addEventListener("click", () => {
     if (!datosFiltradosActuales.length) return alert("No hay datos para exportar.");
-    const headers = ["Mes","ID Equipo","Tipo de Equipo","Status Ticket","Área","Departamento","Encargado","Técnico","Tipo Mantenimiento","Problema","Fecha Entrada","Fecha Salida"];
-    const filas = [headers.join(",")];
+
+    let tablaHTML = `
+        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://w3.org">
+        <head><meta charset="UTF-8"></head>
+        <body>
+            <table border="1" style="border-collapse: collapse; font-family: Arial, sans-serif; font-size: 12px;">
+                <thead>
+                    <tr>
+                        <th colspan="12" style="background-color: #5c1424; color: #ffffff; font-size: 15px; padding: 10px; text-align: center;">
+                            H. AYUNTAMIENTO DE CALNALI 2024-2027 - HISTORIAL DE MANTENIMIENTO
+                        </th>
+                    </tr>
+                    <tr style="background-color: #bc955c; color: #ffffff; font-weight: bold;">
+                        <th>Mes</th><th>ID Equipo</th><th>Tipo de Equipo</th><th>Status Ticket</th>
+                        <th>Área</th><th>Departamento</th><th>Encargado del Equipo</th><th>Técnico en Atención</th>
+                        <th>Tipo de Mantenimiento</th><th>Problema</th><th>Fecha de Entrada</th><th>Fecha de Salida</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+
     datosFiltradosActuales.forEach(r => {
-        const row = [r.mes, r.idEquipo, r.tipoEquipo, r.status, r.area, r.departamento, r.encargado, r.tecnico, r.tipoMantenimiento, r.problema, r.fechaEntrada, r.fechaSalida]
-            .map(c => `"${String(c).replace(/"/g, '""')}"`);
-        filas.push(row.join(","));
+        tablaHTML += `
+            <tr>
+                <td>${r.mes}</td><td>${r.idEquipo}</td><td>${r.tipoEquipo}</td><td>${r.status}</td>
+                <td>${r.area}</td><td>${r.departamento}</td><td>${r.encargado}</td><td>${r.tecnico}</td>
+                <td>${r.tipoMantenimiento}</td><td>${r.problema}</td><td>${r.fechaEntrada}</td><td>${r.fechaSalida}</td>
+            </tr>
+        `;
     });
-    const blob = new Blob(["\uFEFF" + filas.join("\n")], { type: "text/csv;charset=utf-8;" });
+
+    tablaHTML += `</tbody></table></body></html>`;
+
+    const blob = new Blob(["\uFEFF" + tablaHTML], { type: "application/vnd.ms-excel;charset=utf-8;" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = `Historial_Mantenimiento_Calnali_${new Date().toISOString().slice(0,10)}.csv`;
+    a.download = `Historial_Mantenimiento_Calnali_${new Date().toISOString().slice(0,10)}.xls`;
     a.click();
 });
+
 
 document.getElementById("btnImprimirPDF").addEventListener("click", () => {
     document.getElementById("fechaEmisionPDF").innerText = new Date().toLocaleDateString('es-MX', { year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit' });
