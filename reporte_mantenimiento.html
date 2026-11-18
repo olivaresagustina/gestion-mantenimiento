@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historial de Mantenimiento - Calnali</title>
+    <script>
+        (function() {
+            const r = localStorage.getItem("userRole");
+            if (r) document.documentElement.setAttribute('data-user-role', r);
+        })();
+    </script>
+    <link rel="stylesheet" href="styles_menu.css">
+    <style>
+        .filtros-panel { background:#fff; padding:18px; border-radius:6px; border:1px solid #dcdcdc; margin-bottom:18px; }
+        .filtros-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; }
+        .filtro-item { display:flex; flex-direction:column; }
+        .filtro-item label { font-size:11px; font-weight:bold; color:#5c1424; margin-bottom:4px; text-transform:uppercase; }
+        .filtro-item select { padding:7px; border:1px solid #ccc; border-radius:4px; font-size:12px; background:#fafafa; }
+        .acciones-rep { display:flex; justify-content:space-between; align-items:center; margin-top:15px; padding-top:12px; border-top:1px solid #eee; }
+        .btn-rep { padding:8px 15px; border:none; border-radius:4px; font-size:12px; font-weight:bold; cursor:pointer; color:#fff; }
+        .btn-excel { background:#198754; }
+        .btn-pdf { background:#5c1424; }
+        .btn-limpiar { background:#6c757d; }
+        .tabla-scroll { background:#fff; border:1px solid #dcdcdc; border-radius:6px; padding:15px; overflow-x:auto; }
+        .tabla-rep { width:100%; min-width:1350px; border-collapse:collapse; font-size:12px; text-align:left; }
+        .tabla-rep th { background:#5c1424; color:#fff; padding:10px 8px; white-space:nowrap; }
+        .tabla-rep td { border-bottom:1px solid #e6e6e6; padding:9px 8px; }
+        .tabla-rep tr:hover { background:#fdf8ee; }
+        .encabezado-pdf { display:none; }
+        @media print {
+            @page { size:landscape; margin:10mm; }
+            .sidebar, .top-bar, .filtros-panel, .main-footer { display:none !important; }
+            .main-content { margin:0 !important; padding:0 !important; width:100% !important; background:#fff !important; }
+            .tabla-scroll { border:none; padding:0; overflow:visible !important; }
+            .tabla-rep { min-width:100% !important; font-size:9px !important; }
+            .tabla-rep th { background:#5c1424 !important; color:#fff !important; -webkit-print-color-adjust:exact; }
+            .encabezado-pdf { display:flex !important; justify-content:space-between; border-bottom:2px solid #5c1424; padding-bottom:8px; margin-bottom:12px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="sidebar-logo" onclick="window.location.href='menu.html'" style="cursor:pointer;">
+                <img src="logo.png" alt="Logo Calnali" class="menu-logo-img">
+                <div class="logo-text">
+                    <span class="logo-top">JUNTOS RESCATANDO</span>
+                    <span class="logo-bottom">CALNALI</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-item" id="dashboardMenuLink" onclick="window.location.href='menu.html'">📊 Dashboard</div>
+                <div class="nav-section" id="inventarioMenuLink">
+                    <div class="section-title" onclick="const s=document.getElementById('subInv'); s.style.display=s.style.display==='none'?'block':'none';" style="cursor:pointer;">📦 INVENTARIO</div>
+                    <ul class="sub-menu" id="subInv" style="display:none;">
+                        <li><a href="registro_equipo.html" style="color:inherit;text-decoration:none;">• Registro del equipo de cómputo</a></li>
+                        <li><a href="registro_usuarios.html" style="color:inherit;text-decoration:none;">• Registro de Usuarios encargados</a></li>
+                        <li><a href="registro_areas.html" style="color:inherit;text-decoration:none;">• Registro de Áreas y Departamentos</a></li>
+                    </ul>
+                </div>
+                <div class="nav-section">
+                    <div class="section-title" onclick="const s=document.getElementById('subMant'); s.style.display=s.style.display==='none'?'block':'none';" style="cursor:pointer;">🛠️ MANTENIMIENTO</div>
+                    <ul class="sub-menu" id="subMant" style="display:none;">
+                        <li><a href="ticket.html" style="color:inherit;text-decoration:none;">• Levantar Ticket</a></li>
+                        <li class="opcion-admin"><a href="peticiones.html" style="color:inherit;text-decoration:none;">• Bandeja de Entrada</a></li>
+                        <li class="opcion-admin"><a href="tickets_asignados.html" style="color:inherit;text-decoration:none;">• Tickets Asignados</a></li>
+                        <li class="opcion-admin"><a href="registro_actividades.html" style="color:inherit;text-decoration:none;">• Registro de Actividades</a></li>
+                    </ul>
+                </div>
+                <div class="nav-section active" id="sectionReportes">
+                    <div class="section-title">📊 REPORTES</div>
+                    <ul class="sub-menu">
+                        <li class="active-sub">• Historial de mantenimiento</li>
+                    </ul>
+                </div>
+            </nav>
+            <button class="btn-logout-sidebar" onclick="window.logout()">Cerrar Sesión</button>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-bar">
+                <div style="font-size:13px; color:#5c1424; font-weight:bold;">Módulo de Reportes Oficiales</div>
+                <div class="user-profile">
+                    <span class="notification-icon">🔔</span>
+                    <span id="userEmailDisplay" class="user-email-text">Cargando...</span>
+                </div>
+            </header>
+
+            <div class="encabezado-pdf">
+                <div>
+                    <h2 style="margin:0; color:#5c1424;">H. AYUNTAMIENTO DE CALNALI 2024-2027</h2>
+                    <p style="margin:2px 0 0; font-size:12px;">Reporte Oficial: Historial de Mantenimiento de Equipo de Cómputo</p>
+                </div>
+                <div style="text-align:right; font-size:11px;"><strong>Emisión:</strong> <span id="fechaEmisionPDF"></span></div>
+            </div>
+
+            <h1 class="page-title">HISTORIAL DE MANTENIMIENTO</h1>
+
+            <section class="filtros-panel">
+                <div class="filtros-grid">
+                    <div class="filtro-item"><label>Mes:</label><select id="filtroMes"><option value="">Todos los meses</option></select></div>
+                    <div class="filtro-item"><label>Tipo de Equipo:</label><select id="filtroTipoEquipo"><option value="">Todos los tipos</option></select></div>
+                    <div class="filtro-item"><label>Status Ticket:</label>
+                        <select id="filtroStatus">
+                            <option value="">Todos los estatus</option>
+                            <option value="Abierto">Abierto</option>
+                            <option value="Asignado">Asignado</option>
+                            <option value="Cerrado">Cerrado</option>
+                        </select>
+                    </div>
+                    <div class="filtro-item"><label>Área:</label><select id="filtroArea"><option value="">Todas las áreas</option></select></div>
+                    <div class="filtro-item"><label>Departamento:</label><select id="filtroDepartamento"><option value="">Todos los departamentos</option></select></div>
+                    <div class="filtro-item"><label>Encargado del Equipo:</label><select id="filtroEncargado"><option value="">Todos los encargados</option></select></div>
+                    <div class="filtro-item"><label>Técnico en Atención:</label><select id="filtroTecnico"><option value="">Todos los técnicos</option></select></div>
+                    <div class="filtro-item"><label>Tipo de Mantenimiento:</label><select id="filtroTipoMant"><option value="">Todos los mantenimientos</option></select></div>
+                </div>
+                <div class="acciones-rep">
+                    <div style="font-size:13px;">Registros encontrados: <strong id="contadorRegistros" style="color:#5c1424;">0</strong></div>
+                    <div style="display:flex; gap:10px;">
+                        <button type="button" class="btn-rep btn-limpiar" id="btnLimpiarFiltros">🧹 Limpiar</button>
+                        <button type="button" class="btn-rep btn-excel" id="btnExportarExcel">📥 Excel (.CSV)</button>
+                        <button type="button" class="btn-rep btn-pdf" id="btnImprimirPDF">🖨️ Imprimir / PDF</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="tabla-scroll">
+                <table class="tabla-rep">
+                    <thead>
+                        <tr>
+                            <th>Mes</th><th>ID Equipo</th><th>Tipo de Equipo</th><th>Status Ticket</th>
+                            <th>Área</th><th>Departamento</th><th>Encargado del Equipo</th><th>Técnico en Atención</th>
+                            <th>Tipo de Mantenimiento</th><th>Problema</th><th>Fecha de Entrada</th><th>Fecha de Salida</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpoTablaReporte">
+                        <tr><td colspan="12" style="text-align:center; padding:20px;">Cargando registros...</td></tr>
+                    </tbody>
+                </table>
+            </section>
+            <footer class="main-footer">H. AYUNTAMIENTO 2024-2027</footer>
+        </main>
+    </div>
+
+    <!-- COPIA AQUÍ TUS 3 ETIQUETAS <script> DE FIREBASE (app, auth y firestore) IGUAL QUE EN menu.html -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+</body>
+</html>
