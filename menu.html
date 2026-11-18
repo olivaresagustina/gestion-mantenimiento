@@ -86,12 +86,27 @@
                     <span class="search-icon">🔍</span>
                     <input type="text" placeholder="Buscar equipo, departamento, etc...">
                 </div>
-                <div class="user-profile">
-                    <span class="notification-icon">🔔</span>
-                    <span id="userEmailDisplay" class="user-email-text">admin@calnali.gob.mx</span>
-                    <img src="https://placeholder.com" alt="Avatar" class="avatar-img">
-                </div>
-            </header>
+
+
+    <!-- NUEVO MENÚ DESPLEGABLE DE PERFIL -->
+    <div class="user-profile-dropdown" id="userProfileDropdown">
+        <div class="user-profile-trigger" id="btnUserDropdown">
+            <span class="notification-icon">🔔</span>
+            <span id="userEmailDisplay" class="user-email-text user-email-label">admin@calnali.gob.mx</span>
+            <span class="dropdown-arrow">▼</span>
+        </div>
+
+        <div class="user-dropdown-menu" id="userDropdownMenu">
+            <div class="dropdown-header">
+                <span style="font-size: 10px; color: #777;">Sesión activa como:</span>
+                <span id="dropdownUserRole" class="dropdown-role-badge">Usuario</span>
+            </div>
+            <button type="button" class="dropdown-item-logout" onclick="logout()">
+                <span>🚪</span> Cerrar Sesión
+            </button>
+        </div>
+    </div>
+</header>
 
             <h1 class="page-title">RESUMEN DEL EQUIPO DE CÓMPUTO</h1>
 
@@ -422,6 +437,7 @@
             }
         };
     </script>
+<script src="perfil.js"></script>
 
 
 

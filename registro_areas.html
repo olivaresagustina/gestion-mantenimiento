@@ -174,7 +174,32 @@
                     </ul>
                 </div>
                 <div class="nav-item" onclick="window.location.href='ticket.html'">📊 MANTENIMIENTO</div>
-                <div class="nav-item" id="reportesMenuLink">📊 REPORTES</div>
+             <!-- Submenú de Reportes (Visible para Administrador y Director) -->
+<div class="nav-section" id="sectionReportes">
+    <div class="section-title" onclick="const sub = document.getElementById('subMenuReportes'); sub.style.display = sub.style.display === 'none' ? 'block' : 'none';" style="cursor: pointer;">📊 REPORTES</div>
+    <ul class="sub-menu" id="subMenuReportes" style="display: none;">
+        <li><a href="reporte_mantenimiento.html" style="color: inherit; text-decoration: none;">• Historial de mantenimiento</a></li>
+    </ul>
+</div>
+    <!-- NUEVO MENÚ DESPLEGABLE DE PERFIL -->
+    <div class="user-profile-dropdown" id="userProfileDropdown">
+        <div class="user-profile-trigger" id="btnUserDropdown">
+            <span class="notification-icon">🔔</span>
+            <span id="userEmailDisplay" class="user-email-text user-email-label">admin@calnali.gob.mx</span>
+            <span class="dropdown-arrow">▼</span>
+        </div>
+
+        <div class="user-dropdown-menu" id="userDropdownMenu">
+            <div class="dropdown-header">
+                <span style="font-size: 10px; color: #777;">Sesión activa como:</span>
+                <span id="dropdownUserRole" class="dropdown-role-badge">Usuario</span>
+            </div>
+            <button type="button" class="dropdown-item-logout" onclick="logout()">
+                <span>🚪</span> Cerrar Sesión
+            </button>
+        </div>
+    </div>
+</header>
                 
             </nav>
             <button class="btn-logout-sidebar" onclick="logout()">Cerrar Sesión</button>
@@ -284,6 +309,8 @@
             }
         });
     </script>
+    <script src="perfil.js"></script>
+
 </body>
 
 </html>
