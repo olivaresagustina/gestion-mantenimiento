@@ -3,26 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                            <!-- BARRA SUPERIOR DERECHA -->
-                            <header class="top-bar" style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
-                                <div class="user-profile-dropdown" id="userProfileDropdown">
-                                    <div class="user-profile-trigger" id="btnUserDropdown">
-                                        <span class="notification-icon">🔔</span>
-                                        <span id="userEmailDisplay" class="user-email-text user-email-label">Cargando...</span>
-                                        <span class="dropdown-arrow">▼</span>
-                                    </div>
-                        
-                                    <div class="user-dropdown-menu" id="userDropdownMenu">
-                                        <div class="dropdown-header">
-                                            <span style="font-size: 10px; color: #777;">Sesión activa como:</span>
-                                            <span id="dropdownUserRole" class="dropdown-role-badge">Usuario</span>
-                                        </div>
-                                        <button type="button" class="dropdown-item-logout" onclick="logout()">
-                                            <span>🚪</span> Cerrar Sesión
-                                        </button>
-                                    </div>
-                                </div>
-                            </header>
     <title>Áreas y Departamentos - Juntos Rescatando Calnali</title>
     <!-- Vinculamos tus estilos unificados del menú -->
     <link rel="stylesheet" href="styles_menu.css">
@@ -114,7 +94,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
         .form-header {
-            background-color: #5c1424; /* Color Guinda Institucional */
+            background-color: #5c1424;
             color: white;
             padding: 18px;
             font-size: 16px;
@@ -182,47 +162,51 @@
                     <div class="section-title"><a href="menu.html" style="color:inherit; text-decoration:none;">📊 Dashboard</a></div>
                 </div>
               
-                
-            
                 <div class="nav-section active">
                     <div class="section-title">📦 INVENTARIO</div>
                     <ul class="sub-menu">
                         <li><a href="registro_equipo.html" style="color:inherit; text-decoration:none;">• Registro del equipo de cómputo</a></li>
                         <li><a href="registro_usuarios.html" style="color:inherit; text-decoration:none;">• Registro de Usuarios encargados</a></li>
-                        <main class="main-content">
-
                         <li class="active-sub">• Registro de Áreas y Departamentos</li>
-                        
                     </ul>
                 </div>
+
                 <div class="nav-item" onclick="window.location.href='ticket.html'">📊 MANTENIMIENTO</div>
-             <!-- Submenú de Reportes (Visible para Administrador y Director) -->
-<div class="nav-section" id="sectionReportes">
-    <div class="section-title" onclick="const sub = document.getElementById('subMenuReportes'); sub.style.display = sub.style.display === 'none' ? 'block' : 'none';" style="cursor: pointer;">📊 REPORTES</div>
-    <ul class="sub-menu" id="subMenuReportes" style="display: none;">
-        <li><a href="reporte_mantenimiento.html" style="color: inherit; text-decoration: none;">• Historial de mantenimiento</a></li>
-    </ul>
-</div>
 
-
-        <div class="user-dropdown-menu" id="userDropdownMenu">
-            <div class="dropdown-header">
-                <span style="font-size: 10px; color: #777;">Sesión activa como:</span>
-                <span id="dropdownUserRole" class="dropdown-role-badge">Usuario</span>
-            </div>
-            <button type="button" class="dropdown-item-logout" onclick="logout()">
-                <span>🚪</span> Cerrar Sesión
-            </button>
-        </div>
-    </div>
-</header>
-                
+                <!-- Submenú de Reportes -->
+                <div class="nav-section" id="sectionReportes">
+                    <div class="section-title" onclick="const sub = document.getElementById('subMenuReportes'); sub.style.display = sub.style.display === 'none' ? 'block' : 'none';" style="cursor: pointer;">📊 REPORTES</div>
+                    <ul class="sub-menu" id="subMenuReportes" style="display: none;">
+                        <li><a href="reporte_mantenimiento.html" style="color: inherit; text-decoration: none;">• Historial de mantenimiento</a></li>
+                    </ul>
+                </div>
             </nav>
             <button class="btn-logout-sidebar" onclick="logout()">Cerrar Sesión</button>
         </aside>
 
         <!-- CONTENIDO PRINCIPAL -->
         <main class="main-content">
+            <!-- BARRA SUPERIOR DERECHA -->
+            <header class="top-bar" style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
+                <div class="user-profile-dropdown" id="userProfileDropdown">
+                    <div class="user-profile-trigger" id="btnUserDropdown">
+                        <span class="notification-icon">🔔</span>
+                        <span id="userEmailDisplay" class="user-email-text user-email-label">Cargando...</span>
+                        <span class="dropdown-arrow">▼</span>
+                    </div>
+        
+                    <div class="user-dropdown-menu" id="userDropdownMenu">
+                        <div class="dropdown-header">
+                            <span style="font-size: 10px; color: #777;">Sesión activa como:</span>
+                            <span id="dropdownUserRole" class="dropdown-role-badge">Usuario</span>
+                        </div>
+                        <button type="button" class="dropdown-item-logout" onclick="logout()">
+                            <span>🚪</span> Cerrar Sesión
+                        </button>
+                    </div>
+                </div>
+            </header>
+
             <h1 class="page-title">Áreas y Departamentos</h1>
             <div class="table-container">
                 <div class="table-header-actions">
@@ -245,50 +229,42 @@
             </div>
         </main>
     </div>
-
     <!-- VENTANA MODAL FLOTANTE -->
-        <!-- VENTANA MODAL FLOTANTE (ADAPTADA PARA EDITAR) -->
-        <div class="modal-overlay" id="modalAreas">
-            <div class="form-container">
-                <!-- Agregamos un ID al encabezado para cambiar el título con JavaScript -->
-                <div class="form-header" id="modalTitulo">Agregar Área o Departamento</div>
-                <form id="formRegistroAreas">
-                    <!-- Campo oculto para almacenar el ID del documento cuando editamos -->
-                    <input type="hidden" id="editDocId">
-                    
-                    <div class="form-body">
-                        <div class="form-group">
-                            <label>Nombre del Área:</label>
-                            <input type="text" id="inputArea" placeholder="Ej: Gestión Integral" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Nombre del Departamento:</label>
-                            <input type="text" id="inputDepartamento" placeholder="Ej: Dirección de Gestión de Riesgo" required>
-                        </div>
+    <div class="modal-overlay" id="modalAreas">
+        <div class="form-container">
+            <div class="form-header" id="modalTitulo">Agregar Área o Departamento</div>
+            <form id="formRegistroAreas">
+                <input type="hidden" id="editDocId">
+                
+                <div class="form-body">
+                    <div class="form-group">
+                        <label>Nombre del Área:</label>
+                        <input type="text" id="inputArea" placeholder="Ej: Gestión Integral" required>
                     </div>
-                    <div class="row-buttons">
-                        <button type="submit" class="btn-footer btn-save">✓ Guardar</button>
-                        <button type="button" id="btnCancelarModal" class="btn-footer btn-cancel">✕ Cancelar</button>
+                    <div class="form-group">
+                        <label>Nombre del Departamento:</label>
+                        <input type="text" id="inputDepartamento" placeholder="Ej: Dirección de Gestión de Riesgo" required>
                     </div>
-                </form>
-            </div>
+                </div>
+                <div class="row-buttons">
+                    <button type="submit" class="btn-footer btn-save">✓ Guardar</button>
+                    <button type="button" id="btnCancelarModal" class="btn-footer btn-cancel">✕ Cancelar</button>
+                </div>
+            </form>
         </div>
+    </div>
     
-    <!-- LIBRERÍAS DE FIREBASE SDK (Versión 8 de compatibilidad) -->
+    <!-- LIBRERÍAS DE FIREBASE SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>   
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
-
-    
-    <!-- Vinculamos la lógica del sistema -->
-    <!-- Vinculamos la lógica del sistema -->
+    <!-- LÓGICA DE ÁREAS Y DEPARTAMENTOS -->
     <script src="registro_areas.js"></script>
 
-    <!-- Script unificado: Interfaz móvil y control estricto de roles -->
+    <!-- CONTROL DE ROLES Y MENÚ MÓVIL -->
     <script>
         window.addEventListener('DOMContentLoaded', () => {
-            // A. VALIDACIÓN DE PRIVILEGIOS Y FILTRO DE EXPULSIÓN ABSOLUTA
             const storedRole = localStorage.getItem("userRole");
             const storedEmail = localStorage.getItem("userEmail");
 
@@ -300,15 +276,14 @@
 
             if (storedRole === "Encargado") {
                 alert("Acceso denegado. No tienes permisos para ingresar al Registro de Áreas.");
-                window.location.href = "ticket.html"; // Su única página permitida
+                window.location.href = "ticket.html";
                 return;
             } else if (storedRole === "Director") {
                 alert("Acceso denegado. Esta sección es de uso exclusivo para el Administrador de soporte.");
-                window.location.href = "menu.html"; // Su página permitida (Dashboard)
+                window.location.href = "menu.html";
                 return;
             }
 
-            // B. COMPORTAMIENTO DEL BOTÓN HAMBURGUESA MÓVIL (SÓLO ACCESIBLE PARA EL ADMINISTRADOR VÁLIDO)
             const sidebar = document.querySelector('.sidebar');
             const navMenu = document.querySelector('.sidebar-nav');
 
@@ -325,8 +300,19 @@
             }
         });
     </script>
+
+    <!-- LÓGICA DEL MENÚ DESPLEGABLE DE PERFIL -->
     <script src="perfil.js"></script>
-
 </body>
-
 </html>
+
+
+
+
+
+
+
+
+
+
+
