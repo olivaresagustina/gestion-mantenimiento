@@ -687,3 +687,8 @@ html[data-user-role="Director"] .opcion-admin {
 .dropdown-item-logout:hover {
     background-color: #fff0f2 !important;
 }
+
+/* Ocultar el botón inferior de cerrar sesión de la barra lateral */
+.btn-logout-sidebar {
+    display: none !important;
+}
