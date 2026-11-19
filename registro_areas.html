@@ -3,6 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <!-- BARRA SUPERIOR DERECHA -->
+                            <header class="top-bar" style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
+                                <div class="user-profile-dropdown" id="userProfileDropdown">
+                                    <div class="user-profile-trigger" id="btnUserDropdown">
+                                        <span class="notification-icon">🔔</span>
+                                        <span id="userEmailDisplay" class="user-email-text user-email-label">Cargando...</span>
+                                        <span class="dropdown-arrow">▼</span>
+                                    </div>
+                        
+                                    <div class="user-dropdown-menu" id="userDropdownMenu">
+                                        <div class="dropdown-header">
+                                            <span style="font-size: 10px; color: #777;">Sesión activa como:</span>
+                                            <span id="dropdownUserRole" class="dropdown-role-badge">Usuario</span>
+                                        </div>
+                                        <button type="button" class="dropdown-item-logout" onclick="logout()">
+                                            <span>🚪</span> Cerrar Sesión
+                                        </button>
+                                    </div>
+                                </div>
+                            </header>
     <title>Áreas y Departamentos - Juntos Rescatando Calnali</title>
     <!-- Vinculamos tus estilos unificados del menú -->
     <link rel="stylesheet" href="styles_menu.css">
@@ -169,6 +189,8 @@
                     <ul class="sub-menu">
                         <li><a href="registro_equipo.html" style="color:inherit; text-decoration:none;">• Registro del equipo de cómputo</a></li>
                         <li><a href="registro_usuarios.html" style="color:inherit; text-decoration:none;">• Registro de Usuarios encargados</a></li>
+                        <main class="main-content">
+
                         <li class="active-sub">• Registro de Áreas y Departamentos</li>
                         
                     </ul>
@@ -181,13 +203,7 @@
         <li><a href="reporte_mantenimiento.html" style="color: inherit; text-decoration: none;">• Historial de mantenimiento</a></li>
     </ul>
 </div>
-    <!-- NUEVO MENÚ DESPLEGABLE DE PERFIL -->
-    <div class="user-profile-dropdown" id="userProfileDropdown">
-        <div class="user-profile-trigger" id="btnUserDropdown">
-            <span class="notification-icon">🔔</span>
-            <span id="userEmailDisplay" class="user-email-text user-email-label">admin@calnali.gob.mx</span>
-            <span class="dropdown-arrow">▼</span>
-        </div>
+
 
         <div class="user-dropdown-menu" id="userDropdownMenu">
             <div class="dropdown-header">
