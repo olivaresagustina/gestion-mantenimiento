@@ -589,3 +589,101 @@ html[data-user-role="Director"] #inventarioMenuLink,
 html[data-user-role="Director"] .opcion-admin {
     display: none !important;
 }
+/* ==========================================================================
+   ESTILOS BLINDADOS PARA EL MENÚ DESPLEGABLE DE PERFIL
+   ========================================================================== */
+   .user-profile-dropdown {
+    position: relative !important;
+    display: inline-block !important;
+}
+
+.user-profile-trigger {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    background-color: #ffffff !important;
+    border: 1.5px solid #d8ccb8 !important;
+    padding: 7px 15px !important;
+    border-radius: 25px !important;
+    cursor: pointer !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05) !important;
+    transition: all 0.2s ease !important;
+}
+
+.user-profile-trigger:hover {
+    border-color: #b8904c !important;
+    background-color: #fcfaf5 !important;
+}
+
+.user-email-label {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #333333 !important;
+}
+
+.dropdown-arrow {
+    font-size: 10px !important;
+    color: #5c1424 !important;
+    transition: transform 0.25s ease !important;
+}
+
+.user-profile-dropdown.activo .dropdown-arrow {
+    transform: rotate(180deg) !important;
+}
+
+/* OCULTO POR DEFECTO HASTA HACER CLIC */
+.user-dropdown-menu {
+    display: none !important;
+    position: absolute !important;
+    right: 0 !important;
+    top: calc(100% + 8px) !important;
+    background-color: #ffffff !important;
+    min-width: 220px !important;
+    border-radius: 10px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+    border: 1px solid #e5dccb !important;
+    z-index: 9999 !important;
+    overflow: hidden !important;
+}
+
+/* SE MUESTRA SOLO CUANDO JS AGREGA LA CLASE .mostrar */
+.user-dropdown-menu.mostrar {
+    display: block !important;
+}
+
+.dropdown-header {
+    padding: 12px 16px !important;
+    background-color: #fbf6ee !important;
+    border-bottom: 1px solid #ece3d5 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 2px !important;
+}
+
+.dropdown-role-badge {
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    color: #5c1424 !important;
+    text-transform: uppercase !important;
+}
+
+.dropdown-item-logout {
+    width: 100% !important;
+    padding: 12px 16px !important;
+    background-color: #ffffff !important;
+    border: none !important;
+    outline: none !important;
+    text-align: left !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #dc4c64 !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    transition: background-color 0.2s !important;
+}
+
+.dropdown-item-logout:hover {
+    background-color: #fff0f2 !important;
+}
