@@ -46,6 +46,7 @@
         .main-table th, .main-table td {
             border: 1px solid #e0e0e0;
             padding: 10px;
+            vertical-align: middle;
         }
         .main-table th {
             background-color: #fafafa;
@@ -59,9 +60,13 @@
             color: #f57f17;
         }
         .img-table {
-            width: 50px;
-            height: auto;
-            object-fit: contain;
+            width: 48px;
+            height: 48px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            display: block;
+            margin: 0 auto;
         }
         .btn-action-t {
             padding: 4px 8px;
@@ -85,21 +90,22 @@
         .form-container {
             background-color: #ffffff;
             width: 480px;
-            border: 2px solid #1a5276;
-            border-radius: 5px;
+            border: 2px solid #5c1424;
+            border-radius: 8px;
             box-shadow: 0px 4px 15px rgba(0,0,0,0.2);
+            overflow: hidden;
         }
         .form-header {
-            background-color: #1a5276;
+            background-color: #5c1424;
             color: white;
             text-align: center;
-            padding: 10px;
+            padding: 12px;
             font-size: 15px;
             font-weight: bold;
         }
         .form-body {
             padding: 15px 20px;
-            max-height: 85vh;
+            max-height: 82vh;
             overflow-y: auto;
         }
         label {
@@ -111,7 +117,7 @@
         }
         input[type="text"], select, textarea {
             width: 100%;
-            padding: 6px;
+            padding: 7px;
             margin-top: 4px;
             border: 1px solid #ccc;
             border-radius: 4px;
@@ -119,13 +125,31 @@
             font-size: 13px;
         }
         input[disabled] { background-color: #e9ecef; color: #6c757d; }
-        .file-row { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
-        .btn-upload-file { padding: 6px 12px; background-color: #e0e0e0; border: 1px solid #adadad; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .file-row { display: flex; align-items: center; gap: 12px; margin-top: 6px; }
+        .btn-upload-file { padding: 7px 14px; background-color: #e0e0e0; border: 1px solid #adadad; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600; }
+        .btn-upload-file:hover { background-color: #d5d5d5; }
         .row-buttons { display: flex; gap: 10px; margin-top: 20px; }
-        .btn-form { padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 13px; }
-        .btn-save { background-color: #2980b9; color: white; }
-        .btn-cancel { background-color: #bdc3c7; color: #333; }
-        .img-preview-box { width: 35px; height: 35px; border: 1px solid #ccc; background-color: #f9f9f9; display: inline-block; }
+        .btn-form { padding: 9px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 13px; }
+        .btn-save { background-color: #198754; color: white; }
+        .btn-cancel { background-color: #dc3545; color: white; }
+        .img-preview-box { 
+            width: 50px; 
+            height: 50px; 
+            border: 1px solid #ccc; 
+            border-radius: 6px;
+            background-color: #f9f9f9; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            font-size: 10px;
+            color: #888;
+        }
+        .img-preview-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
     </style>
 </head>
 <body>
@@ -146,7 +170,6 @@
                     <div class="section-title"><a href="menu.html" style="color:inherit; text-decoration:none;">📊 Dashboard</a></div>
                 </div>
                 
-                
                 <div class="nav-section active">
                     <div class="section-title">📦 INVENTARIO</div>
                     <ul class="sub-menu">
@@ -155,14 +178,16 @@
                         <li><a href="registro_areas.html" style="color:inherit; text-decoration:none;">• Registro de Áreas y Departamentos</a></li>
                     </ul>
                 </div>
+
                 <div class="nav-item" onclick="window.location.href='ticket.html'">📊 MANTENIMIENTO</div>
- <!-- Submenú de Reportes (Visible para Administrador y Director) -->
-<div class="nav-section" id="sectionReportes">
-    <div class="section-title" onclick="const sub = document.getElementById('subMenuReportes'); sub.style.display = sub.style.display === 'none' ? 'block' : 'none';" style="cursor: pointer;">📊 REPORTES</div>
-    <ul class="sub-menu" id="subMenuReportes" style="display: none;">
-        <li><a href="reporte_mantenimiento.html" style="color: inherit; text-decoration: none;">• Historial de mantenimiento</a></li>
-    </ul>
-</div>
+
+                <!-- Submenú de Reportes -->
+                <div class="nav-section" id="sectionReportes">
+                    <div class="section-title" onclick="const sub = document.getElementById('subMenuReportes'); sub.style.display = sub.style.display === 'none' ? 'block' : 'none';" style="cursor: pointer;">📊 REPORTES</div>
+                    <ul class="sub-menu" id="subMenuReportes" style="display: none;">
+                        <li><a href="reporte_mantenimiento.html" style="color: inherit; text-decoration: none;">• Historial de mantenimiento</a></li>
+                    </ul>
+                </div>
             </nav>
             <button class="btn-logout-sidebar" onclick="logout()">Cerrar Sesión</button>
         </aside>
@@ -172,28 +197,28 @@
             <header class="top-bar">
                 <div class="search-box">
                     <span class="search-icon">🔍</span>
-                    <!-- REQUERIMIENTO CUMPLIDO: Incorporación del ID para que funcione el buscador multicampo -->
                     <input type="text" id="inputBuscarEquipo" placeholder="Buscar equipo...">
                 </div>
-    <!-- NUEVO MENÚ DESPLEGABLE DE PERFIL -->
-    <div class="user-profile-dropdown" id="userProfileDropdown">
-        <div class="user-profile-trigger" id="btnUserDropdown">
-            <span class="notification-icon">🔔</span>
-            <span id="userEmailDisplay" class="user-email-text user-email-label">admin@calnali.gob.mx</span>
-            <span class="dropdown-arrow">▼</span>
-        </div>
 
-        <div class="user-dropdown-menu" id="userDropdownMenu">
-            <div class="dropdown-header">
-                <span style="font-size: 10px; color: #777;">Sesión activa como:</span>
-                <span id="dropdownUserRole" class="dropdown-role-badge">Usuario</span>
-            </div>
-            <button type="button" class="dropdown-item-logout" onclick="logout()">
-                <span>🚪</span> Cerrar Sesión
-            </button>
-        </div>
-    </div>
-</header>
+                <!-- MENÚ DESPLEGABLE DE PERFIL -->
+                <div class="user-profile-dropdown" id="userProfileDropdown">
+                    <div class="user-profile-trigger" id="btnUserDropdown">
+                        <span class="notification-icon">🔔</span>
+                        <span id="userEmailDisplay" class="user-email-text user-email-label">admin@calnali.gob.mx</span>
+                        <span class="dropdown-arrow">▼</span>
+                    </div>
+
+                    <div class="user-dropdown-menu" id="userDropdownMenu">
+                        <div class="dropdown-header">
+                            <span style="font-size: 10px; color: #777;">Sesión activa como:</span>
+                            <span id="dropdownUserRole" class="dropdown-role-badge">Usuario</span>
+                        </div>
+                        <button type="button" class="dropdown-item-logout" onclick="logout()">
+                            <span>🚪</span> Cerrar Sesión
+                        </button>
+                    </div>
+                </div>
+            </header>
 
             <h1 class="page-title">Equipos de Cómputo</h1>
 
@@ -247,7 +272,11 @@
                     <option value="Monitor">Monitor</option>
                     <option value="CPU">CPU</option>
                     <option value="Laptop">Laptop</option>
+                    <option value="Impresora">Impresora</option>
+                    <option value="Otro">Otro (Especificar)</option>
                 </select>
+                <!-- Campo oculto que aparece solo al seleccionar "Otro" -->
+                <input type="text" id="equipoTipoOtro" placeholder="Escriba el tipo de equipo (Ej: Proyector, Escáner...)" style="display: none; margin-top: 8px;">
 
                 <label>Marca</label>
                 <input type="text" id="equipoMarca" placeholder="Ej: DELL" required>
@@ -262,7 +291,7 @@
                 <div class="file-row">
                     <input type="file" id="equipoImagen" accept=".jpeg,.png,.jpg" style="display: none;">
                     <button type="button" class="btn-upload-file" onclick="document.getElementById('equipoImagen').click()">Subir Imagen</button>
-                    <div class="img-preview-box" id="previewContainer"></div>
+                    <div class="img-preview-box" id="previewContainer">Sin img</div>
                 </div>
 
                 <label>Comentarios</label>
@@ -298,13 +327,13 @@
         </div>
     </div>
 
-    <!-- LIBRERÍAS DE FIREBASE (Versión 8 tradicional compatible con navegadores) -->
+    <!-- LIBRERÍAS DE FIREBASE -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>   
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
     <script>
-        // 1. Inicialización de Firebase con credenciales institucionales completas
+        // 1. Inicialización de Firebase
         const nombreProyecto = "gestion-mantenimiento-ap-20f51";
         const firebaseConfig = {
             apiKey: "AIzaSyDDcGT88IspX4-_TOKtQcdeo-93favOuoY",
@@ -322,12 +351,66 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
+        let equiposGlobales = [];
+        window.editEquipoId = "";
+        let imagenBase64Actual = "";
+
+        // Mostrar u ocultar campo "Otro (Especificar)"
+        const selectTipo = document.getElementById("equipoTipo");
+        const inputTipoOtro = document.getElementById("equipoTipoOtro");
+
+        selectTipo.addEventListener("change", (e) => {
+            if (e.target.value === "Otro") {
+                inputTipoOtro.style.display = "block";
+                inputTipoOtro.focus();
+            } else {
+                inputTipoOtro.style.display = "none";
+                inputTipoOtro.value = "";
+            }
+        });
+
+        // Procesar y comprimir imagen subida
+        document.getElementById("equipoImagen").addEventListener("change", (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const extensiones = /(\.jpg|\.jpeg|\.png)$/i;
+            if (!extensiones.exec(file.name)) {
+                alert("Formato inválido. Solo se permiten imágenes .jpg, .jpeg o .png");
+                e.target.value = "";
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement("canvas");
+                    const MAX_WIDTH = 250;
+                    const scale = MAX_WIDTH / img.width;
+                    canvas.width = MAX_WIDTH;
+                    canvas.height = img.height * scale;
+
+                    const ctx = canvas.getContext("2d");
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                    imagenBase64Actual = canvas.toDataURL("image/jpeg", 0.75);
+                    document.getElementById("previewContainer").innerHTML = `<img src="${imagenBase64Actual}" alt="Vista previa">`;
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
         // Control de Ventana Modal Flotante
         const modalElement = document.getElementById('modalRegistro');
         
         document.getElementById('btnAbrirFormulario').addEventListener('click', () => {
             document.getElementById("tituloFormEquipo").innerText = "REGISTRAR NUEVO EQUIPO";
-            window.editEquipoId = ""; // Limpiar variable de edición al abrir limpio
+            window.editEquipoId = "";
+            imagenBase64Actual = "";
+            document.getElementById("previewContainer").innerHTML = "Sin img";
+            inputTipoOtro.style.display = "none";
             modalElement.style.display = 'flex';
         });
 
@@ -335,27 +418,34 @@
             modalElement.style.display = 'none';
             document.getElementById("formRegistroEquipo").reset();
             window.editEquipoId = "";
-            // Restablecer estados de selects bloqueados
+            imagenBase64Actual = "";
+            document.getElementById("previewContainer").innerHTML = "Sin img";
+            inputTipoOtro.style.display = "none";
+            inputTipoOtro.value = "";
+
             document.getElementById("equipoDepartamento").disabled = true;
             document.getElementById("equipoDepartamento").innerHTML = '<option value="">Selecciona primero un área...</option>';
             document.getElementById("equipoEncargado").disabled = true;
             document.getElementById("equipoEncargado").innerHTML = '<option value="">Selecciona primero un departamento...</option>';
         });
 
-        // REQUERIMIENTO CUMPLIDO: Escuchador optimizado sin duplicados para cerrar con la tecla Escape
         window.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && modalElement.style.display === 'flex') {
                 document.getElementById('btnCancelarFormulario').click();
             }
         });
 
-        // 2. Función principal unificada para Guardar (Creación y Edición) en Firestore
+        // 2. Función principal unificada para Guardar (Creación y Edición)
         async function guardarEquipoEnFirebase() {
-            const tipo = document.getElementById("equipoTipo").value;
-            const marca = document.getElementById("equipoMarca").value;
-            const modelo = document.getElementById("equipoModelo").value;
-            const serie = document.getElementById("equipoSerie").value;
-            const comentarios = document.getElementById("equipoComentarios").value;
+            let tipo = document.getElementById("equipoTipo").value;
+            if (tipo === "Otro") {
+                tipo = document.getElementById("equipoTipoOtro").value.trim();
+            }
+
+            const marca = document.getElementById("equipoMarca").value.trim();
+            const modelo = document.getElementById("equipoModelo").value.trim();
+            const serie = document.getElementById("equipoSerie").value.trim();
+            const comentarios = document.getElementById("equipoComentarios").value.trim();
             const condicion = document.getElementById("equipoCondicion").value;
             const area = document.getElementById("equipoArea").value;
             const departamento = document.getElementById("equipoDepartamento").value;
@@ -370,13 +460,15 @@
                 tipo, marca, modelo, serie, comentarios, condicion, area, departamento, encargado
             };
 
+            if (imagenBase64Actual) {
+                datosEquipo.imagen = imagenBase64Actual;
+            }
+
             try {
                 if (window.editEquipoId) {
-                    // MODO EDICIÓN: Actualización reactiva sobre documento existente
                     await db.collection("equipos").doc(window.editEquipoId).update(datosEquipo);
                     alert("¡Operación realizada correctamente! El equipo ha sido modificado.");
                 } else {
-                    // MODO CREACIÓN: Inserción ordinaria con marca de tiempo del servidor
                     datosEquipo.fechaRegistro = firebase.firestore.FieldValue.serverTimestamp();
                     await db.collection("equipos").add(datosEquipo);
                     alert("¡Operación realizada correctamente! El equipo ha sido guardado con éxito.");
@@ -392,10 +484,14 @@
 
         document.getElementById("btnGuardarEquipo").addEventListener("click", guardarEquipoEnFirebase);
 
-        // Variables de caché local para permitir el funcionamiento del Buscador Multicampo
-        let equiposGlobales = [];
-        window.editEquipoId = "";
-        // 3. REQUERIMIENTO CUMPLIDO: Cargar Equipos, quitar engrane/ojo y conectar botón Editar
+        function generarCeldaImagen(datos) {
+            if (datos.imagen) {
+                return `<img src="${datos.imagen}" class="img-table" alt="${datos.tipo || 'Equipo'}">`;
+            }
+            return `<div style="width:48px; height:48px; background:#f3efe6; border:1px solid #dfd6c5; border-radius:6px; display:flex; align-items:center; justify-content:center; margin:0 auto; font-size:20px;" title="Sin imagen asignada">💻</div>`;
+        }
+
+        // 3. Cargar Equipos en Tiempo Real
         function escucharYMostrarEquipos() {
             db.collection("equipos").orderBy("fechaRegistro", "asc").onSnapshot((snapshot) => {
                 const tbody = document.getElementById("tablaEquiposCuerpo");
@@ -423,14 +519,14 @@
                         <td>${datos.marca || ''}</td>
                         <td>${datos.modelo || ''}</td>
                         <td>${datos.serie || ''}</td>
-                        <td><img src="teclado.png" class="img-table" alt="Equipo"></td>
+                        <td>${generarCeldaImagen(datos)}</td>
                         <td>${datos.comentarios || 'Sin comentarios'}</td>
                         <td><span class="status-badge">${datos.condicion || ''}</span></td>
                         <td>${datos.area || ''}</td>
                         <td>${datos.departamento || ''}</td>
                         <td>${datos.encargado || ''}</td>
                         <td>
-                            <button class="btn-action-t" style="background-color: #3b71ca;" onclick="prepararEdicionEquipo('${idDoc}', '${datos.tipo || ''}', '${datos.marca || ''}', '${datos.modelo || ''}', '${datos.serie || ''}', '${datos.comentarios || ''}', '${datos.condicion || ''}', '${datos.area || ''}', '${datos.departamento || ''}', '${datos.encargado || ''}')">✏️</button>
+                            <button class="btn-action-t" style="background-color: #3b71ca;" onclick="prepararEdicionEquipo('${idDoc}')">✏️</button>
                             <button class="btn-action-t" style="background-color: #dc4c64;" onclick="eliminarEquipoReal('${idDoc}')">🗑️</button>
                         </td>
                     `;
@@ -442,25 +538,43 @@
             });
         }
 
-        // REQUERIMIENTO CUMPLIDO: Función que mapea los datos de vuelta al formulario al presionar Editar
-        window.prepararEdicionEquipo = async function(id, tipo, marca, modelo, serie, comentarios, condicion, area, departamento, encargado) {
+        window.prepararEdicionEquipo = async function(id) {
+            const equipo = equiposGlobales.find(e => e.id === id);
+            if (!equipo) return;
+
             window.editEquipoId = id;
             document.getElementById("tituloFormEquipo").innerText = "MODIFICAR EQUIPO DE CÓMPUTO";
 
-            document.getElementById("equipoTipo").value = tipo;
-            document.getElementById("equipoMarca").value = marca;
-            document.getElementById("equipoModelo").value = modelo;
-            document.getElementById("equipoSerie").value = serie;
-            document.getElementById("equipoComentarios").value = comentarios;
-            document.getElementById("equipoCondicion").value = condicion;
+            const opcionesFijas = Array.from(selectTipo.options).map(opt => opt.value);
+            if (opcionesFijas.includes(equipo.tipo) && equipo.tipo !== "Otro") {
+                selectTipo.value = equipo.tipo;
+                inputTipoOtro.style.display = "none";
+                inputTipoOtro.value = "";
+            } else {
+                selectTipo.value = "Otro";
+                inputTipoOtro.style.display = "block";
+                inputTipoOtro.value = equipo.tipo || "";
+            }
 
-            // Inyectamos el Área y forzamos de manera síncrona el flujo en cascada
-            document.getElementById("equipoArea").value = area;
-            await sincronizarDepartamentos(area);
-            document.getElementById("equipoDepartamento").value = departamento;
+            document.getElementById("equipoMarca").value = equipo.marca || "";
+            document.getElementById("equipoModelo").value = equipo.modelo || "";
+            document.getElementById("equipoSerie").value = equipo.serie || "";
+            document.getElementById("equipoComentarios").value = equipo.comentarios || "";
+            document.getElementById("equipoCondicion").value = equipo.condicion || "Funcional";
 
-            await sincronizarEncargados(area, departamento);
-            document.getElementById("equipoEncargado").value = encargado;
+            imagenBase64Actual = equipo.imagen || "";
+            if (equipo.imagen) {
+                document.getElementById("previewContainer").innerHTML = `<img src="${equipo.imagen}" alt="Actual">`;
+            } else {
+                document.getElementById("previewContainer").innerHTML = "Sin img";
+            }
+
+            document.getElementById("equipoArea").value = equipo.area || "";
+            await sincronizarDepartamentos(equipo.area || "");
+            document.getElementById("equipoDepartamento").value = equipo.departamento || "";
+
+            await sincronizarEncargados(equipo.area || "", equipo.departamento || "");
+            document.getElementById("equipoEncargado").value = equipo.encargado || "";
 
             modalElement.style.display = 'flex';
         };
@@ -474,7 +588,8 @@
                 });
             }
         }
-        // REQUERIMIENTO CUMPLIDO: Motor del Buscador Multicampo en Tiempo Real conectado al ID
+
+        // Buscador Multicampo en Tiempo Real
         const inputBuscarEquipo = document.getElementById("inputBuscarEquipo");
         if (inputBuscarEquipo) {
             inputBuscarEquipo.addEventListener("input", (e) => {
@@ -506,14 +621,14 @@
                         <td>${datos.marca || ''}</td>
                         <td>${datos.modelo || ''}</td>
                         <td>${datos.serie || ''}</td>
-                        <td><img src="teclado.png" class="img-table" alt="Equipo"></td>
+                        <td>${generarCeldaImagen(datos)}</td>
                         <td>${datos.comentarios || 'Sin comentarios'}</td>
                         <td><span class="status-badge">${datos.condicion || ''}</span></td>
                         <td>${datos.area || ''}</td>
                         <td>${datos.departamento || ''}</td>
                         <td>${datos.encargado || ''}</td>
                         <td>
-                            <button class="btn-action-t" style="background-color: #3b71ca;" onclick="prepararEdicionEquipo('${datos.id}', '${datos.tipo || ''}', '${datos.marca || ''}', '${datos.modelo || ''}', '${datos.serie || ''}', '${datos.comentarios || ''}', '${datos.condicion || ''}', '${datos.area || ''}', '${datos.departamento || ''}', '${datos.encargado || ''}')">✏️</button>
+                            <button class="btn-action-t" style="background-color: #3b71ca;" onclick="prepararEdicionEquipo('${datos.id}')">✏️</button>
                             <button class="btn-action-t" style="background-color: #dc4c64;" onclick="eliminarEquipoReal('${datos.id}')">🗑️</button>
                         </td>
                     `;
@@ -521,8 +636,7 @@
                 });
             });
         }
-
-        // 4. TRIPLE FILTRADO EN CASCADA CONECTADO A FIRESTORE
+        // 4. TRIPLE FILTRADO EN CASCADA
         let listaGlobalAreasDeptos = [];
 
         function inicializarFiltroAvanzadoEquipos() {
@@ -612,56 +726,64 @@
             });
         }
 
-        // --- 9. INICIALIZACIÓN DE SESIÓN CON EXPULSIÓN ABSOLUTA POR ROLES ---
+        // 5. INICIALIZACIÓN DE SESIÓN Y ROLES
         window.addEventListener('DOMContentLoaded', () => {
             const emailDisplay = document.querySelector(".user-email-text");
             const storedEmail = localStorage.getItem("userEmail");
-            const storedRole = localStorage.getItem("userRole"); // Evaluamos el rol guardado en el login
+            const storedRole = localStorage.getItem("userRole");
 
-            // A. CONTROL DE ENTRADA CRÍTICO: Si no hay credenciales locales, expulsa al login
             if (!storedEmail || !storedRole) {
                 alert("Acceso denegado. Por favor inicia sesión de forma correcta.");
                 window.location.href = "index.html";
                 return;
             }
 
-            // B. EXPULSIÓN INMEDIATA DE ROLES NO AUTORIZADOS
             if (storedRole === "Encargado") {
                 alert("Acceso denegado. No tienes permisos para gestionar el inventario del Ayuntamiento.");
-                window.location.href = "ticket.html"; // Su única página permitida
+                window.location.href = "ticket.html";
                 return;
             } else if (storedRole === "Director") {
                 alert("Acceso denegado. Esta sección es exclusiva para el Administrador del sistema.");
-                window.location.href = "menu.html"; // Su menú permitido (Dashboard)
+                window.location.href = "menu.html";
                 return;
             }
 
-            // C. DISPARAR LA CARGA DE DATOS (Solo si pasó el filtro y es Administrador)
             if (emailDisplay) {
                 emailDisplay.innerText = storedEmail;
             }
             
-            // Inicializamos las descargas del servidor de Firebase una vez validados los privilegios
             escucharYMostrarEquipos();
             inicializarFiltroAvanzadoEquipos();
         });
 
-        // --- 10. CIERRE DE SESIÓN SEGURO INSTITUCIONAL ---
         window.logout = async () => {
             try {
                 await auth.signOut();
-                localStorage.clear(); // Limpieza absoluta de cookies y almacenamiento de roles
+                localStorage.clear();
                 window.location.href = "index.html";
             } catch (error) {
                 alert("Error al cerrar sesión institucional: " + error.message);
             }
         };
-
     </script>
     <script src="perfil.js"></script>
-
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
