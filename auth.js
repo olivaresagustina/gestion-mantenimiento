@@ -120,3 +120,36 @@ window.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+    // --- BOTÓN DEL OJITO PARA MOSTRAR / OCULTAR CONTRASEÑA ---
+    const inputPassword = document.getElementById("password");
+    if (inputPassword && inputPassword.parentElement) {
+        const contenedorInput = inputPassword.parentElement;
+        contenedorInput.style.position = "relative";
+        inputPassword.style.paddingRight = "38px"; // Espacio para que el texto no choque con el ojo
+
+        const btnTogglePass = document.createElement("span");
+        btnTogglePass.innerHTML = "👁️";
+        btnTogglePass.title = "Mostrar u ocultar contraseña";
+        btnTogglePass.style.position = "absolute";
+        btnTogglePass.style.right = "12px";
+        btnTogglePass.style.top = "50%";
+        btnTogglePass.style.transform = "translateY(-50%)";
+        btnTogglePass.style.cursor = "pointer";
+        btnTogglePass.style.fontSize = "16px";
+        btnTogglePass.style.userSelect = "none";
+        btnTogglePass.style.opacity = "0.65";
+
+        btnTogglePass.addEventListener("click", () => {
+            if (inputPassword.type === "password") {
+                inputPassword.type = "text";
+                btnTogglePass.innerHTML = "🙈";
+                btnTogglePass.style.opacity = "1";
+            } else {
+                inputPassword.type = "password";
+                btnTogglePass.innerHTML = "👁️";
+                btnTogglePass.style.opacity = "0.65";
+            }
+        });
+
+        contenedorInput.appendChild(btnTogglePass);
+    }
