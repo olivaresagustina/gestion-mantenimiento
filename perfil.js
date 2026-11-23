@@ -27,23 +27,27 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
- // 2. CREACIÓN AUTOMÁTICA DEL MENÚ HAMBURGUESA EN CELULAR (<= 768px)
- const sidebar = document.querySelector('.sidebar');
- const navMenu = document.querySelector('.sidebar-nav');
 
- if (sidebar && navMenu && !document.querySelector('.toggle-menu-movil')) {
-     const botonHamburguesa = document.createElement('button');
-     botonHamburguesa.type = 'button';
-     botonHamburguesa.className = 'toggle-menu-movil';
-     botonHamburguesa.innerHTML = '☰';
-     botonHamburguesa.setAttribute('aria-label', 'Abrir menú');
-     sidebar.appendChild(botonHamburguesa);
 
-     botonHamburguesa.addEventListener('click', (e) => {
-         e.stopPropagation();
-         navMenu.classList.toggle('menu-activo');
-         botonHamburguesa.innerHTML = navMenu.classList.contains('menu-activo') ? '✕' : '☰';
-     });
- }
+
+    // 2. CREACIÓN DEL MENÚ HAMBURGUESA SOLO PARA ADMINISTRADOR Y DIRECTOR
+    const sidebar = document.querySelector('.sidebar');
+    const navMenu = document.querySelector('.sidebar-nav');
+
+    if (storedRole !== "Encargado" && sidebar && navMenu && !document.querySelector('.toggle-menu-movil')) {
+        const botonHamburguesa = document.createElement('button');
+        botonHamburguesa.type = 'button';
+        botonHamburguesa.className = 'toggle-menu-movil';
+        botonHamburguesa.innerHTML = '☰';
+        botonHamburguesa.setAttribute('aria-label', 'Abrir menú');
+        sidebar.appendChild(botonHamburguesa);
+
+        botonHamburguesa.addEventListener('click', (e) => {
+            e.stopPropagation();
+            navMenu.classList.toggle('menu-activo');
+            botonHamburguesa.innerHTML = navMenu.classList.contains('menu-activo') ? '✕' : '☰';
+        });
+    }
 });
+
 
