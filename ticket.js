@@ -218,6 +218,19 @@ function inyectarTicketsEnTabla(listaDeTickets) {
             `;
         }
 
+        const esEditable = (statusActual.toLowerCase() === "abierto");
+
+        const celdasBotonesHTML = esEditable
+            ? `
+                <button class='btn-action-t' style='background-color: #2c9faf; margin-right: 5px;' id="btnEditar-${ticket.id}" title="Editar ticket">
+                    ✏️
+                </button>
+                <button class='btn-action-t' style='background-color: #dc4c64;' id="btnEliminar-${ticket.id}" title="Eliminar ticket">
+                    🗑️
+                </button>
+              `
+            : `<span style="font-size: 11px; color: #777; font-style: italic; font-weight: 500;">En atención 🔒</span>`;
+
         tr.innerHTML = `
             <td><strong>${index++}</strong></td>
             <td>${ticket.fechaPeticion || 'S/F'}</td>
@@ -231,33 +244,31 @@ function inyectarTicketsEnTabla(listaDeTickets) {
                 <span class="badge badge-funcional" style="background-color: #2c9faf; color: white; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 11px;">
                     ${statusActual}
                 </span>
-                ${alertaMensajeHTML} <!-- Renderizado dinámico de la notificación -->
+                ${alertaMensajeHTML}
             </td>
-            <td>
-                <button class='btn-action-t' style='background-color: #2c9faf; margin-right: 5px;' id="btnEditar-${ticket.id}">
-                    ✏️
-                </button>
-                <button class='btn-action-t' style='background-color: #dc4c64;' id="btnEliminar-${ticket.id}">
-                    🗑️
-                </button>
-            </td>
+            <td>${celdasBotonesHTML}</td>
         `;
 
-        tr.querySelector(`#btnEditar-${ticket.id}`).addEventListener('click', (e) => {
-            e.stopPropagation();
-            prepararEdicionTicket(ticket.id, ticket.tipo, ticket.marca, ticket.modelo, ticket.serie, ticket.detalle, ticket.condicion, ticket.fechaPeticion, ticket.urgente);
-        });
+        if (esEditable) {
+            tr.querySelector(`#btnEditar-${ticket.id}`).addEventListener('click', (e) => {
+                e.stopPropagation();
+                prepararEdicionTicket(ticket.id, ticket.tipo, ticket.marca, ticket.modelo, ticket.serie, ticket.detalle, ticket.condicion, ticket.fechaPeticion, ticket.urgente);
+            });
 
-        tr.querySelector(`#btnEliminar-${ticket.id}`).addEventListener('click', (e) => {
-            e.stopPropagation();
-            eliminarTicket(ticket.id);
-        });
+            tr.querySelector(`#btnEliminar-${ticket.id}`).addEventListener('click', (e) => {
+                e.stopPropagation();
+                eliminarTicket(ticket.id);
+            });
+        }
 
         tr.addEventListener('click', () => {
             activarChatDesdeUsuario(ticket);
         });
 
         tbody.appendChild(tr);
+    
+
+       
     });
 }
 // --- 6. ENLACE REACTIVO CON LA SUBCOLECCIÓN DE CHAT DESDE EL USUARIO ---
