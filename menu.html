@@ -139,10 +139,11 @@
                         <canvas id="graficaDonaEstados"></canvas>
                     </div>
                     <div class="chart-legends" id="leyendaDona">
-                        <span class="legend"><span class="dot maroon"></span> Operativo</span>
-                        <span class="legend"><span class="dot gold"></span> En Reparación</span>
-                        <span class="legend"><span class="dot brown"></span> Baja</span>
+                        <span class="legend"><span class="dot maroon"></span> Funcional</span>
+                        <span class="legend"><span class="dot gold"></span> Mantenimiento</span>
+                        <span class="legend"><span class="dot brown"></span> No Funcional</span>
                     </div>
+                   
                 </div>
 
                 <!-- Bloque Central: Gráfica de Barras Real por Departamento -->
@@ -330,15 +331,19 @@
                         }
                     });
 
-                    // 1. Conteo de Equipos
+                    // 1. Conteo de Equipos por condición real
                     let totalEquipos = equiposSnap.size;
-                    let operativos = 0, enReparacion = 0, baja = 0;
+                    let funcionales = 0, enMantenimiento = 0, noFuncionales = 0;
 
                     equiposSnap.forEach(doc => {
-                        const estado = (doc.data().estado || "Operativo").toLowerCase();
-                        if (estado.includes("reparaci") || estado.includes("mantenimiento")) enReparacion++;
-                        else if (estado.includes("baja") || estado.includes("inactivo")) baja++;
-                        else operativos++;
+                        const cond = (doc.data().condicion || "Funcional").trim().toLowerCase();
+                        if (cond === "mantenimiento") {
+                            enMantenimiento++;
+                        } else if (cond === "no funcional") {
+                            noFuncionales++;
+                        } else {
+                            funcionales++;
+                        }
                     });
 
                     // 2. Conteo de Tickets cruzando el departamento real
@@ -364,26 +369,29 @@
 
                     // 3. Actualizar números en tarjetas
                     document.getElementById("cardTotalEquipos").innerText = totalEquipos;
-                    document.getElementById("cardPreventivoAlDia").innerText = operativos;
+                    document.getElementById("cardPreventivoAlDia").innerText = funcionales;
                     document.getElementById("cardCorrectivoPendiente").innerText = pendientes;
 
                     document.getElementById("sideTotalEquipos").innerText = totalEquipos;
                     document.getElementById("sideTicketsCerrados").innerText = cerrados;
                     document.getElementById("sideTicketsEspera").innerText = pendientes;
 
-                    // 4. Dibujar Gráfica de Dona
+                    // 4. Dibujar Gráfica de Dona con los estados reales
                     new Chart(document.getElementById('graficaDonaEstados'), {
                         type: 'doughnut',
                         data: {
-                            labels: ['Operativo', 'En Reparación', 'Baja'],
+                            labels: ['Funcional', 'Mantenimiento', 'No Funcional'],
                             datasets: [{
-                                data: [operativos, enReparacion, baja],
+                                data: [funcionales, enMantenimiento, noFuncionales],
                                 backgroundColor: ['#691c32', '#bc955c', '#4a3b32'],
                                 borderWidth: 0
                             }]
                         },
                         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
                     });
+
+
+
 
                     // 5. Dibujar Gráfica de Barras con los Departamentos Reales (Top 5)
                     const topDeptos = Object.entries(conteoDeptos).sort((a, b) => b[1] - a[1]).slice(0, 5);

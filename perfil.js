@@ -28,8 +28,6 @@ window.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-
-
     // 2. CREACIÓN DEL MENÚ HAMBURGUESA SOLO PARA ADMINISTRADOR Y DIRECTOR
     const sidebar = document.querySelector('.sidebar');
     const navMenu = document.querySelector('.sidebar-nav');
