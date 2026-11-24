@@ -28,6 +28,15 @@ function obtenerNombreMes(fechaStr) {
     return (mesNum >= 1 && mesNum <= 12) ? MESES[mesNum - 1] : "Sin Mes";
 }
 
+function obtenerAnio(fechaStr) {
+    if (!fechaStr || typeof fechaStr !== "string") return "Sin Año";
+    const partes = fechaStr.trim().split(/[-/]/);
+    if (partes.length < 3) return "Sin Año";
+    // Si el primer segmento tiene 4 dígitos es YYYY-MM-DD; si no, tomamos el tercer segmento (DD/MM/YYYY)
+    const anio = partes[0].length === 4 ? partes[0] : partes[2].slice(0, 4);
+    return /^\d{4}$/.test(anio) ? anio : "Sin Año";
+}
+
 
 function formatearSalida(ts) {
     if (!ts) return "Pendiente";
@@ -85,6 +94,7 @@ async function cargarHistorialReporte() {
             const st = t.status || "Abierto";
 
             datosCompletosReporte.push({
+                anio: obtenerAnio(fEntrada),
                 mes: obtenerNombreMes(fEntrada),
                 idEquipo: eq.idVisual,
                 tipoEquipo: t.tipo || "No especificado",
@@ -109,12 +119,14 @@ async function cargarHistorialReporte() {
 }
 
 function poblarFiltros() {
-    const llenar = (id, campo, def) => {
+    const llenar = (id, campo, def, ordenarDesc = false) => {
         const sel = document.getElementById(id);
         if (!sel) return;
-        const unicos = [...new Set(datosCompletosReporte.map(i => i[campo]).filter(Boolean))];
+        let unicos = [...new Set(datosCompletosReporte.map(i => i[campo]).filter(Boolean))];
+        if (ordenarDesc) unicos.sort((a, b) => b.localeCompare(a));
         sel.innerHTML = `<option value="">${def}</option>` + unicos.map(v => `<option value="${v}">${v}</option>`).join("");
     };
+    llenar("filtroAnio", "anio", "Todos los años", true);
     llenar("filtroMes", "mes", "Todos los meses");
     llenar("filtroTipoEquipo", "tipoEquipo", "Todos los tipos");
     llenar("filtroArea", "area", "Todas las áreas");
@@ -126,12 +138,12 @@ function poblarFiltros() {
 
 function aplicarFiltros() {
     const val = id => document.getElementById(id).value;
-    const fMes = val("filtroMes"), fTipo = val("filtroTipoEquipo"), fSt = val("filtroStatus"),
-          fArea = val("filtroArea"), fDepto = val("filtroDepartamento"), fEnc = val("filtroEncargado"),
-          fTec = val("filtroTecnico"), fMant = val("filtroTipoMant");
+    const fAnio = val("filtroAnio"), fMes = val("filtroMes"), fTipo = val("filtroTipoEquipo"),
+          fSt = val("filtroStatus"), fArea = val("filtroArea"), fDepto = val("filtroDepartamento"),
+          fEnc = val("filtroEncargado"), fTec = val("filtroTecnico"), fMant = val("filtroTipoMant");
 
     datosFiltradosActuales = datosCompletosReporte.filter(r =>
-        (!fMes || r.mes === fMes) && (!fTipo || r.tipoEquipo === fTipo) &&
+        (!fAnio || r.anio === fAnio) && (!fMes || r.mes === fMes) && (!fTipo || r.tipoEquipo === fTipo) &&
         (!fSt || r.status.toLowerCase() === fSt.toLowerCase()) && (!fArea || r.area === fArea) &&
         (!fDepto || r.departamento === fDepto) && (!fEnc || r.encargado === fEnc) &&
         (!fTec || r.tecnico === fTec) && (!fMant || r.tipoMantenimiento === fMant)
