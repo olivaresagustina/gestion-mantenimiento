@@ -85,7 +85,11 @@ function cargarPeticionesGlobales() {
     }
 
     // Escuchamos la colección real "tickets"
-    db.collection("tickets").onSnapshot(async (ticketsSnapshot) => {
+    // Escuchamos únicamente los tickets con status "Abierto" pendientes de asignación
+     db.collection("tickets")
+     .where("status", "in", ["Abierto", "ABIERTO"])
+     .onSnapshot(async (ticketsSnapshot) => {
+
         if (ticketsSnapshot.empty) {
             tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #777; padding: 20px;">No hay ningún ticket levantado en el sistema actualmente.</td></tr>`;
             return;
@@ -320,32 +324,27 @@ window.addEventListener('DOMContentLoaded', () => {
         document.documentElement.setAttribute('data-user-role', storedRole);
     }
 
-    // A. CONTROL ESTRICTO DE ACCESO
-    if (!storedEmail || !storedRole) {
+       // A. CONTROL ESTRICTO DE ACCESO
+       if (!storedEmail || !storedRole) {
         alert("Acceso denegado. Por favor inicia sesión.");
         window.location.href = "index.html";
         return;
     }
 
+    // B. EXPULSIÓN DE ROLES NO AUTORIZADOS (Encargado y Director)
     if (storedRole === "Encargado") {
-        alert("No tienes permisos para acceder a la Bandeja de Gestión.");
+        alert("No tienes permisos para acceder a la Bandeja de Entrada.");
         window.location.href = "ticket.html";
+        return;
+    } else if (storedRole === "Director") {
+        alert("Acceso denegado. Esta sección es exclusiva para el Administrador del sistema.");
+        window.location.href = "menu.html";
         return;
     }
 
-    // B. CONFIGURAR COMPORTAMIENTO SI ES ADMIN O DIRECTOR
-    if (storedRole === "Administrador") {
-        esUsuarioAdministrador = true;
-    } else if (storedRole === "Director") {
-        esUsuarioAdministrador = false; 
-        console.log("Modo de vista de solo lectura configurado para Dirección.");
-        
-        // Ocultamos las pestañas que el director no debe ver en su barra lateral
-        const segMenu = document.getElementById("seguridadMenuLink"); 
-        const invMenu = document.getElementById("inventarioMenuLink");
-        if (segMenu) segMenu.style.display = "none";
-        if (invMenu) invMenu.style.display = "none";
-    }
+    // SI LLEGA AQUÍ, ES ADMINISTRADOR
+    esUsuarioAdministrador = true;
+
 
     // C. INICIALIZAR RENDERIZADO
     if (emailDisplay) emailDisplay.innerText = storedEmail;
