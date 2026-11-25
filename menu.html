@@ -345,9 +345,9 @@
                             funcionales++;
                         }
                     });
-
                     // 2. Conteo de Tickets cruzando el departamento real
                     let pendientes = 0, cerrados = 0;
+                    const porVencerDashboard = [];
                     const conteoDeptos = {};
                     const conteoTiposMant = { "Correctivo": 0, "Preventivo": 0, "Actualización de software": 0, "Sin clasificar": 0 };
 
@@ -356,6 +356,25 @@
                         const st = (t.status || "Abierto").toLowerCase();
                         if (st === "cerrado") cerrados++;
                         else pendientes++;
+
+                        // Detectar tickets Asignados que vencen mañana, hoy o ya vencieron
+                        if (st === "asignado" && t.fechaSalidaEstimada && t.fechaSalidaEstimada !== "S/F") {
+                            const p = t.fechaSalidaEstimada.trim().split("-");
+                            if (p.length === 3) {
+                                const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+                                const fLim = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2])); fLim.setHours(0, 0, 0, 0);
+                                const dias = Math.round((fLim - hoy) / (1000 * 60 * 60 * 24));
+                                if (dias <= 1) {
+                                    porVencerDashboard.push({
+                                        equipo: `${t.tipo || 'Equipo'} ${t.marca || ''}`.trim(),
+                                        tecnico: t.tecnicoAsignado || 'Sin técnico',
+                                        depto: mapaDeptosPorEmail[(t.usuarioEmail || "").trim().toLowerCase()] || t.departamento || "General",
+                                        fecha: t.fechaSalidaEstimada,
+                                        dias: dias
+                                    });
+                                }
+                            }
+                        }
 
                         // Buscamos el departamento real usando el correo del ticket
                         const correoTicket = (t.usuarioEmail || "").trim().toLowerCase();
@@ -375,6 +394,49 @@
                     document.getElementById("sideTotalEquipos").innerText = totalEquipos;
                     document.getElementById("sideTicketsCerrados").innerText = cerrados;
                     document.getElementById("sideTicketsEspera").innerText = pendientes;
+
+                    // Alerta minimizable de tickets por vencer arriba del Dashboard
+                    const rolActual = localStorage.getItem("userRole");
+                    const tituloPagina = document.querySelector(".page-title");
+                    if (porVencerDashboard.length > 0 && tituloPagina && (rolActual === "Administrador" || rolActual === "Director")) {
+                        let bannerDash = document.getElementById("bannerAlertaDashboard");
+                        if (!bannerDash) {
+                            bannerDash = document.createElement("div");
+                            bannerDash.id = "bannerAlertaDashboard";
+                            bannerDash.style.cssText = "background:#fff3cd; border-left:5px solid #dc3545; color:#661d2a; padding:12px 16px; margin:12px 0 18px 0; border-radius:6px; font-size:13px; box-shadow:0 2px 6px rgba(0,0,0,0.08);";
+                            tituloPagina.insertAdjacentElement("afterend", bannerDash);
+                        }
+                        const itemsDashHTML = porVencerDashboard.map(item => {
+                            let est = item.dias === 1 ? "<strong>Vence MAÑANA</strong>" :
+                                      item.dias === 0 ? "<strong style='color:#dc3545;'>Vence HOY</strong>" :
+                                      `<strong style='color:#dc3545;'>Vencido hace ${Math.abs(item.dias)} día(s)</strong>`;
+                            return `<li style="margin:4px 0;">Técnico: <strong>${item.tecnico}</strong> | ${item.equipo} (${item.depto}) — ${est} (${item.fecha})</li>`;
+                        }).join("");
+
+                        bannerDash.innerHTML = `
+                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                                <div style="font-weight:bold; font-size:14px;">
+                                    ⏰ Atención: Hay ${porVencerDashboard.length} ticket(s) próximo(s) a vencer o vencido(s)
+                                </div>
+                                <div style="display:flex; gap:6px;">
+                                    ${rolActual === "Administrador" ? `<a href="tickets_asignados.html" style="background:#b8904c; color:#fff; text-decoration:none; border-radius:4px; padding:3px 10px; font-size:11px; font-weight:bold;">Ir a atender →</a>` : ""}
+                                    <button type="button" id="btnToggleBannerDash" style="background:#661d2a; color:#fff; border:none; border-radius:4px; padding:3px 10px; font-size:11px; cursor:pointer; font-weight:bold;">
+                                        ➖ Minimizar
+                                    </button>
+                                </div>
+                            </div>
+                            <ul id="listaBannerDash" style="margin:8px 0 0 0; padding-left:20px;">${itemsDashHTML}</ul>
+                        `;
+
+                        document.getElementById("btnToggleBannerDash").addEventListener("click", () => {
+                            const ul = document.getElementById("listaBannerDash");
+                            const btn = document.getElementById("btnToggleBannerDash");
+                            const oculto = ul.style.display === "none";
+                            ul.style.display = oculto ? "block" : "none";
+                            btn.innerText = oculto ? "➖ Minimizar" : "➕ Ver detalles";
+                        });
+                    }
+                  
 
                     // 4. Dibujar Gráfica de Dona con los estados reales
                     new Chart(document.getElementById('graficaDonaEstados'), {

@@ -420,12 +420,28 @@ function evaluarAlertasVencimiento(listaTickets) {
         }).join("");
 
         banner.innerHTML = `
-            <div style="font-weight:bold; font-size:14px; margin-bottom:6px;">
-                ⏰ Atención: Tienes ${porVencer.length} ticket(s) próximo(s) a vencer o vencido(s):
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="font-weight:bold; font-size:14px;">
+                    ⏰ Atención: Tienes ${porVencer.length} ticket(s) próximo(s) a vencer o vencido(s)
+                </div>
+                <button type="button" id="btnToggleBannerVenc" style="background:#661d2a; color:#fff; border:none; border-radius:4px; padding:3px 10px; font-size:11px; cursor:pointer; font-weight:bold;">
+                    ➖ Minimizar
+                </button>
             </div>
-            <ul style="margin:0; padding-left:20px;">${itemsHTML}</ul>
+            <ul id="listaBannerVenc" style="margin:8px 0 0 0; padding-left:20px;">${itemsHTML}</ul>
         `;
+
+        const btnToggle = document.getElementById("btnToggleBannerVenc");
+        const listaUl = document.getElementById("listaBannerVenc");
+        if (btnToggle && listaUl) {
+            btnToggle.addEventListener("click", () => {
+                const oculto = listaUl.style.display === "none";
+                listaUl.style.display = oculto ? "block" : "none";
+                btnToggle.innerText = oculto ? "➖ Minimizar" : "➕ Ver detalles";
+            });
+        }
     }
+
 
     // 2. Notificación nativa del navegador (máximo 1 vez por sesión para no molestar)
     if (!sessionStorage.getItem("notificacionVencimientoMostrada") && "Notification" in window) {
