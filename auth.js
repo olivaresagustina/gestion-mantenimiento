@@ -78,31 +78,22 @@ window.logout = async () => {
     }
 };
 
-// ---  LOGICA ENLAZADA PARA RESTABLECER CONTRASEÑA ---
+// --- LÓGICA ENLAZADA PARA RESTABLECER CONTRASEÑA Y VER CLAVE ---
 window.addEventListener('DOMContentLoaded', () => {
-    // Buscamos el enlace mediante selectores de texto elásticos ya que tu HTML no tiene una ID explícita
-    const enlaces = document.getElementsByTagName('a');
-    let btnRecuperar = null;
+    const btnRecuperar = document.getElementById('btnRecuperarClave');
 
-    for (let i = 0; i < enlaces.length; i++) {
-        if (enlaces[i].textContent.includes("¿Olvidaste tu contraseña?")) {
-            btnRecuperar = enlaces[i];
-            break;
-        }
-    }
-
-    // Si encontramos el enlace en la página, le inyectamos la lógica de Google
     if (btnRecuperar) {
-        btnRecuperar.style.cursor = "pointer"; // Nos aseguramos de que parezca un botón clickeable
+        btnRecuperar.style.cursor = "pointer";
         btnRecuperar.addEventListener('click', (e) => {
             e.preventDefault();
 
-            const emailUsuario = prompt("Por favor, introduce tu correo electrónico institucional:");
+            // Si ya escribió su correo en el login, lo sugerimos automáticamente
+            const correoActual = document.getElementById("email")?.value.trim() || "";
+            const emailUsuario = prompt("Por favor, introduce tu correo electrónico institucional:", correoActual);
             if (!emailUsuario || emailUsuario.trim() === "") return;
 
             const correoLimpio = emailUsuario.trim().toLowerCase();
 
-            // Petición de recuperación segura directa a Firebase Auth
             auth.sendPasswordResetEmail(correoLimpio)
                 .then(() => {
                     alert("¡Correo de recuperación enviado con éxito! Revisa tu bandeja de entrada o la carpeta de Spam para restablecer tu contraseña.");
@@ -119,13 +110,13 @@ window.addEventListener('DOMContentLoaded', () => {
                 });
         });
     }
-});
+
     // --- BOTÓN DEL OJITO PARA MOSTRAR / OCULTAR CONTRASEÑA ---
     const inputPassword = document.getElementById("password");
     if (inputPassword && inputPassword.parentElement) {
         const contenedorInput = inputPassword.parentElement;
         contenedorInput.style.position = "relative";
-        inputPassword.style.paddingRight = "38px"; // Espacio para que el texto no choque con el ojo
+        inputPassword.style.paddingRight = "38px";
 
         const btnTogglePass = document.createElement("span");
         btnTogglePass.innerHTML = "👁️";
@@ -153,3 +144,4 @@ window.addEventListener('DOMContentLoaded', () => {
 
         contenedorInput.appendChild(btnTogglePass);
     }
+});

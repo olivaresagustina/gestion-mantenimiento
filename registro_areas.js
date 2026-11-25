@@ -1,7 +1,7 @@
 // 1. Credenciales Oficiales de Conexión de tu Proyecto Corregidas
 const firebaseConfig = {
     apiKey: "AIzaSyDDcGT88IspX4-_TOKtQcdeo-93favOuoY",
-    authDomain: "://firebaseapp.com",
+    authDomain: "gestion-mantenimiento-ap-20f51.firebaseapp.com",
     projectId: "gestion-mantenimiento-ap-20f51",
     storageBucket: "gestion-mantenimiento-ap-20f51.firebasestorage.app",
     messagingSenderId: "792321276987",

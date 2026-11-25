@@ -32,7 +32,9 @@
                 <h2>Iniciar Sesión</h2>
                 <p class="subtitle">Use su correo y contraseña</p>
 
-                <form id="loginForm" onsubmit="event.preventDefault();"> <!--  OPTIMIZACIÓN: Evita recargas erróneas -->
+
+                    <form id="loginForm" onsubmit="event.preventDefault(); login();"><!--  OPTIMIZACIÓN: Evita recargas erróneas -->
+
                     <div class="input-group">
                         <span class="input-icon">✉</span>
                         <input type="email" id="email" required placeholder="Email" autocomplete="username">

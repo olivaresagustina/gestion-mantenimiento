@@ -1,7 +1,7 @@
 // 1. Configuración de Firebase y Servicios Institucionales Oficiales
 const firebaseConfig = {
     apiKey: "AIzaSyDDcGT88IspX4-_TOKtQcdeo-93favOuoY",
-    authDomain: "://firebaseapp.com",
+    authDomain: "gestion-mantenimiento-ap-20f51.firebaseapp.com",
     projectId: "gestion-mantenimiento-ap-20f51",
     storageBucket: "gestion-mantenimiento-ap-20f51.firebasestorage.app",
     messagingSenderId: "792321276987",
@@ -14,6 +14,7 @@ if (!firebase.apps.length) {
 }
 const db = firebase.firestore();
 const auth = firebase.auth();
+let ticketsLocales = [];
 
 const modal = document.getElementById('modalTicket');
 const form = document.getElementById('formRegistroTicket');
