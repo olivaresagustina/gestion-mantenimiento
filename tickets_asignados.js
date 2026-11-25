@@ -115,6 +115,7 @@ function cargarTicketsAsignadosGlobales() {
 
           registrosAsignados = await Promise.all(promesasTickets);
           inyectarTicketsEnTabla(registrosAsignados);
+          evaluarAlertasVencimiento(registrosAsignados);
 
       }, (error) => {
           console.error("Error en sincronía global de asignaciones:", error);
@@ -361,3 +362,86 @@ window.addEventListener('DOMContentLoaded', () => {
     if (emailDisplay) emailDisplay.innerText = storedEmail;
     cargarTicketsAsignadosGlobales();
 });
+// --- SISTEMA DE ALERTAS DE VENCIMIENTO (0 CONSUMO EXTRA EN FIRESTORE) ---
+function calcularDiasRestantes(fechaSalidaStr) {
+    if (!fechaSalidaStr || fechaSalidaStr === "S/F") return null;
+    const partes = fechaSalidaStr.trim().split("-");
+    if (partes.length !== 3) return null;
+
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
+    const fechaLimite = new Date(Number(partes[0]), Number(partes[1]) - 1, Number(partes[2]));
+    fechaLimite.setHours(0, 0, 0, 0);
+
+    const diffMs = fechaLimite - hoy;
+    return Math.round(diffMs / (1000 * 60 * 60 * 24));
+}
+
+function evaluarAlertasVencimiento(listaTickets) {
+    const porVencer = [];
+
+    listaTickets.forEach(t => {
+        const dias = calcularDiasRestantes(t.fechaSalida);
+        if (dias !== null && dias <= 1) {
+            porVencer.push({
+                id: t.ticketId,
+                equipo: `${t.tipo || 'Equipo'} ${t.marca || ''}`.trim(),
+                tecnico: t.tecnico || 'Sin técnico',
+                depto: t.departamento || 'General',
+                fecha: t.fechaSalida,
+                dias: dias
+            });
+        }
+    });
+
+    // 1. Mostrar u ocultar banner visual arriba de la tabla
+    let banner = document.getElementById("bannerAlertaVencimiento");
+    const tabla = document.querySelector("table");
+
+    if (porVencer.length === 0) {
+        if (banner) banner.remove();
+        return;
+    }
+
+    if (!banner && tabla && tabla.parentElement) {
+        banner = document.createElement("div");
+        banner.id = "bannerAlertaVencimiento";
+        banner.style.cssText = "background:#fff3cd; border-left:5px solid #dc3545; color:#661d2a; padding:12px 16px; margin-bottom:15px; border-radius:6px; font-size:13px; box-shadow:0 2px 6px rgba(0,0,0,0.08);";
+        tabla.parentElement.insertBefore(banner, tabla);
+    }
+
+    if (banner) {
+        const itemsHTML = porVencer.map(item => {
+            let estadoTexto = item.dias === 1 ? "<strong>Vence MAÑANA</strong>" :
+                              item.dias === 0 ? "<strong style='color:#dc3545;'>Vence HOY</strong>" :
+                              `<strong style='color:#dc3545;'>Vencido hace ${Math.abs(item.dias)} día(s)</strong>`;
+            return `<li style="margin:4px 0;">Técnico: <strong>${item.tecnico}</strong> | ${item.equipo} (${item.depto}) — ${estadoTexto} (${item.fecha})</li>`;
+        }).join("");
+
+        banner.innerHTML = `
+            <div style="font-weight:bold; font-size:14px; margin-bottom:6px;">
+                ⏰ Atención: Tienes ${porVencer.length} ticket(s) próximo(s) a vencer o vencido(s):
+            </div>
+            <ul style="margin:0; padding-left:20px;">${itemsHTML}</ul>
+        `;
+    }
+
+    // 2. Notificación nativa del navegador (máximo 1 vez por sesión para no molestar)
+    if (!sessionStorage.getItem("notificacionVencimientoMostrada") && "Notification" in window) {
+        const enviarNotif = () => {
+            new Notification("⏰ Tickets por vencer - Soporte Calnali", {
+                body: `Hay ${porVencer.length} ticket(s) asignado(s) que vencen mañana o requieren cierre inmediato.`
+            });
+            sessionStorage.setItem("notificacionVencimientoMostrada", "true");
+        };
+
+        if (Notification.permission === "granted") {
+            enviarNotif();
+        } else if (Notification.permission !== "denied") {
+            Notification.requestPermission().then(perm => {
+                if (perm === "granted") enviarNotif();
+            });
+        }
+    }
+}
