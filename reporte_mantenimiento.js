@@ -57,17 +57,30 @@ async function cargarHistorialReporte() {
             db.collection("usuarios_encargados").get()
         ]);
 
-        const mapaEquipos = {};
-        let idxEq = 1;
-        equiposSnap.forEach(doc => {
+
+        
+        const mapaEquiposPorSerie = {};
+        const mapaEquiposExacto = {};
+        const seriesInvalidas = ["", "s/n", "sn", "n/a", "na", "ninguno", "sin serie", "0", "123", "1234", "12345"];
+
+        // Ordenamos los documentos por ID para que la numeración EQ-001, EQ-002... siempre sea fija
+        const docsEquiposOrdenados = [...equiposSnap.docs].sort((a, b) => a.id.localeCompare(b.id));
+
+        docsEquiposOrdenados.forEach((doc, index) => {
             const eq = doc.data();
             const serie = (eq.serie || "").trim().toLowerCase();
+            const claveExacta = `${(eq.tipo || "").trim().toLowerCase()}|${(eq.marca || "").trim().toLowerCase()}|${(eq.modelo || "").trim().toLowerCase()}|${serie}`;
+
             const info = {
-                idVisual: eq.idEquipo || eq.codigo || `EQ-${String(idxEq++).padStart(3, '0')}`,
+                idVisual: eq.idEquipo || eq.codigo || `EQ-${String(index + 1).padStart(3, '0')}`,
                 area: eq.area || "General",
                 depto: eq.departamento || "General"
             };
-            if (serie) mapaEquipos[serie] = info;
+
+            mapaEquiposExacto[claveExacta] = info;
+            if (serie && !seriesInvalidas.includes(serie)) {
+                mapaEquiposPorSerie[serie] = info;
+            }
         });
 
         const mapaUsuarios = {};
@@ -87,11 +100,18 @@ async function cargarHistorialReporte() {
             const t = doc.data();
             const correo = (t.usuarioEmail || "").trim().toLowerCase();
             const serie = (t.serie || "").trim().toLowerCase();
+            const claveExactaTicket = `${(t.tipo || "").trim().toLowerCase()}|${(t.marca || "").trim().toLowerCase()}|${(t.modelo || "").trim().toLowerCase()}|${serie}`;
 
             const usr = mapaUsuarios[correo] || { nombre: "Desconocido", area: "General", depto: "General" };
-            const eq = mapaEquipos[serie] || { idVisual: t.serie || "S/ID", area: usr.area, depto: usr.depto };
+            const eq = mapaEquiposExacto[claveExactaTicket] || mapaEquiposPorSerie[serie] || { idVisual: "S/ID", area: usr.area, depto: usr.depto };
             const fEntrada = t.fechaPeticion || "Sin fecha";
             const st = t.status || "Abierto";
+  
+        
+        
+ 
+
+
 
             datosCompletosReporte.push({
                 anio: obtenerAnio(fEntrada),
