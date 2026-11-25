@@ -398,7 +398,9 @@
                     // Alerta minimizable de tickets por vencer arriba del Dashboard
                     const rolActual = localStorage.getItem("userRole");
                     const tituloPagina = document.querySelector(".page-title");
-                    if (porVencerDashboard.length > 0 && tituloPagina && (rolActual === "Administrador" || rolActual === "Director")) {
+                    
+                        if (porVencerDashboard.length > 0 && tituloPagina && rolActual === "Administrador") {
+
                         let bannerDash = document.getElementById("bannerAlertaDashboard");
                         if (!bannerDash) {
                             bannerDash = document.createElement("div");
