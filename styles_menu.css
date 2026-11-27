@@ -832,60 +832,87 @@ html[data-user-role="Encargado"] .sidebar-nav.menu-activo {
         break-inside: avoid !important;
     }
 }
-
 /* ==========================================================================
-   BOTÓN DE MENÚ MÓVIL DE ALTA VISIBILIDAD (SIN ENCIMAR EL TÍTULO)
+   ENCABEZADO MÓVIL Y BOTÓN MENÚ PERFECTAMENTE ALINEADOS
    ========================================================================== */
    @media (max-width: 768px) {
-    /* Acomodar logo/título a la izquierda y botón a la derecha sin encimarse */
     .sidebar {
         display: flex !important;
+        flex-direction: row !important;
         justify-content: space-between !important;
         align-items: center !important;
-        padding: 10px 12px !important;
+        padding: 10px 15px !important;
         flex-wrap: wrap !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
     }
 
     .sidebar-logo {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 8px !important;
         margin: 0 !important;
+        padding: 0 !important;
+        width: auto !important;
         flex: 1 !important;
     }
 
-    /* Hacer el texto del logo ligeramente más compacto en celular para dar espacio */
-    .logo-top {
-        font-size: 9px !important;
-    }
-    .logo-bottom {
-        font-size: 16px !important;
+    .menu-logo-img {
+        width: 36px !important;
+        height: auto !important;
     }
 
-    /* Botón dorado bien alineado a la derecha */
+    .logo-text {
+        text-align: left !important;
+    }
+
+    .logo-top {
+        font-size: 8.5px !important;
+        display: block !important;
+    }
+
+    .logo-bottom {
+        font-size: 16px !important;
+        line-height: 1.1 !important;
+    }
+
+    /* Botón dorado limpio y pegado a la esquina derecha */
     .toggle-menu-movil {
-        position: static !important; /* Quita el encimado */
+        position: relative !important;
+        top: auto !important;
+        right: auto !important;
+        left: auto !important;
+        transform: none !important;
+        width: auto !important;
+        height: auto !important;
+        margin-left: auto !important;
         background-color: #bc955c !important;
         color: #ffffff !important;
         border: 2px solid #ffffff !important;
         border-radius: 6px !important;
-        padding: 6px 10px !important;
+        padding: 6px 12px !important;
         font-size: 15px !important;
         font-weight: bold !important;
-        display: flex !important;
+        display: inline-flex !important;
         align-items: center !important;
-        gap: 5px !important;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35) !important;
+        justify-content: center !important;
+        gap: 6px !important;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3) !important;
         cursor: pointer !important;
-        flex-shrink: 0 !important;
     }
 
     .toggle-menu-movil::after {
         content: "MENÚ";
-        font-size: 11px;
-        letter-spacing: 0.5px;
+        font-size: 12px !important;
+        letter-spacing: 0.5px !important;
+        white-space: nowrap !important;
     }
 
-    /* Asegurar que el menú desplegable ocupe todo el ancho debajo al abrirse */
+    /* Al abrir el menú, ocupa el 100% de ancho en la fila de abajo */
     .sidebar-nav.menu-activo {
         width: 100% !important;
-        margin-top: 10px !important;
+        flex-basis: 100% !important;
+        margin-top: 12px !important;
     }
 }
