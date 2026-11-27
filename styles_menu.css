@@ -834,28 +834,58 @@ html[data-user-role="Encargado"] .sidebar-nav.menu-activo {
 }
 
 /* ==========================================================================
-   BOTÓN DE MENÚ MÓVIL DE ALTA VISIBILIDAD PARA DIRECTORES
+   BOTÓN DE MENÚ MÓVIL DE ALTA VISIBILIDAD (SIN ENCIMAR EL TÍTULO)
    ========================================================================== */
    @media (max-width: 768px) {
-    .toggle-menu-movil {
-        background-color: #bc955c !important; /* Fondo dorado institucional */
-        color: #ffffff !important;            /* Texto e ícono blanco puro */
-        border: 2px solid #ffffff !important; /* Borde blanco resaltado */
-        border-radius: 6px !important;
-        padding: 6px 12px !important;
+    /* Acomodar logo/título a la izquierda y botón a la derecha sin encimarse */
+    .sidebar {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        padding: 10px 12px !important;
+        flex-wrap: wrap !important;
+    }
+
+    .sidebar-logo {
+        margin: 0 !important;
+        flex: 1 !important;
+    }
+
+    /* Hacer el texto del logo ligeramente más compacto en celular para dar espacio */
+    .logo-top {
+        font-size: 9px !important;
+    }
+    .logo-bottom {
         font-size: 16px !important;
+    }
+
+    /* Botón dorado bien alineado a la derecha */
+    .toggle-menu-movil {
+        position: static !important; /* Quita el encimado */
+        background-color: #bc955c !important;
+        color: #ffffff !important;
+        border: 2px solid #ffffff !important;
+        border-radius: 6px !important;
+        padding: 6px 10px !important;
+        font-size: 15px !important;
         font-weight: bold !important;
         display: flex !important;
         align-items: center !important;
-        gap: 6px !important;
+        gap: 5px !important;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35) !important;
         cursor: pointer !important;
+        flex-shrink: 0 !important;
     }
 
-    /* Agrega automáticamente la palabra "MENÚ" junto a las 3 rayitas */
     .toggle-menu-movil::after {
         content: "MENÚ";
-        font-size: 12px;
+        font-size: 11px;
         letter-spacing: 0.5px;
+    }
+
+    /* Asegurar que el menú desplegable ocupe todo el ancho debajo al abrirse */
+    .sidebar-nav.menu-activo {
+        width: 100% !important;
+        margin-top: 10px !important;
     }
 }
