@@ -916,3 +916,24 @@ html[data-user-role="Encargado"] .sidebar-nav.menu-activo {
         margin-top: 12px !important;
     }
 }
+/* ==========================================================================
+   PROTECCIÓN DE COLORES INSTITUCIONALES CONTRA MODO OSCURO DEL CELULAR
+   ========================================================================== */
+   :root {
+    color-scheme: light only !important;
+}
+
+.dot.maroon {
+    background-color: #691c32 !important;
+    forced-color-adjust: none !important;
+}
+
+.dot.gold {
+    background-color: #bc955c !important;
+    forced-color-adjust: none !important;
+}
+
+.dot.brown {
+    background-color: #4a3b32 !important;
+    forced-color-adjust: none !important;
+}
