@@ -764,3 +764,71 @@ html[data-user-role="Encargado"] .sidebar-nav,
 html[data-user-role="Encargado"] .sidebar-nav.menu-activo {
     display: none !important;
 }
+
+/* ==========================================================================
+   CONFIGURACIÓN DE IMPRESIÓN PDF: UNA SOLA HOJA EN FORMATO HORIZONTAL
+   ========================================================================== */
+   @media print {
+    /* 1. Forzar hoja tamaño Carta en orientación Horizontal y márgenes mínimos */
+    @page {
+        size: letter landscape;
+        margin: 6mm;
+    }
+
+    /* 2. Ocultar menú lateral, barra superior, filtros, botones y pie de página */
+    .sidebar,
+    .toggle-menu-movil,
+    .top-bar,
+    .filtros-grid,
+    #btnLimpiarFiltros,
+    #btnExportarExcel,
+    #btnImprimirPDF,
+    .main-footer {
+        display: none !important;
+    }
+
+    /* 3. Limpiar contenedores para aprovechar el 100% del ancho de la hoja */
+    body,
+    html,
+    .dashboard-container,
+    .main-content {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+        display: block !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    /* 4. Quitar scroll horizontal móvil de la tabla para que no se corte */
+    .table-container {
+        width: 100% !important;
+        overflow: visible !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+    }
+
+    /* 5. Ajustar el ancho y compactar filas para que todo quepa en 1 sola hoja */
+    .main-table,
+    table {
+        width: 100% !important;
+        min-width: 100% !important;
+        border-collapse: collapse !important;
+        font-size: 7.5px !important;
+    }
+
+    th,
+    td {
+        padding: 2.5px 4px !important;
+        line-height: 1.1 !important;
+        word-wrap: break-word !important;
+    }
+
+    /* Evitar que una fila se parta a la mitad */
+    tr {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+}
