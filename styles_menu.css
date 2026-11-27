@@ -832,3 +832,30 @@ html[data-user-role="Encargado"] .sidebar-nav.menu-activo {
         break-inside: avoid !important;
     }
 }
+
+/* ==========================================================================
+   BOTÓN DE MENÚ MÓVIL DE ALTA VISIBILIDAD PARA DIRECTORES
+   ========================================================================== */
+   @media (max-width: 768px) {
+    .toggle-menu-movil {
+        background-color: #bc955c !important; /* Fondo dorado institucional */
+        color: #ffffff !important;            /* Texto e ícono blanco puro */
+        border: 2px solid #ffffff !important; /* Borde blanco resaltado */
+        border-radius: 6px !important;
+        padding: 6px 12px !important;
+        font-size: 16px !important;
+        font-weight: bold !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35) !important;
+        cursor: pointer !important;
+    }
+
+    /* Agrega automáticamente la palabra "MENÚ" junto a las 3 rayitas */
+    .toggle-menu-movil::after {
+        content: "MENÚ";
+        font-size: 12px;
+        letter-spacing: 0.5px;
+    }
+}
