@@ -250,7 +250,7 @@ document.getElementById("btnImprimirPDF").addEventListener("click", () => {
     contenedorPDF.style.padding = "5px";
     contenedorPDF.style.fontFamily = "Arial, sans-serif";
     contenedorPDF.style.background = "#ffffff";
-    contenedorPDF.style.width = "1050px";
+    contenedorPDF.style.width = "980px";
 
     contenedorPDF.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #5c1424; padding-bottom:6px; margin-bottom:8px;">
