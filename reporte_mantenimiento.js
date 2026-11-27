@@ -235,8 +235,71 @@ document.getElementById("btnExportarExcel").addEventListener("click", () => {
 
 
 document.getElementById("btnImprimirPDF").addEventListener("click", () => {
-    document.getElementById("fechaEmisionPDF").innerText = new Date().toLocaleDateString('es-MX', { year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit' });
-    window.print();
+    if (!datosFiltradosActuales.length) return alert("No hay datos para generar el PDF.");
+
+    const btn = document.getElementById("btnImprimirPDF");
+    const textoOriginal = btn.innerHTML;
+    btn.innerHTML = "⏳ Generando PDF...";
+    btn.disabled = true;
+
+    const fechaStr = new Date().toLocaleDateString('es-MX', { 
+        year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' 
+    });
+
+    const contenedorPDF = document.createElement("div");
+    contenedorPDF.style.padding = "5px";
+    contenedorPDF.style.fontFamily = "Arial, sans-serif";
+    contenedorPDF.style.background = "#ffffff";
+    contenedorPDF.style.width = "1050px";
+
+    contenedorPDF.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #5c1424; padding-bottom:6px; margin-bottom:8px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <img src="logo.png" style="width:45px; height:auto;">
+                <div>
+                    <h2 style="margin:0; color:#5c1424; font-size:16px;">H. AYUNTAMIENTO DE CALNALI 2024-2027</h2>
+                    <p style="margin:2px 0 0; font-size:11px; color:#333;">Reporte Oficial: Historial de Mantenimiento de Equipo de Cómputo</p>
+                </div>
+            </div>
+            <div style="text-align:right; font-size:10px; color:#333;">
+                <strong>Emisión:</strong> ${fechaStr}<br>
+                <strong>Registros:</strong> ${datosFiltradosActuales.length}
+            </div>
+        </div>
+        ${document.querySelector(".tabla-scroll").innerHTML}
+    `;
+
+    const tabla = contenedorPDF.querySelector("table");
+    tabla.style.width = "100%";
+    tabla.style.minWidth = "100%";
+    tabla.style.fontSize = "7.5px";
+    tabla.querySelectorAll("th, td").forEach(celda => {
+        celda.style.padding = "2.5px 4px";
+    });
+    tabla.querySelectorAll("td span").forEach(badge => {
+        badge.style.padding = "1px 4px";
+        badge.style.fontSize = "6.5px";
+    });
+
+    const opciones = {
+        margin:       6,
+        filename:     `Historial_Mantenimiento_Calnali_${new Date().toISOString().slice(0,10)}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'mm', format: 'letter', orientation: 'landscape' }
+    };
+
+    html2pdf().set(opciones).from(contenedorPDF).save()
+        .then(() => {
+            btn.innerHTML = textoOriginal;
+            btn.disabled = false;
+        })
+        .catch(err => {
+            console.error("Error al generar PDF:", err);
+            alert("Hubo un detalle al generar el PDF. Intenta de nuevo.");
+            btn.innerHTML = textoOriginal;
+            btn.disabled = false;
+        });
 });
 
 document.getElementById("btnLimpiarFiltros").addEventListener("click", () => {
